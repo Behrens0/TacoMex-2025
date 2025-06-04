@@ -1,9 +1,8 @@
-// Login Page
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SupabaseService } from '../services/supabase.service';
+import { SupabaseService } from '../../servicios/supabase.service';
 
 import {
   IonContent,
@@ -61,7 +60,7 @@ export class LoginPage {
   }
 
   goToRegister() {
-    this.router.navigateByUrl('/register');
+    this.router.navigateByUrl('/registro');
   }
 
   autofill(type: string) {

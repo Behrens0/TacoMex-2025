@@ -42,6 +42,21 @@ export class SupabaseService {
   }
 
   getPublicUrl(path: string): string {
-  return this.supabase.storage.from('sonidos').getPublicUrl(path).data.publicUrl;
-}
+    return this.supabase.storage.from('sonidos').getPublicUrl(path).data.publicUrl;
+  }
+
+  async subirImagenPerfil(archivo: File): Promise<string> {
+    const { data, error } = await this.supabase.storage
+      .from('usuarios.img')
+      .upload(`perfil-${archivo.name}`, archivo, {
+        cacheControl: '3600',
+        upsert: true
+      });
+
+    if (error) {
+      throw new Error(`Error al subir la imagen: ${error.message}`);
+    }
+
+    return data.path;
+  }
 }
