@@ -1,0 +1,142 @@
+.login-page {
+  --background: linear-gradient(135deg, #005503, #014900);
+  font-family: 'Poppins', sans-serif;
+
+  .center-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 0.5rem;
+  }
+
+  .login-container {
+    width: 100%;
+    max-width: 340px; // más angosto
+    background: #ffffff;
+    border-radius: 1.5rem 0.5rem 1.5rem 0.5rem;
+    box-shadow: 0 6px 18px rgba(255, 0, 0, 0.15);
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .welcome-title {
+    color: #ff0000;
+    font-size: 2rem; // más chico
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+
+  .login-subtitle {
+    font-size: 1.1rem;
+    color: #000000;
+    margin-bottom: 1.2rem;
+  }
+
+  form {
+    width: 100%;
+  }
+
+  ion-item {
+    --background: #dfdfdf;
+    --border-radius: 10px;
+    --highlight-color-focused: transparent;
+    --padding-start: 0.5rem;
+    margin-bottom: 0.8rem;
+    border-radius: 10px;
+
+    ion-icon {
+      color: #fff;
+      background: #000000;
+      padding: 6px;
+      border-radius: 50%;
+      font-size: 18px;
+      margin-right: 6px;
+    }
+
+    ion-label {
+      color: #000000;
+      font-size: 0.85rem;
+    }
+
+    ion-input {
+      color: #000000;
+      font-size: 0.9rem;
+    }
+  }
+
+  ion-button[type="submit"] {
+    margin-top: 0.8rem;
+    --background: #6CC272;
+    --background-hover: #004d0a;
+    --color: #fff;
+    font-weight: bold;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(14, 100, 1, 0.35);
+    height: 42px;
+    font-size: 0.9rem;
+  }
+
+  .error-message {
+    color: #000000;
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+  }
+
+  .register-link {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #444;
+
+    a {
+      color: #0e5f00;
+      font-weight: bold;
+      margin-left: 4px;
+      cursor: pointer;
+    }
+  }
+
+  .quick-access-container {
+    margin-top: 2rem;
+
+    .quick-access-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #000000;
+      margin-bottom: 0.7rem;
+    }
+  }
+
+  .quick-access {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+
+    ion-button {
+      --background: transparent;
+      --ion-color-base: transparent;
+      --ion-color-contrast: #000000;
+      --box-shadow: none;
+      --background-activated: transparent;
+      --background-focused: transparent;
+      border: 2px solid #000000;
+      border-radius: 22px;
+      color: #000000;
+      font-size: 0.75rem;
+      height: 42px;
+      min-width: 140px;
+      flex: 1 1 110px;
+      max-width: 120px;
+      text-align: center;
+    }
+
+    ion-button::part(native) {
+      transition: transform 0.2s ease;
+
+      &:active {
+        transform: scale(0.92);
+      }
+    }
+  }
+}

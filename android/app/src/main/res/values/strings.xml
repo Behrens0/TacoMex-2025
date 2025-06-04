@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Taco Mex</string>
+    <string name="title_activity_main">Taco Mex</string>
+    <string name="package_name">app.Taco.Mex</string>
+    <string name="custom_url_scheme">app.Taco.Mex</string>
+</resources>

@@ -1,0 +1,66 @@
+.splash-screen {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+
+  .logo-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: fadeZoomIn 1.2s ease-out;
+  }
+
+  .logo {
+    width: 350px;
+    border-radius: 20px;
+    animation: spin 2s linear 1;
+    animation-fill-mode: forwards;
+  }
+
+.app-name {
+  font-size: 30px;
+  font-weight: bold;
+  color: #ffffff;
+  font-family: 'Segoe UI', sans-serif;
+  width: 100%;          
+  text-align: center;   
+  white-space: nowrap;   
+  overflow: hidden;      
+  text-overflow: ellipsis; 
+  box-sizing: border-box;
+}
+
+  @keyframes fadeZoomIn {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.6);
+    }
+    60% {
+      opacity: 0.8;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+ion-content.splash-screen {
+  --background: #e9ae47; // Sobrescribe variable CSS de fondo de Ionic
+}

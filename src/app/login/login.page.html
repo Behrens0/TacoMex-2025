@@ -1,0 +1,85 @@
+<ion-content class="login-page">
+  <div class="center-wrapper">
+    <div class="login-container">
+      <img src="assets/TacoMex.png" alt="Logo" class="login-logo" />
+
+      <h2 class="login-subtitle">¡INICIA SESIÓN!</h2>
+
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
+        <ion-item>
+          <ion-icon slot="start" name="mail-outline"></ion-icon>
+          <ion-label position="floating">Correo electrónico</ion-label>
+          <ion-input type="email" formControlName="email"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+          <ion-label position="floating">Contraseña</ion-label>
+          <ion-input type="password" formControlName="password"></ion-input>
+        </ion-item>
+
+        <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+        <ion-button expand="block" type="submit" [disabled]="loginForm.invalid">
+          INGRESAR
+        </ion-button>
+
+        <!-- Accesos rápidos -->
+        <div class="quick-access-container">
+          <h3 class="quick-access-title">ACCESOS RÁPIDOS</h3>
+          <div class="quick-access">
+
+            <!-- Supervisor -->
+            <ion-button shape="round" (click)="autofill('supervisor')">
+              <ion-icon name="eye" slot="start"></ion-icon>
+              Supervisor
+            </ion-button>
+
+            <!-- Dueño -->
+            <ion-button shape="round" (click)="autofill('dueno')">
+              <ion-icon name="person" slot="start"></ion-icon>
+              Dueño
+            </ion-button>
+
+            <!-- Empleados con popover -->
+            <ion-button id="empleados-trigger" shape="round">
+              <ion-icon name="people" slot="start"></ion-icon>
+              Empleados
+              <ion-icon name="chevron-up-outline" slot="end"></ion-icon>
+            </ion-button>
+            <ion-popover trigger="empleados-trigger" triggerAction="click" showBackdrop="false">
+              <ng-template>
+                <ion-list>
+                  <ion-item button (click)="autofill('maitre')">Maître</ion-item>
+                  <ion-item button (click)="autofill('mozo')">Mozo</ion-item>
+                  <ion-item button (click)="autofill('cocinero')">Cocinero</ion-item>
+                  <ion-item button (click)="autofill('bartender')">Bartender</ion-item>
+                </ion-list>
+              </ng-template>
+            </ion-popover>
+
+            <!-- Cliente con popover -->
+            <ion-button id="cliente-trigger" shape="round">
+              <ion-icon name="walk" slot="start"></ion-icon>
+              Cliente
+              <ion-icon name="chevron-up-outline" slot="end"></ion-icon>
+            </ion-button>
+            <ion-popover trigger="cliente-trigger" triggerAction="click" showBackdrop="false">
+              <ng-template>
+                <ion-list>
+                  <ion-item button (click)="autofill('cliente_registrado')">Registrado</ion-item>
+                  <ion-item button (click)="autofill('cliente_anonimo')">Anónimo</ion-item>
+                </ion-list>
+              </ng-template>
+            </ion-popover>
+
+          </div>
+        </div>
+
+        <div class="register-link">
+          ¿No tenés cuenta? <a (click)="goToRegister()">Registrate</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</ion-content>
