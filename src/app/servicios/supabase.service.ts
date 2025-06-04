@@ -33,10 +33,9 @@ export class SupabaseService {
     return this.supabase.auth.getUser();
   }
 
-  insertUser(user: { nombre: string, apellido: string, correo: string, password: string }) {
-    return this.supabase.from('usuarios').insert(user);
-  }
-
+insertUser(user: { nombre: string; apellido: string; correo: string; dni?: string; foto?: string }) {
+  return this.supabase.from('usuarios').insert([user]);
+}
   getCurrentUser() {
     return this.supabase.auth.getUser();
   }

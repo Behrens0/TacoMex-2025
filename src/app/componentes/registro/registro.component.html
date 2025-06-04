@@ -1,3 +1,81 @@
-<p>
-  registro works!
-</p>
+<ion-content class="register-page">
+  <div class="center-wrapper">
+    <div class="register-container">
+      <img src="assets/TacoMex.png" alt="Logo" class="login-logo" />
+
+      <h2 class="register-subtitle">¡BIENVENIDO!</h2>
+
+      <!-- ANONIMO -->
+      <ion-item lines="none">
+        <ion-label>¿Deseas ser un cliente anónimo?</ion-label>
+        <ion-checkbox slot="end" [(ngModel)]="esAnonimo" (ionChange)="alternarAnonimato()"></ion-checkbox>
+      </ion-item>
+
+      <form [formGroup]="registerForm" (ngSubmit)="registrar()">
+        <!-- NOMBRE -->
+        <ion-item>
+          <ion-icon slot="start" name="person-outline"></ion-icon>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input formControlName="nombre"></ion-input>
+        </ion-item>
+
+        <!-- APELLIDO -->
+        <ion-item>
+          <ion-icon slot="start" name="person-outline"></ion-icon>
+          <ion-label position="floating">Apellido</ion-label>
+          <ion-input formControlName="apellido"></ion-input>
+        </ion-item>
+
+        <!-- CORREO -->
+        <ng-container *ngIf="!esAnonimo">
+          <ion-item>
+            <ion-icon slot="start" name="mail-outline"></ion-icon>
+            <ion-label position="floating">Correo electrónico</ion-label>
+            <ion-input type="email" formControlName="correo"></ion-input>
+          </ion-item>
+          
+        <!-- CONTRASENA -->
+          <ion-item>
+            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+            <ion-label position="floating">Contraseña</ion-label>
+            <ion-input type="password" formControlName="contraseña"></ion-input>
+          </ion-item>
+
+        <!-- DNI -->
+          <ion-item>
+            <ion-icon slot="start" name="card-outline"></ion-icon>
+            <ion-label position="floating">DNI</ion-label>
+            <ion-input type="text" formControlName="dni"></ion-input>
+          </ion-item>
+
+          <!-- DNI FOTO -->
+          <ion-item lines="none">
+            <ion-label>Escanea tu DNI</ion-label>
+            <ion-button slot="end" size="small" (click)="escanearDNI()" class="boton-verde">Escanear</ion-button>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon slot="start" name="camera-outline"></ion-icon>
+            <ion-label>Foto</ion-label>
+            <ion-button slot="end" size="small" (click)="tomarFoto()" class="boton-verde">Tomar Foto</ion-button>
+            <ion-button slot="end" size="small" (click)="subirFoto()" class="boton-verde">Subir Imagen</ion-button>
+          </ion-item>
+        </ng-container>
+
+        <!-- ERROR -->
+        <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
+
+        <!-- ENVIAR REGISTRO -->
+        <ion-button expand="block" type="submit" [disabled]="registerForm.invalid && !esAnonimo">
+          REGISTRARME
+        </ion-button>
+
+        <!-- VOLVER AL LOGIN -->
+        <div class="register-link">
+          ¿Ya tenés cuenta?
+          <a (click)="irAlLogin()">Iniciar sesión</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</ion-content>
