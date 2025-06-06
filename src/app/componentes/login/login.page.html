@@ -5,17 +5,17 @@
 
       <h2 class="login-subtitle">¡INICIA SESIÓN!</h2>
 
-      <form [formGroup]="loginForm" (ngSubmit)="login()">
+      <form [formGroup]="loginForm" (ngSubmit)="ingresar()">
         <ion-item>
           <ion-icon slot="start" name="mail-outline"></ion-icon>
           <ion-label position="floating">Correo electrónico</ion-label>
-          <ion-input type="email" formControlName="email"></ion-input>
+          <ion-input type="email" formControlName="correo"></ion-input>
         </ion-item>
 
         <ion-item>
           <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
           <ion-label position="floating">Contraseña</ion-label>
-          <ion-input type="password" formControlName="password"></ion-input>
+          <ion-input type="password" formControlName="contrasenia"></ion-input>
         </ion-item>
 
         <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
@@ -30,13 +30,13 @@
           <div class="quick-access">
 
             <!-- Supervisor -->
-            <ion-button shape="round" (click)="autofill('supervisor')">
+            <ion-button shape="round" (click)="accesoRapido('supervisor')">
               <ion-icon name="eye" slot="start"></ion-icon>
               Supervisor
             </ion-button>
 
             <!-- Dueño -->
-            <ion-button shape="round" (click)="autofill('dueno')">
+            <ion-button shape="round" (click)="accesoRapido('dueno')">
               <ion-icon name="person" slot="start"></ion-icon>
               Dueño
             </ion-button>
@@ -50,10 +50,10 @@
             <ion-popover trigger="empleados-trigger" triggerAction="click" showBackdrop="false">
               <ng-template>
                 <ion-list>
-                  <ion-item button (click)="autofill('maitre')">Maître</ion-item>
-                  <ion-item button (click)="autofill('mozo')">Mozo</ion-item>
-                  <ion-item button (click)="autofill('cocinero')">Cocinero</ion-item>
-                  <ion-item button (click)="autofill('bartender')">Bartender</ion-item>
+                  <ion-item button (click)="accesoRapido('maitre')">Maître</ion-item>
+                  <ion-item button (click)="accesoRapido('mozo')">Mozo</ion-item>
+                  <ion-item button (click)="accesoRapido('cocinero')">Cocinero</ion-item>
+                  <ion-item button (click)="accesoRapido('bartender')">Bartender</ion-item>
                 </ion-list>
               </ng-template>
             </ion-popover>
@@ -67,8 +67,8 @@
             <ion-popover trigger="cliente-trigger" triggerAction="click" showBackdrop="false">
               <ng-template>
                 <ion-list>
-                  <ion-item button (click)="autofill('cliente_registrado')">Registrado</ion-item>
-                  <ion-item button (click)="autofill('cliente_anonimo')">Anónimo</ion-item>
+                  <ion-item button (click)="accesoRapido('cliente_registrado')">Registrado</ion-item>
+                  <ion-item button (click)="accesoRapido('cliente_anonimo')">Anónimo</ion-item>
                 </ion-list>
               </ng-template>
             </ion-popover>

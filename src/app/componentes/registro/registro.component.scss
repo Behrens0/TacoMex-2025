@@ -11,7 +11,7 @@
 
   .register-container {
     width: 100%;
-    max-width: 390px; // Más angosto
+    max-width: 390px;
     background: #ffffff;
     padding: 0.8rem 0.8rem;
     border-radius: 1rem 0.5rem;
@@ -28,21 +28,21 @@
 
   form {
     width: 100%;
-    max-width: 360px; // Más angosto
+    max-width: 360px;
     margin: 0 auto;
   }
 
   ion-item {
     --background: #dfdfdf;
     --border-radius: 6px;
-    margin-bottom: 5px; // Espacio de 5px entre cada input
+    margin-bottom: 5px;
     padding-inline-start: 0.1rem;
-    max-width: 380px; // Más angosto
-    min-height: 36px; // Más alto para mejor alineación vertical
+    max-width: 380px;
+    min-height: 36px;
     margin-left: auto;
     margin-right: auto;
     box-shadow: none;
-    align-items: center; // Centra verticalmente el contenido
+    align-items: center;
 
     ion-icon {
       color: #000000;
@@ -61,22 +61,22 @@
 
   ion-input {
     color: #000000;
-    max-width: 300px; // Más angosto
+    max-width: 300px;
     font-size: 0.95rem;
     margin: 0 auto;
-    min-height: 36px; // Igual que el ion-item para centrar
+    min-height: 36px;
     padding: 0 8px;
     display: flex;
-    align-items: center; // Centra el contenido verticalmente
+    align-items: center;
 
     &::placeholder {
       margin-top: 0 !important;
       padding-top: 0 !important;
       line-height: 1.2;
-      vertical-align: middle; // Centra el placeholder
+      vertical-align: middle;
       opacity: 1;
       font-weight: bold !important;
-      color: #000000 !important;// Opcional: puedes ajustar el color si lo deseas
+      color: #000000 !important;
     }
   }
 
@@ -166,5 +166,32 @@
     display: block;
     margin: 0 auto;
     margin-bottom: 10px;
+  }
+
+  .mensaje-exito {
+    color: #0e5f00;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    font-weight: bold;
+    text-align: center;
+    display: block;
+  }
+
+  ion-item img[alt="preview"] {
+    margin-left: 4px;
+    margin-right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  ion-item .perfil-checkboxes {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-left: 1rem;
   }
 }

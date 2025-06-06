@@ -5,13 +5,14 @@
 
       <h2 class="register-subtitle">¡BIENVENIDO!</h2>
 
-      <!-- ANONIMO -->
-      <ion-item lines="none">
-        <ion-label>¿Deseas ser un cliente anónimo?</ion-label>
-        <ion-checkbox slot="end" [(ngModel)]="esAnonimo" (ionChange)="alternarAnonimato()"></ion-checkbox>
-      </ion-item>
+      <!-- Cliente -->
+      <form *ngIf="tipoRegistro==='cliente'" [formGroup]="clienteForm" (ngSubmit)="registrarCliente()">
+        <!-- ANONIMO -->
+        <ion-item lines="none">
+          <ion-label>¿Deseas ser un cliente anónimo?</ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="esAnonimo" (ionChange)="alternarAnonimato()"></ion-checkbox>
+        </ion-item>
 
-      <form [formGroup]="registerForm" (ngSubmit)="registrar()">
         <!-- NOMBRE -->
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
@@ -38,7 +39,7 @@
           <ion-item>
             <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
             <ion-label position="floating">Contraseña</ion-label>
-            <ion-input type="password" formControlName="contraseña"></ion-input>
+            <ion-input type="password" formControlName="contrasenia"></ion-input>
           </ion-item>
 
         <!-- DNI -->
@@ -46,19 +47,22 @@
             <ion-icon slot="start" name="card-outline"></ion-icon>
             <ion-label position="floating">DNI</ion-label>
             <ion-input type="text" formControlName="dni"></ion-input>
+            <ion-button slot="end" size="small" class="boton-verde" (click)="escanearDNI()">
+              Escanear
+            </ion-button>
           </ion-item>
 
-          <!-- DNI FOTO -->
-          <ion-item lines="none">
-            <ion-label>Escanea tu DNI</ion-label>
-            <ion-button slot="end" size="small" (click)="escanearDNI()" class="boton-verde">Escanear</ion-button>
-          </ion-item>
-
+          <!-- IMAGEN DE PERFIL -->
           <ion-item>
             <ion-icon slot="start" name="camera-outline"></ion-icon>
             <ion-label>Foto</ion-label>
-            <ion-button slot="end" size="small" (click)="tomarFoto()" class="boton-verde">Tomar Foto</ion-button>
-            <ion-button slot="end" size="small" (click)="subirFoto()" class="boton-verde">Subir Imagen</ion-button>
+            <ion-button slot="end" size="small" class="boton-verde" (click)="fileInput.click()">Subir Imagen</ion-button>
+            <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
+            <input #fileInput type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
+            <ng-container *ngIf="imagenURL">
+              <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
+              <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
+            </ng-container>
           </ion-item>
         </ng-container>
 
@@ -66,16 +70,188 @@
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
         <!-- ENVIAR REGISTRO -->
-        <ion-button expand="block" type="submit" [disabled]="registerForm.invalid && !esAnonimo">
+        <ion-button expand="block" type="submit" [disabled]="clienteForm.invalid && !esAnonimo">
           REGISTRARME
         </ion-button>
 
-        <!-- VOLVER AL LOGIN -->
-        <div class="register-link">
+        <div *ngIf="mensajeExito" class="mensaje-exito">
+          {{ mensajeExito }}
+        </div>
+
+        <!-- SOLO SI NO ES SUPERVISOR -->
+        <div class="register-link" *ngIf="!esAdmin">
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
         </div>
       </form>
+
+      <!-- Empleado -->
+      <form *ngIf="tipoRegistro==='empleado'" [formGroup]="empleadoForm" (ngSubmit)="registrarEmpleado()">
+        <!-- APELLIDO -->
+        <ion-item>
+          <ion-icon slot="start" name="person-outline"></ion-icon>
+          <ion-label position="floating">Apellido</ion-label>
+          <ion-input formControlName="apellido"></ion-input>
+        </ion-item>
+
+        <!-- NOMBRE -->
+        <ion-item>
+          <ion-icon slot="start" name="person-outline"></ion-icon>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input formControlName="nombre"></ion-input>
+        </ion-item>
+
+        <!-- CORREO -->
+        <ion-item>
+          <ion-icon slot="start" name="mail-outline"></ion-icon>
+          <ion-label position="floating">Correo electrónico</ion-label>
+          <ion-input type="email" formControlName="correo"></ion-input>
+        </ion-item>
+        
+        <!-- CONTRASENA -->
+          <ion-item>
+            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+            <ion-label position="floating">Contraseña</ion-label>
+            <ion-input type="password" formControlName="contrasenia"></ion-input>
+          </ion-item>
+
+        <!-- DNI -->
+          <ion-item>
+            <ion-icon slot="start" name="card-outline"></ion-icon>
+            <ion-label position="floating">DNI</ion-label>
+            <ion-input type="text" formControlName="dni"></ion-input>
+            <ion-button slot="end" size="small" class="boton-verde" (click)="escanearDNI()">
+              Escanear
+            </ion-button>
+          </ion-item>
+
+          <!-- IMAGEN DE PERFIL -->
+          <ion-item>
+            <ion-icon slot="start" name="camera-outline"></ion-icon>
+            <ion-label>Foto</ion-label>
+            <ion-button slot="end" size="small" class="boton-verde" (click)="fileInput.click()">Subir Imagen</ion-button>
+            <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
+            <input #fileInput type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
+            <ng-container *ngIf="imagenURL">
+              <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
+              <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
+            </ng-container>
+          </ion-item>
+        
+
+        <!-- ERROR -->
+        <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
+
+        <!-- ENVIAR REGISTRO -->
+        <ion-button expand="block" type="submit" [disabled]="empleadoForm.invalid">
+          REGISTRAR EMPLEADO
+        </ion-button>
+
+        <div *ngIf="mensajeExito" class="mensaje-exito">
+          {{ mensajeExito }}
+        </div>
+
+        <!-- VOLVER AL LOGIN -->
+        <div class="register-link" *ngIf="!esAdmin">
+          ¿Ya tenés cuenta?
+          <a (click)="irAlLogin()">Iniciar sesión</a>
+        </div>
+      </form>
+
+      <!-- Supervisor -->
+      <form *ngIf="tipoRegistro==='supervisor'" [formGroup]="supervisorForm" (ngSubmit)="registrarSupervisor()">
+        <!-- NOMBRE -->
+        <ion-item>
+          <ion-icon slot="start" name="person-outline"></ion-icon>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input formControlName="nombre"></ion-input>
+        </ion-item>
+
+        <!-- APELLIDO -->
+        <ion-item>
+          <ion-icon slot="start" name="person-outline"></ion-icon>
+          <ion-label position="floating">Apellido</ion-label>
+          <ion-input formControlName="apellido"></ion-input>
+        </ion-item>
+
+        <!-- CORREO -->
+        <ion-item>
+          <ion-icon slot="start" name="mail-outline"></ion-icon>
+          <ion-label position="floating">Correo electrónico</ion-label>
+          <ion-input type="email" formControlName="correo"></ion-input>
+        </ion-item>
+
+        <!-- CONTRASEÑA -->
+        <ion-item>
+          <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+          <ion-label position="floating">Contraseña</ion-label>
+          <ion-input type="password" formControlName="contrasenia"></ion-input>
+        </ion-item>
+
+        <!-- DNI -->
+        <ion-item>
+          <ion-icon slot="start" name="card-outline"></ion-icon>
+          <ion-label position="floating">DNI</ion-label>
+          <ion-input type="text" formControlName="dni"></ion-input>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="escanearDNI()">
+            Escanear
+          </ion-button>
+        </ion-item>
+
+        <!-- CUIL -->
+        <ion-item>
+          <ion-icon slot="start" name="card-outline"></ion-icon>
+          <ion-label position="floating">CUIL</ion-label>
+          <ion-input type="text" formControlName="cuil"></ion-input>
+        </ion-item>
+
+        <!-- PERFIL -->
+        <ion-item lines="none">
+          <ion-label>Perfil</ion-label>
+          <div class="perfil-checkboxes">
+            <ion-checkbox
+              [checked]="supervisorForm.get('perfil')?.value === 'dueño'"
+              (ionChange)="supervisorForm.get('perfil')?.setValue('dueño')"
+            >Dueño</ion-checkbox>
+            <ion-checkbox
+              [checked]="supervisorForm.get('perfil')?.value === 'supervisor'"
+              (ionChange)="supervisorForm.get('perfil')?.setValue('supervisor')"
+            >Supervisor</ion-checkbox>
+          </div>
+        </ion-item>
+
+        <!-- IMAGEN DE PERFIL -->
+        <ion-item>
+          <ion-icon slot="start" name="camera-outline"></ion-icon>
+          <ion-label>Foto</ion-label>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="fileInputSupervisor.click()">Subir Imagen</ion-button>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
+          <input #fileInputSupervisor type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
+          <ng-container *ngIf="imagenURL">
+            <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
+            <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
+          </ng-container>
+        </ion-item>
+
+
+        <!-- ERROR -->
+        <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
+
+        <!-- ENVIAR REGISTRO -->
+        <ion-button expand="block" type="submit" [disabled]="supervisorForm.invalid">
+          REGISTRAR SUPERVISOR
+        </ion-button>
+
+        <div *ngIf="mensajeExito" class="mensaje-exito">
+          {{ mensajeExito }}
+        </div>
+      </form>
+
+      <div *ngIf="esAdmin" class="registro-selector">
+        <ion-button size="small" [color]="tipoRegistro==='supervisor' ? 'success' : 'medium'" (click)="tipoRegistro='supervisor'">Supervisores</ion-button>
+        <ion-button size="small" [color]="tipoRegistro==='empleado' ? 'success' : 'medium'" (click)="tipoRegistro='empleado'">Empleados</ion-button>
+        <ion-button size="small" [color]="tipoRegistro==='cliente' ? 'success' : 'medium'" (click)="tipoRegistro='cliente'">Clientes</ion-button>
+      </div>
     </div>
   </div>
 </ion-content>

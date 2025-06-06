@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SupabaseService } from '../../servicios/supabase.service';
+import { AuthService } from 'src/app/servicios/auth.service';
 
 import {
   IonContent,
@@ -36,26 +36,55 @@ import {
 export class LoginPage {
   loginForm: FormGroup;
   errorMessage: string = '';
+  correo: string = '';
+  contrasenia: string = '';
+  mensajeError: string = '';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private supabaseService: SupabaseService
+    private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+      correo: ['', [Validators.required, Validators.email]],
+      contrasenia: ['', Validators.required],
     });
   }
 
-  async login() {
-    const { email, password } = this.loginForm.value;
-    const { error } = await this.supabaseService.signIn(email, password);
+  async ingresar() {
+    this.mensajeError = '';
 
-    if (error) {
-      this.errorMessage = error.message;
-    } else {
-      this.router.navigateByUrl('/home', { replaceUrl: true });
+    try {
+      const correo = this.loginForm.get('correo')?.value;
+      const contrasenia = this.loginForm.get('contrasenia')?.value;
+
+      if (!correo || !contrasenia) {
+        throw new Error('Debe completar todos los campos');
+      }
+
+      if (contrasenia.length < 6) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres');
+      }
+
+      let usuario;
+      try {
+        usuario = await this.authService.logIn(correo, contrasenia);
+      } catch (error: any) {
+        if (error?.message) {
+          throw new Error(error.message);
+        }
+        throw new Error('Correo electrónico o contraseña inválidos');
+      }
+
+      if (!usuario) {
+        throw new Error('Correo electrónico o contraseña inválidos');
+      }
+
+      this.router.navigate(['/home']);
+    } catch (e: any) {
+      this.mensajeError = e.message || 'Ocurrió un error al iniciar sesión';
+    } finally {
+      this.loginForm.reset();
     }
   }
 
@@ -63,26 +92,19 @@ export class LoginPage {
     this.router.navigateByUrl('/registro');
   }
 
-  autofill(type: string) {
-    const presets: { [key: string]: { email: string; password: string } } = {
-      admin: { email: 'admin@test.com', password: 'admin123' },
-      user: { email: 'user@test.com', password: 'user123' },
-      guest: { email: 'guest@test.com', password: 'guest123' },
-      supervisor: { email: 'supervisor@test.com', password: 'super123' },
-      dueno: { email: 'dueno@test.com', password: 'dueno123' },
-      maitre: { email: 'maitre@test.com', password: 'maitre123' },
-      mozo: { email: 'mozo@test.com', password: 'mozo123' },
-      cocinero: { email: 'cocinero@test.com', password: 'cocinero123' },
-      bartender: { email: 'bartender@test.com', password: 'bartender123' },
-      cliente_registrado: { email: 'cliente@test.com', password: 'cliente123' },
-      cliente_anonimo: { email: 'anonimo@test.com', password: 'anonimo123' }
+  accesoRapido(type: string) {
+    const presets: { [key: string]: { correo: string; contrasenia: string } } = {
+      admin: { correo: 'admin@test.com', contrasenia: 'admin123' },
+      user: { correo: 'user@test.com', contrasenia: 'user123' },
+      guest: { correo: 'guest@test.com', contrasenia: 'guest123' },
+      supervisor: { correo: 'supervisor@test.com', contrasenia: 'super123' },
+      dueno: { correo: 'dueno@test.com', contrasenia: 'dueno123' },
+      maitre: { correo: 'maitre@test.com', contrasenia: 'maitre123' },
+      mozo: { correo: 'mozo@test.com', contrasenia: 'mozo123' },
+      cocinero: { correo: 'cocinero@test.com', contrasenia: 'cocinero123' },
+      bartender: { correo: 'bartender@test.com', contrasenia: 'bartender123' },
+      cliente_registrado: { correo: 'cliente@test.com', contrasenia: 'cliente123' },
+      cliente_anonimo: { correo: 'anonimo@test.com', contrasenia: 'anonimo123' }
     };
-
-    if (presets[type]) {
-      const { email, password } = presets[type];
-      this.loginForm.patchValue({ email, password });
-    } else {
-      this.errorMessage = 'Tipo de acceso no reconocido.';
-    }
   }
 }

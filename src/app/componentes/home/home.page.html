@@ -1,4 +1,4 @@
-<ion-header class="custom-header">
+<!-- <ion-header class="custom-header">
   <link href="https://fonts.googleapis.com/css2?family=Alata&display=swap" rel="stylesheet">
   <ion-toolbar>
     <ion-buttons slot="end">
@@ -35,4 +35,8 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-footer>
+</ion-footer> -->
+
+<ion-button *ngIf="mostrarBotonRegistro" expand="block" (click)="irARegistro()">
+  Ir a registro de usuarios
+</ion-button>

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from 'src/app/servicios/supabase.service';
+import { AuthService } from 'src/app/servicios/auth.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -23,71 +24,75 @@ import {
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   imports: [
-    IonContent,
-    IonLabel,
-    IonHeader,
-    IonToolbar,
-    IonButtons,
     IonButton,
-    IonPopover,
-    IonItem,
-    IonIcon,
-    IonList,
-    IonFooter,
     FormsModule,
     RouterModule,
     CommonModule
-  ],
+],
 })
 export class HomePage {
-  userName: string = 'Usuario';
-  avatarUrl: string = '';
+  mostrarBotonRegistro: boolean = false;
 
-  constructor(private supabase: SupabaseService, private router: Router) {}
+//   userName: string = 'Usuario';
+//   avatarUrl: string = '';
 
-  ionViewWillEnter() {
-    this.loadUser();
+  constructor(
+    private authService: AuthService,
+    private supabase: SupabaseService,
+    private router: Router
+  ) {}
+
+  async ngOnInit() {
+    this.mostrarBotonRegistro = this.authService.esUsuarioAdmin();
   }
 
-  async loadUser() {
-    const { data, error } = await this.supabase.getCurrentUser();
-    const user = data?.user;
-
-    if (user) {
-      this.userName = user.email?.split('@')[0] ?? 'Usuario';
-      this.avatarUrl = this.generateAvatarUrl(user.email ?? 'default');
-    } else {
-      this.router.navigateByUrl('/login');
-    }
+  irARegistro() {
+    this.router.navigate(['/registro']);
   }
 
-  generateAvatarUrl(seed: string): string {
-    return `https://robohash.org/${encodeURIComponent(seed)}.png?set=set5`;
-  }
+//   ionViewWillEnter() {
+//     this.loadUser();
+//   }
 
-  changeAvatar() {
-    const randomSeed = Math.random().toString(36).substring(2, 10);
-    this.avatarUrl = this.generateAvatarUrl(randomSeed);
-  }
+//   async loadUser() {
+//     const { data, error } = await this.supabase.getCurrentUser();
+//     const user = data?.user;
 
-  async logout() {
-    const popovers = document.querySelectorAll('ion-popover');
-    popovers.forEach((popover) => (popover as HTMLIonPopoverElement).dismiss());
+//     if (user) {
+//       this.userName = user.email?.split('@')[0] ?? 'Usuario';
+//       this.avatarUrl = this.generateAvatarUrl(user.email ?? 'default');
+//     } else {
+//       this.router.navigateByUrl('/login');
+//     }
+//   }
 
-    await this.supabase.signOut();
-    this.userName = '';
-    this.avatarUrl = '';
-    this.router.navigateByUrl('/login', { replaceUrl: true });
-  }
+//   generateAvatarUrl(seed: string): string {
+//     return `https://robohash.org/${encodeURIComponent(seed)}.png?set=set5`;
+//   }
 
-  goTo(route: string) {
-    this.router.navigate([route]);
-  }
+//   changeAvatar() {
+//     const randomSeed = Math.random().toString(36).substring(2, 10);
+//     this.avatarUrl = this.generateAvatarUrl(randomSeed);
+//   }
 
-  escondePopOver(event: Event) {
-  const popover = (event.target as HTMLElement).closest('ion-popover');
-  if (popover) {
-    (popover as any).dismiss();
-  }
-}
+//   async logout() {
+//     const popovers = document.querySelectorAll('ion-popover');
+//     popovers.forEach((popover) => (popover as HTMLIonPopoverElement).dismiss());
+
+//     await this.supabase.signOut();
+//     this.userName = '';
+//     this.avatarUrl = '';
+//     this.router.navigateByUrl('/login', { replaceUrl: true });
+//   }
+
+//   goTo(route: string) {
+//     this.router.navigate([route]);
+//   }
+
+//   escondePopOver(event: Event) {
+//   const popover = (event.target as HTMLElement).closest('ion-popover');
+//   if (popover) {
+//     (popover as any).dismiss();
+//   }
+// }
 }

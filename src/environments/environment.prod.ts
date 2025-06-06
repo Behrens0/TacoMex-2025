@@ -1,11 +1,5 @@
 export const environment = {
-  production: false,
-  firebase: {
-    apiKey: "AIzaSyDiECB96dBS4o-Fq_rfXCg2XrgCQ4rN59U",
-    authDomain: "pruebaapp-e93f9.firebaseapp.com",
-    projectId: "pruebaapp-e93f9",
-    storageBucket: "pruebaapp-e93f9.appspot.com",
-    messagingSenderId: "964790110381",
-    appId: "1:964790110381:web:bfd3c8b8213be0ca755e24"
-  }
+  production: true,
+  supabaseUrl: 'https://mficerecckvozdhndecj.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1maWNlcmVjY2t2b3pkaG5kZWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNTkzODMsImV4cCI6MjA2NDYzNTM4M30.5wB2Dcct3w1qfYHJUKrFm-1bVnoooMc8GP3NtUiMURo'
 };
