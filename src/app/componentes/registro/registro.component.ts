@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../servicios/supabase.service';
 import { AuthService } from 'src/app/servicios/auth.service';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 @Component({
   selector: 'app-register',
@@ -41,6 +42,12 @@ export class RegistroComponent {
       imagenPerfil: [null, Validators.required]
     })
     this.empleadoForm = this.fb.group({
+      nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
+      apellido: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
+      correo: ['', [Validators.required, Validators.email]],
+      contrasenia: ['', [Validators.required, Validators.minLength(6)]],
+      dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
+      imagenPerfil: [null, Validators.required]
     });
     this.supervisorForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
@@ -233,6 +240,55 @@ export class RegistroComponent {
     input.click();
   }
 
-  escanearDNI() {
+  async escanearDNI() {
+    try {
+      const result = await BarcodeScanner.scan();
+
+      if (result.barcodes.length > 0) {
+        const codigo = result.barcodes[0].rawValue;
+
+        this.procesarDatosDNI(codigo);
+      } else {
+        this.mensajeError = 'No se detectó ningún código.';
+      }
+    } catch (error) {
+      this.mensajeError = 'Error al escanear: ' + error;
+    }
+  }
+
+  procesarDatosDNI(codigo: string) {
+    const partes = codigo.split('@');
+    if (partes.length > 5) {
+      const apellido = this.capitalizar(partes[1]);
+      const nombre = this.capitalizar(partes[2]);
+      const dni = this.capitalizar(partes[4]);
+
+      if (this.tipoRegistro === 'cliente') {
+        this.clienteForm.patchValue({ nombre, apellido, dni });
+      } else if (this.tipoRegistro === 'empleado') {
+        this.empleadoForm.patchValue({ nombre, apellido, dni });
+      } else if (this.tipoRegistro === 'supervisor') {
+        this.supervisorForm.patchValue({ nombre, apellido, dni });
+      }
+    } else {
+      this.mensajeError = 'El formato del DNI no es válido.';
+    }
+  }
+
+  private capitalizar(str: string): string {
+    return str
+      .toLowerCase()
+      .replace(/(^|\s)\S/g, l => l.toUpperCase());
+  }
+
+  setTipoRegistro(tipo: 'cliente' | 'empleado' | 'supervisor') {
+    this.tipoRegistro = tipo;
+    this.mensajeError = '';
+    this.mensajeExito = '';
+    this.imagenURL = null;
+
+    if (tipo !== 'cliente') this.clienteForm.reset();
+    if (tipo !== 'empleado') this.empleadoForm.reset();
+    if (tipo !== 'supervisor') this.supervisorForm.reset();
   }
 }

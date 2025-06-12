@@ -96,3 +96,16 @@ ion-footer {
   justify-content: space-around;
   width: 100%;
 }
+
+.boton-registro-verde {
+  margin-top: 32px;
+  border-radius: 18px;
+  --border-radius: 18px;
+  --background: #1bb300;
+  --background-hover: #158a00;
+  --background-activated: #158a00;
+  color: #fff;
+  width: 90%;
+  align-self: center;
+  display: block;
+}

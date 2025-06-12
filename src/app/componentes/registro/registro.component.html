@@ -248,9 +248,9 @@
       </form>
 
       <div *ngIf="esAdmin" class="registro-selector">
-        <ion-button size="small" [color]="tipoRegistro==='supervisor' ? 'success' : 'medium'" (click)="tipoRegistro='supervisor'">Supervisores</ion-button>
-        <ion-button size="small" [color]="tipoRegistro==='empleado' ? 'success' : 'medium'" (click)="tipoRegistro='empleado'">Empleados</ion-button>
-        <ion-button size="small" [color]="tipoRegistro==='cliente' ? 'success' : 'medium'" (click)="tipoRegistro='cliente'">Clientes</ion-button>
+        <ion-button size="small" [color]="tipoRegistro==='supervisor' ? 'success' : 'medium'" (click)="setTipoRegistro('supervisor')">Supervisores</ion-button>
+        <ion-button size="small" [color]="tipoRegistro==='empleado' ? 'success' : 'medium'" (click)="setTipoRegistro('empleado')">Empleados</ion-button>
+        <ion-button size="small" [color]="tipoRegistro==='cliente' ? 'success' : 'medium'" (click)="setTipoRegistro('cliente')">Clientes</ion-button>
       </div>
     </div>
   </div>

@@ -42,8 +42,8 @@ export class HomePage {
     private router: Router
   ) {}
 
-  async ngOnInit() {
-    this.mostrarBotonRegistro = this.authService.esUsuarioAdmin();
+  ngOnInit() {
+    this.mostrarBotonRegistro = this.authService.esUsuarioAdmin() && this.router.url !== '/registro';
   }
 
   irARegistro() {
