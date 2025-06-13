@@ -3,18 +3,19 @@
   ion-toolbar {
     --padding-top: 40px;
     --padding-start: 16px;
-    --padding-end: 8px; // achicamos el margen derecho
+    --padding-end: 8px;
     --min-height: 100px;
   }
 }
 
 ion-toolbar {
   --padding-start: 16px;
-  --padding-end: 8px; // margen derecho más chico
+  --padding-end: 8px;
 }
 
 ion-content {
-  --background: #ffe0b2;
+  --background: #0f4400;
+  --padding-bottom: 80px;
 }
 
 /* === AVATAR Y POPOVER === */
@@ -52,7 +53,7 @@ ion-item {
   --inner-padding-start: 0px;
   --inner-padding-end: 0px;
   --padding-start: 8px;
-  --padding-end: 4px; // menos espacio a la derecha
+  --padding-end: 4px; 
   --padding-top: 4px;
   --padding-bottom: 4px;
   --min-height: 28px;
@@ -66,7 +67,7 @@ ion-item ion-icon {
 }
 
 .user-popover-header {
-  padding: 2px 6px; // más compacto aún
+  padding: 2px 6px;
   min-height: 20px;
   --background: transparent;
 }
@@ -78,7 +79,7 @@ ion-item ion-icon {
   font-weight: 500;
   padding: 0;
   margin: 0;
-  white-space: nowrap; // evita que salte de línea
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -98,7 +99,7 @@ ion-footer {
 }
 
 .boton-registro-verde {
-  margin-top: 32px;
+  margin: 2rem auto 0 auto;
   border-radius: 18px;
   --border-radius: 18px;
   --background: #1bb300;
@@ -108,4 +109,12 @@ ion-footer {
   width: 90%;
   align-self: center;
   display: block;
+}
+
+.home-container {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }

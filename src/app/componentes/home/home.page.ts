@@ -27,14 +27,25 @@ import {
     IonButton,
     FormsModule,
     RouterModule,
-    CommonModule
+    CommonModule,
+    IonHeader,
+    IonContent,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonPopover,
+    IonItem,
+    IonIcon,
+    IonList,
+    IonFooter,
+    IonLabel
 ],
 })
 export class HomePage {
   mostrarBotonRegistro: boolean = false;
 
-//   userName: string = 'Usuario';
-//   avatarUrl: string = '';
+  userName: string = 'Usuario';
+  avatarUrl: string = '';
 
   constructor(
     private authService: AuthService,
@@ -50,49 +61,49 @@ export class HomePage {
     this.router.navigate(['/registro']);
   }
 
-//   ionViewWillEnter() {
-//     this.loadUser();
-//   }
+  ionViewWillEnter() {
+    this.loadUser();
+  }
 
-//   async loadUser() {
-//     const { data, error } = await this.supabase.getCurrentUser();
-//     const user = data?.user;
+  async loadUser() {
+    const { data, error } = await this.authService.getCurrentUser();
+    const user = data?.user;
 
-//     if (user) {
-//       this.userName = user.email?.split('@')[0] ?? 'Usuario';
-//       this.avatarUrl = this.generateAvatarUrl(user.email ?? 'default');
-//     } else {
-//       this.router.navigateByUrl('/login');
-//     }
-//   }
+    if (user) {
+      this.userName = user.email?.split('@')[0] ?? 'Usuario';
+      this.avatarUrl = this.generateAvatarUrl(user.email ?? 'default');
+    } else {
+      this.router.navigateByUrl('/login');
+    }
+  }
 
-//   generateAvatarUrl(seed: string): string {
-//     return `https://robohash.org/${encodeURIComponent(seed)}.png?set=set5`;
-//   }
+  generateAvatarUrl(seed: string): string {
+    return `https:obohash.org/${encodeURIComponent(seed)}.png?set=set5`;
+  }
 
-//   changeAvatar() {
-//     const randomSeed = Math.random().toString(36).substring(2, 10);
-//     this.avatarUrl = this.generateAvatarUrl(randomSeed);
-//   }
+  changeAvatar() {
+    const randomSeed = Math.random().toString(36).substring(2, 10);
+    this.avatarUrl = this.generateAvatarUrl(randomSeed);
+  }
 
-//   async logout() {
-//     const popovers = document.querySelectorAll('ion-popover');
-//     popovers.forEach((popover) => (popover as HTMLIonPopoverElement).dismiss());
+  async logout() {
+    const popovers = document.querySelectorAll('ion-popover');
+    popovers.forEach((popover) => (popover as HTMLIonPopoverElement).dismiss());
 
-//     await this.supabase.signOut();
-//     this.userName = '';
-//     this.avatarUrl = '';
-//     this.router.navigateByUrl('/login', { replaceUrl: true });
-//   }
+    await this.authService.signOut();
+    this.userName = '';
+    this.avatarUrl = '';
+    this.router.navigateByUrl('/login', { replaceUrl: true });
+  }
 
-//   goTo(route: string) {
-//     this.router.navigate([route]);
-//   }
+  goTo(route: string) {
+    this.router.navigate([route]);
+  }
 
-//   escondePopOver(event: Event) {
-//   const popover = (event.target as HTMLElement).closest('ion-popover');
-//   if (popover) {
-//     (popover as any).dismiss();
-//   }
-// }
+  escondePopOver(event: Event) {
+  const popover = (event.target as HTMLElement).closest('ion-popover');
+  if (popover) {
+    (popover as any).dismiss();
+  }
+}
 }

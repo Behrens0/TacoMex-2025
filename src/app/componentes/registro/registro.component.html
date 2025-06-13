@@ -1,4 +1,4 @@
-<ion-content class="register-page">
+<ion-content class="register-page" fullscreen="true" [scrollEvents]="true" scroll="true">
   <div class="center-wrapper">
     <div class="register-container">
       <img src="assets/TacoMex.png" alt="Logo" class="login-logo" />
@@ -8,9 +8,9 @@
       <!-- Cliente -->
       <form *ngIf="tipoRegistro==='cliente'" [formGroup]="clienteForm" (ngSubmit)="registrarCliente()">
         <!-- ANONIMO -->
-        <ion-item lines="none">
+        <ion-item>
           <ion-label>¿Deseas ser un cliente anónimo?</ion-label>
-          <ion-checkbox slot="end" [(ngModel)]="esAnonimo" (ionChange)="alternarAnonimato()"></ion-checkbox>
+          <ion-checkbox slot="end" formControlName="anonimo"></ion-checkbox>
         </ion-item>
 
         <!-- NOMBRE -->
@@ -27,22 +27,21 @@
           <ion-input formControlName="apellido"></ion-input>
         </ion-item>
 
-        <!-- CORREO -->
-        <ng-container *ngIf="!esAnonimo">
+        <!-- SOLO SI NO ES ANONIMO -->
+        <ng-container *ngIf="!clienteForm.get('anonimo')?.value">
+          <!-- CORREO -->
           <ion-item>
             <ion-icon slot="start" name="mail-outline"></ion-icon>
             <ion-label position="floating">Correo electrónico</ion-label>
             <ion-input type="email" formControlName="correo"></ion-input>
           </ion-item>
-          
-        <!-- CONTRASENA -->
+          <!-- CONTRASEÑA -->
           <ion-item>
             <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
             <ion-label position="floating">Contraseña</ion-label>
             <ion-input type="password" formControlName="contrasenia"></ion-input>
           </ion-item>
-
-        <!-- DNI -->
+          <!-- DNI -->
           <ion-item>
             <ion-icon slot="start" name="card-outline"></ion-icon>
             <ion-label position="floating">DNI</ion-label>
@@ -51,7 +50,6 @@
               Escanear
             </ion-button>
           </ion-item>
-
           <!-- IMAGEN DE PERFIL -->
           <ion-item>
             <ion-icon slot="start" name="camera-outline"></ion-icon>
@@ -70,7 +68,7 @@
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
         <!-- ENVIAR REGISTRO -->
-        <ion-button expand="block" type="submit" [disabled]="clienteForm.invalid && !esAnonimo">
+        <ion-button expand="block" type="submit" [disabled]="clienteForm.invalid && !clienteForm.get('anonimo')?.value">
           REGISTRARME
         </ion-button>
 
@@ -78,7 +76,6 @@
           {{ mensajeExito }}
         </div>
 
-        <!-- SOLO SI NO ES SUPERVISOR -->
         <div class="register-link" *ngIf="!esAdmin">
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
@@ -137,7 +134,6 @@
               <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
             </ng-container>
           </ion-item>
-        
 
         <!-- ERROR -->
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>

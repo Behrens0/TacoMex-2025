@@ -94,17 +94,23 @@ export class LoginPage {
 
   accesoRapido(type: string) {
     const presets: { [key: string]: { correo: string; contrasenia: string } } = {
-      admin: { correo: 'admin@test.com', contrasenia: 'admin123' },
-      user: { correo: 'user@test.com', contrasenia: 'user123' },
-      guest: { correo: 'guest@test.com', contrasenia: 'guest123' },
-      supervisor: { correo: 'supervisor@test.com', contrasenia: 'super123' },
-      dueno: { correo: 'dueno@test.com', contrasenia: 'dueno123' },
-      maitre: { correo: 'maitre@test.com', contrasenia: 'maitre123' },
-      mozo: { correo: 'mozo@test.com', contrasenia: 'mozo123' },
-      cocinero: { correo: 'cocinero@test.com', contrasenia: 'cocinero123' },
-      bartender: { correo: 'bartender@test.com', contrasenia: 'bartender123' },
-      cliente_registrado: { correo: 'cliente@test.com', contrasenia: 'cliente123' },
-      cliente_anonimo: { correo: 'anonimo@test.com', contrasenia: 'anonimo123' }
+      user: { correo: 'supervisor@prueba.com', contrasenia: '123456' },
+      guest: { correo: 'guest@prueba.com', contrasenia: '123456' },
+      supervisor: { correo: 'supervisor@prueba.com', contrasenia: '123456' },
+      dueno: { correo: 'tomasbehrens0@gmail.com', contrasenia: '123456' },
+      maitre: { correo: 'maitre@prueba.com', contrasenia: '123456' },
+      mozo: { correo: 'mozo@prueba.com', contrasenia: '123456' },
+      cocinero: { correo: 'cocinero@prueba.com', contrasenia: '123456' },
+      bartender: { correo: 'bartender@prueba.com', contrasenia: '123456' },
+      cliente_registrado: { correo: 'cliente@prueba.com', contrasenia: '123456' },
+      cliente_anonimo: { correo: 'anonimo@prueba.com', contrasenia: '123456' }
     };
+
+    if (presets[type]) {
+      this.loginForm.patchValue({
+        correo: presets[type].correo,
+        contrasenia: presets[type].contrasenia
+      });
+    }
   }
 }

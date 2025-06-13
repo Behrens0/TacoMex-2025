@@ -194,4 +194,24 @@
     align-items: center;
     margin-left: 1rem;
   }
+
+  ion-checkbox {
+    --background: #fff;
+    --border-color: #0e5f00;
+    --checkmark-color: #0e5f00;
+    --border-radius: 6px;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  ion-checkbox::part(container) {
+  background: #fff !important;
+  border: 2px solid #0e5f00 !important;
+  border-radius: 6px !important;
+}
+
+ion-checkbox::part(mark) {
+  color: #0e5f00 !important;
+}
 }

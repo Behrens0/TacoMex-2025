@@ -79,4 +79,8 @@ export class AuthService {
     this.usuarioActual = null;
     this.esAdmin = false;
   }
+
+    async getCurrentUser() {
+    return await this.sb.supabase.auth.getUser();
+  }
 }

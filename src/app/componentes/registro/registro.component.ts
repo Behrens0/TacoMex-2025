@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, LoadingController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -6,15 +6,18 @@ import { Router } from '@angular/router';
 import { SupabaseService } from '../../servicios/supabase.service';
 import { AuthService } from 'src/app/servicios/auth.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import {
+  IonCheckbox,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule,IonCheckbox],
   templateUrl: './registro.component.html',
   styleUrls: ['./registro.component.scss']
 })
-export class RegistroComponent {
+export class RegistroComponent implements OnInit {
   clienteForm: FormGroup;
   empleadoForm: FormGroup;
   supervisorForm: FormGroup;
@@ -34,6 +37,7 @@ export class RegistroComponent {
     private loadingCtrl: LoadingController
   ) {
     this.clienteForm = this.fb.group({
+      anonimo: [false],
       nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
       apellido: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
       correo: ['', [Validators.required, Validators.email]],
@@ -59,7 +63,9 @@ export class RegistroComponent {
       imagenPerfil: [null, Validators.required],
       perfil: ['supervisor', Validators.required]
     });
+  }
 
+  ngOnInit() {
     this.esAdmin = this.authService.esUsuarioAdmin();
   }
 
@@ -291,4 +297,5 @@ export class RegistroComponent {
     if (tipo !== 'empleado') this.empleadoForm.reset();
     if (tipo !== 'supervisor') this.supervisorForm.reset();
   }
+
 }
