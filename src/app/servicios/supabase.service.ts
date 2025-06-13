@@ -29,12 +29,4 @@ export class SupabaseService {
 
     return data.path;
   }
-
-  async getCurrentUser() {
-    return await this.supabase.auth.getUser();
-  }
-
-  async signOut() {
-    return await this.supabase.auth.signOut();
-  }
 }

@@ -215,3 +215,51 @@ ion-checkbox::part(mark) {
   color: #0e5f00 !important;
 }
 }
+
+
+.perfil-checkboxes {
+  display: flex;
+  flex-direction: row;
+  gap: 0.2rem; 
+  align-items: center;
+  margin-left: 0.2rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.95em;
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+ion-checkbox {
+  --background: #fff;
+  --border-color: #0e5f00;
+  --checkmark-color: #0e5f00;
+  --border-radius: 6px;
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+ion-checkbox::part(container) {
+  background: #fff !important;
+  border: 2px solid #0e5f00 !important;
+  border-radius: 6px !important;
+}
+
+ion-checkbox::part(mark) {
+  color: #0e5f00 !important;
+}
+
+.perfil-checkboxes ion-checkbox {
+  margin-right: 0.5rem;
+}
+
+.perfil-checkboxes ion-checkbox:last-child {
+  margin-right: 0;
+}

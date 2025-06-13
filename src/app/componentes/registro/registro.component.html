@@ -8,19 +8,17 @@
       <!-- Cliente -->
       <form *ngIf="tipoRegistro==='cliente'" [formGroup]="clienteForm" (ngSubmit)="registrarCliente()">
         <!-- ANONIMO -->
-        <ion-item>
+        <ion-item lines="none">
           <ion-label>¿Deseas ser un cliente anónimo?</ion-label>
           <ion-checkbox slot="end" formControlName="anonimo"></ion-checkbox>
         </ion-item>
 
-        <!-- NOMBRE -->
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="floating">Nombre</ion-label>
           <ion-input formControlName="nombre"></ion-input>
         </ion-item>
 
-        <!-- APELLIDO -->
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="floating">Apellido</ion-label>
@@ -29,19 +27,18 @@
 
         <!-- SOLO SI NO ES ANONIMO -->
         <ng-container *ngIf="!clienteForm.get('anonimo')?.value">
-          <!-- CORREO -->
           <ion-item>
             <ion-icon slot="start" name="mail-outline"></ion-icon>
             <ion-label position="floating">Correo electrónico</ion-label>
             <ion-input type="email" formControlName="correo"></ion-input>
           </ion-item>
-          <!-- CONTRASEÑA -->
+
           <ion-item>
             <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
             <ion-label position="floating">Contraseña</ion-label>
             <ion-input type="password" formControlName="contrasenia"></ion-input>
           </ion-item>
-          <!-- DNI -->
+
           <ion-item>
             <ion-icon slot="start" name="card-outline"></ion-icon>
             <ion-label position="floating">DNI</ion-label>
@@ -50,7 +47,7 @@
               Escanear
             </ion-button>
           </ion-item>
-          <!-- IMAGEN DE PERFIL -->
+
           <ion-item>
             <ion-icon slot="start" name="camera-outline"></ion-icon>
             <ion-label>Foto</ion-label>
@@ -64,7 +61,6 @@
           </ion-item>
         </ng-container>
 
-        <!-- ERROR -->
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
         <!-- ENVIAR REGISTRO -->
@@ -84,35 +80,30 @@
 
       <!-- Empleado -->
       <form *ngIf="tipoRegistro==='empleado'" [formGroup]="empleadoForm" (ngSubmit)="registrarEmpleado()">
-        <!-- APELLIDO -->
-        <ion-item>
-          <ion-icon slot="start" name="person-outline"></ion-icon>
-          <ion-label position="floating">Apellido</ion-label>
-          <ion-input formControlName="apellido"></ion-input>
-        </ion-item>
-
-        <!-- NOMBRE -->
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="floating">Nombre</ion-label>
           <ion-input formControlName="nombre"></ion-input>
         </ion-item>
 
-        <!-- CORREO -->
+        <ion-item>
+          <ion-icon slot="start" name="person-outline"></ion-icon>
+          <ion-label position="floating">Apellido</ion-label>
+          <ion-input formControlName="apellido"></ion-input>
+        </ion-item>
+
         <ion-item>
           <ion-icon slot="start" name="mail-outline"></ion-icon>
           <ion-label position="floating">Correo electrónico</ion-label>
           <ion-input type="email" formControlName="correo"></ion-input>
         </ion-item>
         
-        <!-- CONTRASENA -->
           <ion-item>
             <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
             <ion-label position="floating">Contraseña</ion-label>
             <ion-input type="password" formControlName="contrasenia"></ion-input>
           </ion-item>
 
-        <!-- DNI -->
           <ion-item>
             <ion-icon slot="start" name="card-outline"></ion-icon>
             <ion-label position="floating">DNI</ion-label>
@@ -122,7 +113,12 @@
             </ion-button>
           </ion-item>
 
-          <!-- IMAGEN DE PERFIL -->
+          <ion-item>
+            <ion-icon slot="start" name="card-outline"></ion-icon>
+            <ion-label position="floating">CUIL</ion-label>
+            <ion-input type="text" formControlName="cuil"></ion-input>
+          </ion-item>
+
           <ion-item>
             <ion-icon slot="start" name="camera-outline"></ion-icon>
             <ion-label>Foto</ion-label>
@@ -134,11 +130,11 @@
               <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
             </ng-container>
           </ion-item>
+        
 
         <!-- ERROR -->
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
-        <!-- ENVIAR REGISTRO -->
         <ion-button expand="block" type="submit" [disabled]="empleadoForm.invalid">
           REGISTRAR EMPLEADO
         </ion-button>
@@ -147,44 +143,112 @@
           {{ mensajeExito }}
         </div>
 
-        <!-- VOLVER AL LOGIN -->
         <div class="register-link" *ngIf="!esAdmin">
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
         </div>
       </form>
+      <!-- Formulario de Alta de Mesa -->
+      <form *ngIf="tipoRegistro==='mesa'" [formGroup]="mesaForm" (ngSubmit)="registrarMesa()">
+        <!-- NÚMERO DE MESA -->
+        <ion-item>
+          <ion-icon slot="start" name="grid-outline"></ion-icon>
+          <ion-label position="floating">Número de mesa</ion-label>
+          <ion-input type="number" formControlName="numero"></ion-input>
+        </ion-item>
 
+        <!-- CANTIDAD DE COMENSALES -->
+        <ion-item>
+          <ion-icon slot="start" name="people-outline"></ion-icon>
+          <ion-label position="floating">Cantidad de comensales</ion-label>
+          <ion-input type="number" formControlName="comensales"></ion-input>
+        </ion-item>
+
+        <!-- TIPO DE MESA-->
+        <ion-item lines="none">
+          <ion-label style="min-width: 40px; margin-right: 0.2rem;">Mesa:</ion-label>
+          <div class="perfil-checkboxes">
+            <label class="checkbox-label">
+              <ion-checkbox
+                [checked]="mesaForm.get('tipo')?.value === 'estandar'"
+                (ionChange)="mesaForm.get('tipo')?.setValue('estandar')"
+              ></ion-checkbox>
+              <span>Estándar</span>
+            </label>
+            <label class="checkbox-label">
+              <ion-checkbox
+                [checked]="mesaForm.get('tipo')?.value === 'vip'"
+                (ionChange)="mesaForm.get('tipo')?.setValue('vip')"
+              ></ion-checkbox>
+              <span>VIP</span>
+            </label>
+            <label class="checkbox-label">
+              <ion-checkbox
+                [checked]="mesaForm.get('tipo')?.value === 'discapacitados'"
+                (ionChange)="mesaForm.get('tipo')?.setValue('discapacitados')"
+              ></ion-checkbox>
+              <span class="material-icons" style="vertical-align: middle; font-size: 1.2em; margin-right: 2px;">accessible</span>
+            </label>
+          </div>
+        </ion-item>
+
+        <!-- FOTO DE LA MESA -->
+        <ion-item>
+          <ion-icon slot="start" name="camera-outline"></ion-icon>
+          <ion-label>Foto</ion-label>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="fileInputMesa.click()">Subir Imagen</ion-button>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
+          <input #fileInputMesa type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
+          <ng-container *ngIf="imagenURL">
+            <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
+            <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
+          </ng-container>
+        </ion-item>
+
+        <!-- QR GENERADO -->
+        <ion-item *ngIf="qrMesaURL">
+          <ion-label>QR generado</ion-label>
+          <img [src]="qrMesaURL" alt="QR Mesa" style="width:64px;height:64px;margin-left:8px;" />
+        </ion-item>
+
+        <!-- ERROR -->
+        <div class="error-message" *ngIf="mensajeErrorMesa">{{ mensajeErrorMesa }}</div>
+
+        <!-- ENVIAR REGISTRO -->
+        <ion-button expand="block" type="submit" [disabled]="mesaForm.invalid">
+          REGISTRAR MESA
+        </ion-button>
+
+        <div *ngIf="mensajeExitoMesa" class="mensaje-exito">
+          {{ mensajeExitoMesa }}
+        </div>
+      </form>
       <!-- Supervisor -->
       <form *ngIf="tipoRegistro==='supervisor'" [formGroup]="supervisorForm" (ngSubmit)="registrarSupervisor()">
-        <!-- NOMBRE -->
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="floating">Nombre</ion-label>
           <ion-input formControlName="nombre"></ion-input>
         </ion-item>
 
-        <!-- APELLIDO -->
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="floating">Apellido</ion-label>
           <ion-input formControlName="apellido"></ion-input>
         </ion-item>
 
-        <!-- CORREO -->
         <ion-item>
           <ion-icon slot="start" name="mail-outline"></ion-icon>
           <ion-label position="floating">Correo electrónico</ion-label>
           <ion-input type="email" formControlName="correo"></ion-input>
         </ion-item>
 
-        <!-- CONTRASEÑA -->
         <ion-item>
           <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
           <ion-label position="floating">Contraseña</ion-label>
           <ion-input type="password" formControlName="contrasenia"></ion-input>
         </ion-item>
 
-        <!-- DNI -->
         <ion-item>
           <ion-icon slot="start" name="card-outline"></ion-icon>
           <ion-label position="floating">DNI</ion-label>
@@ -194,14 +258,12 @@
           </ion-button>
         </ion-item>
 
-        <!-- CUIL -->
         <ion-item>
           <ion-icon slot="start" name="card-outline"></ion-icon>
           <ion-label position="floating">CUIL</ion-label>
           <ion-input type="text" formControlName="cuil"></ion-input>
         </ion-item>
 
-        <!-- PERFIL -->
         <ion-item lines="none">
           <ion-label>Perfil</ion-label>
           <div class="perfil-checkboxes">
@@ -216,7 +278,6 @@
           </div>
         </ion-item>
 
-        <!-- IMAGEN DE PERFIL -->
         <ion-item>
           <ion-icon slot="start" name="camera-outline"></ion-icon>
           <ion-label>Foto</ion-label>
@@ -229,11 +290,8 @@
           </ng-container>
         </ion-item>
 
-
-        <!-- ERROR -->
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
-        <!-- ENVIAR REGISTRO -->
         <ion-button expand="block" type="submit" [disabled]="supervisorForm.invalid">
           REGISTRAR SUPERVISOR
         </ion-button>
@@ -247,6 +305,7 @@
         <ion-button size="small" [color]="tipoRegistro==='supervisor' ? 'success' : 'medium'" (click)="setTipoRegistro('supervisor')">Supervisores</ion-button>
         <ion-button size="small" [color]="tipoRegistro==='empleado' ? 'success' : 'medium'" (click)="setTipoRegistro('empleado')">Empleados</ion-button>
         <ion-button size="small" [color]="tipoRegistro==='cliente' ? 'success' : 'medium'" (click)="setTipoRegistro('cliente')">Clientes</ion-button>
+        <ion-button size="small" [color]="tipoRegistro==='mesa' ? 'success' : 'medium'" (click)="setTipoRegistro('mesa')">Mesas</ion-button>
       </div>
     </div>
   </div>
