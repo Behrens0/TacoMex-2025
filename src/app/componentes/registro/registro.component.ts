@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, LoadingController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -12,21 +12,22 @@ import { IonCheckbox } from '@ionic/angular/standalone';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule,IonCheckbox],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule, QRCodeComponent, IonCheckbox],
   templateUrl: './registro.component.html',
   styleUrls: ['./registro.component.scss']
 })
-export class RegistroComponent implements OnInit {
-  @ViewChild(QRCodeComponent, { static: false }) qrMesaComponent!: QRCodeComponent;
-
+export class RegistroComponent {
+  @ViewChild('qrMesa', { static: false }) qrMesaComponent!: QRCodeComponent;
   clienteForm: FormGroup;
   empleadoForm: FormGroup;
   supervisorForm: FormGroup;
   mesaForm: FormGroup;
+
   mensajeExito: string = '';
   mensajeError: string = '';
   mensajeExitoMesa: string = '';
   mensajeErrorMesa: string = '';
+
   esAnonimo = false;
   imagenURL: string | null = null;
   imagenMesaURL: string | null = null;
@@ -44,13 +45,13 @@ export class RegistroComponent implements OnInit {
     private loadingCtrl: LoadingController
   ) {
     this.clienteForm = this.fb.group({
-      anonimo: [false],
       nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
       apellido: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
       correo: ['', [Validators.required, Validators.email]],
       contrasenia: ['', [Validators.required, Validators.minLength(6)]],
       dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
-      imagenPerfil: [null, Validators.required]
+      imagenPerfil: [null, Validators.required],
+      anonimo: [false]
     });
     this.empleadoForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
@@ -70,29 +71,16 @@ export class RegistroComponent implements OnInit {
       dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
       cuil: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
       imagenPerfil: [null, Validators.required],
-      perfil: ['supervisor', Validators.required]
+      perfil: ['', Validators.required]
     });
     this.mesaForm = this.fb.group({
-      numero: ['', Validators.required],
-      comensales: ['', Validators.required],
+      numero: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
+      comensales: ['', [Validators.required, Validators.min(1)]],
       tipo: ['', Validators.required],
       imagen: [null, Validators.required]
     });
-  }
 
-  ngOnInit() {
     this.esAdmin = this.authService.esUsuarioAdmin();
-
-    this.clienteForm.get('anonimo')?.valueChanges.subscribe((anonimo) => {
-      if (anonimo) {
-        this.clienteForm.patchValue({
-          correo: '',
-          contrasenia: '',
-          dni: '',
-          imagenPerfil: null
-        });
-      }
-    });
   }
 
   async registrarCliente() {
@@ -279,7 +267,6 @@ export class RegistroComponent implements OnInit {
       }
     }
   }
-  
 
   async registrarMesa() {
   this.mensajeExitoMesa = '';
@@ -340,14 +327,17 @@ export class RegistroComponent implements OnInit {
 
 
   alternarAnonimato() {
+    this.esAnonimo = this.clienteForm.get('anonimo')?.value;
     if (this.esAnonimo) {
       this.clienteForm.get('correo')?.disable();
       this.clienteForm.get('contrasenia')?.disable();
       this.clienteForm.get('dni')?.disable();
+      this.clienteForm.get('imagenPerfil')?.disable();
     } else {
       this.clienteForm.get('correo')?.enable();
       this.clienteForm.get('contrasenia')?.enable();
       this.clienteForm.get('dni')?.enable();
+      this.clienteForm.get('imagenPerfil')?.enable();
     }
   }
 
@@ -478,5 +468,4 @@ export class RegistroComponent implements OnInit {
     if (tipo !== 'supervisor') this.supervisorForm.reset();
     if (tipo !== 'mesa') this.mesaForm.reset();
   }
-
 }

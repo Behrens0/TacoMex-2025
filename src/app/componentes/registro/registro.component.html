@@ -10,7 +10,7 @@
         <!-- ANONIMO -->
         <ion-item lines="none">
           <ion-label>¿Deseas ser un cliente anónimo?</ion-label>
-          <ion-checkbox slot="end" formControlName="anonimo"></ion-checkbox>
+          <ion-checkbox slot="end" formControlName="anonimo" (ionChange)="alternarAnonimato()"></ion-checkbox>
         </ion-item>
 
         <ion-item>
@@ -134,6 +134,24 @@
 
         <!-- ERROR -->
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
+
+        <ion-item lines="none">
+          <ion-label>Perfil</ion-label>
+          <div class="perfil-checkboxes">
+            <ion-checkbox
+              [checked]="empleadoForm.get('perfil')?.value === 'mozo'"
+              (ionChange)="empleadoForm.get('perfil')?.setValue('mozo')"
+            >Mozo</ion-checkbox>
+            <ion-checkbox
+              [checked]="empleadoForm.get('perfil')?.value === 'cocinero'"
+              (ionChange)="empleadoForm.get('perfil')?.setValue('cocinero')"
+            >Cocinero</ion-checkbox>
+            <ion-checkbox
+              [checked]="empleadoForm.get('perfil')?.value === 'bartender'"
+              (ionChange)="empleadoForm.get('perfil')?.setValue('bartender')"
+            >Bartender</ion-checkbox>
+          </div>
+        </ion-item>
 
         <ion-button expand="block" type="submit" [disabled]="empleadoForm.invalid">
           REGISTRAR EMPLEADO
