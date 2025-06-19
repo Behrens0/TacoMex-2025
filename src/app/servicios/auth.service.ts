@@ -30,15 +30,6 @@ export class AuthService {
       .eq('correo', correo)
       .single();
 
-    // if (empleado) {
-    //   if (empleado.validado === false) {
-    //     throw new Error('Su cuenta fue rechazada por un administrador');
-    //   }
-    //   if (!this.usuarioActual.email_confirmed_at) {
-    //     throw new Error('Debe validar su correo electrónico para ingresar');
-    //   }
-    // }
-
     const { data: cliente } = await this.sb.supabase
       .from('clientes')
       .select('id')

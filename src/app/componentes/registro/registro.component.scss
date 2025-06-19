@@ -54,10 +54,31 @@
   }
 
   ion-label {
-    color: #000000;
+    color: #000000 !important;
     font-size: 0.95rem;
     padding: 0;
     font-weight: 500;
+    --color: #000000 !important;
+  }
+
+  ion-label[position="floating"] {
+    color: #000000 !important;
+    --color: #000000 !important;
+  }
+
+  ion-label.ion-focused {
+    color: #000000 !important;
+    --color: #000000 !important;
+  }
+
+  ion-label.ion-valid {
+    color: #000000 !important;
+    --color: #000000 !important;
+  }
+
+  ion-label.ion-invalid {
+    color: #000000 !important;
+    --color: #000000 !important;
   }
 
   ion-input {
@@ -115,6 +136,14 @@
     margin-bottom: 0.5rem;
     text-align: left;
     padding-left: 0.5rem;
+    font-weight: 500;
+  }
+
+  .field-error {
+    color: #d32f2f;
+    font-size: 0.7rem;
+    margin: -0.2rem 0 0.3rem 0.5rem;
+    text-align: left;
     font-weight: 500;
   }
 

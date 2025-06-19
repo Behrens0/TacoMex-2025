@@ -18,12 +18,14 @@
           <ion-label position="floating">Nombre</ion-label>
           <ion-input formControlName="nombre"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="clienteNombreError">{{ clienteNombreError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="floating">Apellido</ion-label>
           <ion-input formControlName="apellido"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="clienteApellidoError">{{ clienteApellidoError }}</div>
 
         <!-- SOLO SI NO ES ANONIMO -->
         <ng-container *ngIf="!clienteForm.get('anonimo')?.value">
@@ -32,12 +34,14 @@
             <ion-label position="floating">Correo electrónico</ion-label>
             <ion-input type="email" formControlName="correo"></ion-input>
           </ion-item>
+          <div class="field-error" *ngIf="clienteCorreoError">{{ clienteCorreoError }}</div>
 
           <ion-item>
             <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
             <ion-label position="floating">Contraseña</ion-label>
             <ion-input type="password" formControlName="contrasenia"></ion-input>
           </ion-item>
+          <div class="field-error" *ngIf="clienteContraseniaError">{{ clienteContraseniaError }}</div>
 
           <ion-item>
             <ion-icon slot="start" name="card-outline"></ion-icon>
@@ -47,6 +51,7 @@
               Escanear
             </ion-button>
           </ion-item>
+          <div class="field-error" *ngIf="clienteDniError">{{ clienteDniError }}</div>
 
           <ion-item>
             <ion-icon slot="start" name="camera-outline"></ion-icon>
@@ -59,6 +64,7 @@
               <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
             </ng-container>
           </ion-item>
+          <div class="field-error" *ngIf="clienteImagenError">{{ clienteImagenError }}</div>
         </ng-container>
 
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
@@ -85,51 +91,58 @@
           <ion-label position="floating">Nombre</ion-label>
           <ion-input formControlName="nombre"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="empleadoNombreError">{{ empleadoNombreError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="floating">Apellido</ion-label>
           <ion-input formControlName="apellido"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="empleadoApellidoError">{{ empleadoApellidoError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="mail-outline"></ion-icon>
           <ion-label position="floating">Correo electrónico</ion-label>
           <ion-input type="email" formControlName="correo"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="empleadoCorreoError">{{ empleadoCorreoError }}</div>
         
-          <ion-item>
-            <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
-            <ion-label position="floating">Contraseña</ion-label>
-            <ion-input type="password" formControlName="contrasenia"></ion-input>
-          </ion-item>
+        <ion-item>
+          <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
+          <ion-label position="floating">Contraseña</ion-label>
+          <ion-input type="password" formControlName="contrasenia"></ion-input>
+        </ion-item>
+        <div class="field-error" *ngIf="empleadoContraseniaError">{{ empleadoContraseniaError }}</div>
 
-          <ion-item>
-            <ion-icon slot="start" name="card-outline"></ion-icon>
-            <ion-label position="floating">DNI</ion-label>
-            <ion-input type="text" formControlName="dni"></ion-input>
-            <ion-button slot="end" size="small" class="boton-verde" (click)="escanearDNI()">
-              Escanear
-            </ion-button>
-          </ion-item>
+        <ion-item>
+          <ion-icon slot="start" name="card-outline"></ion-icon>
+          <ion-label position="floating">DNI</ion-label>
+          <ion-input type="text" formControlName="dni"></ion-input>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="escanearDNI()">
+            Escanear
+          </ion-button>
+        </ion-item>
+        <div class="field-error" *ngIf="empleadoDniError">{{ empleadoDniError }}</div>
 
-          <ion-item>
-            <ion-icon slot="start" name="card-outline"></ion-icon>
-            <ion-label position="floating">CUIL</ion-label>
-            <ion-input type="text" formControlName="cuil"></ion-input>
-          </ion-item>
+        <ion-item>
+          <ion-icon slot="start" name="card-outline"></ion-icon>
+          <ion-label position="floating">CUIL</ion-label>
+          <ion-input type="text" formControlName="cuil"></ion-input>
+        </ion-item>
+        <div class="field-error" *ngIf="empleadoCuilError">{{ empleadoCuilError }}</div>
 
-          <ion-item>
-            <ion-icon slot="start" name="camera-outline"></ion-icon>
-            <ion-label>Foto</ion-label>
-            <ion-button slot="end" size="small" class="boton-verde" (click)="fileInput.click()">Subir Imagen</ion-button>
-            <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
-            <input #fileInput type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
-            <ng-container *ngIf="imagenURL">
-              <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
-              <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
-            </ng-container>
-          </ion-item>
+        <ion-item>
+          <ion-icon slot="start" name="camera-outline"></ion-icon>
+          <ion-label>Foto</ion-label>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="fileInput.click()">Subir Imagen</ion-button>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
+          <input #fileInput type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
+          <ng-container *ngIf="imagenURL">
+            <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
+            <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
+          </ng-container>
+        </ion-item>
+        <div class="field-error" *ngIf="empleadoImagenError">{{ empleadoImagenError }}</div>
         
 
         <!-- ERROR -->
@@ -152,6 +165,7 @@
             >Bartender</ion-checkbox>
           </div>
         </ion-item>
+        <div class="field-error" *ngIf="empleadoPerfilError">{{ empleadoPerfilError }}</div>
 
         <ion-button expand="block" type="submit" [disabled]="empleadoForm.invalid">
           REGISTRAR EMPLEADO
@@ -174,6 +188,7 @@
           <ion-label position="floating">Número de mesa</ion-label>
           <ion-input type="number" formControlName="numero"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="mesaNumeroError">{{ mesaNumeroError }}</div>
 
         <!-- CANTIDAD DE COMENSALES -->
         <ion-item>
@@ -181,6 +196,7 @@
           <ion-label position="floating">Cantidad de comensales</ion-label>
           <ion-input type="number" formControlName="comensales"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="mesaComensalesError">{{ mesaComensalesError }}</div>
 
         <!-- TIPO DE MESA-->
         <ion-item lines="none">
@@ -209,6 +225,7 @@
             </label>
           </div>
         </ion-item>
+        <div class="field-error" *ngIf="mesaTipoError">{{ mesaTipoError }}</div>
 
         <!-- FOTO DE LA MESA -->
         <ion-item>
@@ -222,6 +239,7 @@
             <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
           </ng-container>
         </ion-item>
+        <div class="field-error" *ngIf="mesaImagenError">{{ mesaImagenError }}</div>
 
         <!-- QR GENERADO -->
         <ion-item *ngIf="qrMesaURL">
@@ -248,24 +266,28 @@
           <ion-label position="floating">Nombre</ion-label>
           <ion-input formControlName="nombre"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="supervisorNombreError">{{ supervisorNombreError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="person-outline"></ion-icon>
           <ion-label position="floating">Apellido</ion-label>
           <ion-input formControlName="apellido"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="supervisorApellidoError">{{ supervisorApellidoError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="mail-outline"></ion-icon>
           <ion-label position="floating">Correo electrónico</ion-label>
           <ion-input type="email" formControlName="correo"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="supervisorCorreoError">{{ supervisorCorreoError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
           <ion-label position="floating">Contraseña</ion-label>
           <ion-input type="password" formControlName="contrasenia"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="supervisorContraseniaError">{{ supervisorContraseniaError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="card-outline"></ion-icon>
@@ -275,12 +297,14 @@
             Escanear
           </ion-button>
         </ion-item>
+        <div class="field-error" *ngIf="supervisorDniError">{{ supervisorDniError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="card-outline"></ion-icon>
           <ion-label position="floating">CUIL</ion-label>
           <ion-input type="text" formControlName="cuil"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="supervisorCuilError">{{ supervisorCuilError }}</div>
 
         <ion-item lines="none">
           <ion-label>Perfil</ion-label>
@@ -295,6 +319,7 @@
             >Supervisor</ion-checkbox>
           </div>
         </ion-item>
+        <div class="field-error" *ngIf="supervisorPerfilError">{{ supervisorPerfilError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="camera-outline"></ion-icon>
@@ -307,6 +332,7 @@
             <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
           </ng-container>
         </ion-item>
+        <div class="field-error" *ngIf="supervisorImagenError">{{ supervisorImagenError }}</div>
 
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 

@@ -12,7 +12,7 @@
 
   .login-container {
     width: 100%;
-    max-width: 340px; // más angosto
+    max-width: 340px;
     background: #ffffff;
     border-radius: 1.5rem 0.5rem 1.5rem 0.5rem;
     box-shadow: 0 6px 18px rgba(255, 0, 0, 0.15);
@@ -22,7 +22,7 @@
 
   .welcome-title {
     color: #ff0000;
-    font-size: 2rem; // más chico
+    font-size: 2rem;
     font-weight: 700;
     margin-bottom: 0.3rem;
   }
@@ -55,8 +55,29 @@
     }
 
     ion-label {
-      color: #000000;
+      color: #000000 !important;
       font-size: 0.85rem;
+      --color: #000000 !important;
+    }
+
+    ion-label[position="floating"] {
+      color: #000000 !important;
+      --color: #000000 !important;
+    }
+
+    ion-label.ion-focused {
+      color: #000000 !important;
+      --color: #000000 !important;
+    }
+
+    ion-label.ion-valid {
+      color: #000000 !important;
+      --color: #000000 !important;
+    }
+
+    ion-label.ion-invalid {
+      color: #000000 !important;
+      --color: #000000 !important;
     }
 
     ion-input {
@@ -78,9 +99,18 @@
   }
 
   .error-message {
-    color: #000000;
+    color: #d32f2f;
     font-size: 0.8rem;
     margin-top: 0.4rem;
+    font-weight: 500;
+  }
+
+  .field-error {
+    color: #d32f2f;
+    font-size: 0.75rem;
+    margin: -0.3rem 0 0.5rem 0.5rem;
+    text-align: left;
+    font-weight: 500;
   }
 
   .register-link {

@@ -38,7 +38,8 @@ export class LoginPage {
   errorMessage: string = '';
   correo: string = '';
   contrasenia: string = '';
-  mensajeError: string = '';
+  correoError: string = '';
+  contraseniaError: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -49,10 +50,58 @@ export class LoginPage {
       correo: ['', [Validators.required, Validators.email]],
       contrasenia: ['', Validators.required],
     });
+
+    this.loginForm.get('correo')?.valueChanges.subscribe(() => {
+      this.validarCampo('correo');
+    });
+
+    this.loginForm.get('contrasenia')?.valueChanges.subscribe(() => {
+      this.validarCampo('contrasenia');
+    });
+  }
+
+  validarCampo(campo: string) {
+    const control = this.loginForm.get(campo);
+    if (!control) return;
+
+    this.errorMessage = '';
+
+    if (campo === 'correo') {
+      this.correoError = '';
+    } else if (campo === 'contrasenia') {
+      this.contraseniaError = '';
+    }
+
+    if (control.value || control.touched) {
+      if (campo === 'correo') {
+        if (control.errors?.['required']) {
+          this.correoError = 'El correo electrónico es requerido';
+        } else if (control.errors?.['email']) {
+          this.correoError = 'Ingrese un correo electrónico válido';
+        }
+      } else if (campo === 'contrasenia') {
+        if (control.errors?.['required']) {
+          this.contraseniaError = 'La contraseña es requerida';
+        }
+      }
+    }
+  }
+
+  limpiarErrores() {
+    this.errorMessage = '';
+    this.correoError = '';
+    this.contraseniaError = '';
   }
 
   async ingresar() {
-    this.mensajeError = '';
+    this.limpiarErrores();
+
+    this.validarCampo('correo');
+    this.validarCampo('contrasenia');
+
+    if (this.correoError || this.contraseniaError) {
+      return;
+    }
 
     try {
       const correo = this.loginForm.get('correo')?.value;
@@ -63,28 +112,41 @@ export class LoginPage {
       }
 
       if (contrasenia.length < 6) {
-        throw new Error('La contraseña debe tener al menos 6 caracteres');
+        this.contraseniaError = 'La contraseña debe tener al menos 6 caracteres';
+        return;
       }
 
       let usuario;
       try {
         usuario = await this.authService.logIn(correo, contrasenia);
       } catch (error: any) {
-        if (error?.message) {
-          throw new Error(error.message);
+        console.log('Error de login:', error);
+        
+        if (error?.message === 'Invalid login credentials') {
+          this.errorMessage = 'Correo electrónico o contraseña inválidos';
+        } else if (error?.message) {
+          if (error.message.includes('correo') || error.message.includes('email')) {
+            this.correoError = error.message;
+          } else if (error.message.includes('contraseña') || error.message.includes('password')) {
+            this.contraseniaError = error.message;
+          } else {
+            this.errorMessage = error.message;
+          }
+        } else {
+          this.errorMessage = 'Correo electrónico o contraseña inválidos';
         }
-        throw new Error('Correo electrónico o contraseña inválidos');
+        return;
       }
 
       if (!usuario) {
-        throw new Error('Correo electrónico o contraseña inválidos');
+        this.errorMessage = 'Correo electrónico o contraseña inválidos';
+        return;
       }
 
+      this.loginForm.reset();
       this.router.navigate(['/home']);
     } catch (e: any) {
-      this.mensajeError = e.message || 'Ocurrió un error al iniciar sesión';
-    } finally {
-      this.loginForm.reset();
+      this.errorMessage = e.message || 'Ocurrió un error al iniciar sesión';
     }
   }
 

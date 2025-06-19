@@ -11,12 +11,14 @@
           <ion-label position="floating">Correo electrónico</ion-label>
           <ion-input type="email" formControlName="correo"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="correoError">{{ correoError }}</div>
 
         <ion-item>
           <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
           <ion-label position="floating">Contraseña</ion-label>
           <ion-input type="password" formControlName="contrasenia"></ion-input>
         </ion-item>
+        <div class="field-error" *ngIf="contraseniaError">{{ contraseniaError }}</div>
 
         <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
 
@@ -24,24 +26,20 @@
           INGRESAR
         </ion-button>
 
-        <!-- Accesos rápidos -->
         <div class="quick-access-container">
           <h3 class="quick-access-title">ACCESOS RÁPIDOS</h3>
           <div class="quick-access">
 
-            <!-- Supervisor -->
             <ion-button shape="round" (click)="accesoRapido('supervisor')">
               <ion-icon name="eye" slot="start"></ion-icon>
               Supervisor
             </ion-button>
 
-            <!-- Dueño -->
             <ion-button shape="round" (click)="accesoRapido('dueno')">
               <ion-icon name="person" slot="start"></ion-icon>
               Dueño
             </ion-button>
 
-            <!-- Empleados con popover -->
             <ion-button id="empleados-trigger" shape="round">
               <ion-icon name="people" slot="start"></ion-icon>
               Empleados
@@ -58,7 +56,6 @@
               </ng-template>
             </ion-popover>
 
-            <!-- Cliente con popover -->
             <ion-button id="cliente-trigger" shape="round">
               <ion-icon name="walk" slot="start"></ion-icon>
               Cliente
