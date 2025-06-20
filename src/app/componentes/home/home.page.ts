@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { SupabaseService } from 'src/app/servicios/supabase.service';
 import { AuthService } from 'src/app/servicios/auth.service';
 import { LoadingService } from 'src/app/servicios/loading.service';
+import { PushNotificationService } from 'src/app/servicios/push-notification.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -33,7 +34,8 @@ export class HomePage {
     private supabase: SupabaseService,
     private router: Router,
     private loadingService: LoadingService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private pushNotificationService: PushNotificationService
   ) {}
 
   ngOnInit() {
@@ -67,6 +69,9 @@ export class HomePage {
 
     if (!this.user) {
       this.router.navigateByUrl('/login');
+    } else {
+      // Inicializar notificaciones push si el usuario ya está logueado
+      await this.pushNotificationService.initializePushNotifications();
     }
   }
 

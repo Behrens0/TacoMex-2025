@@ -467,7 +467,7 @@ export class RegistroComponent {
           return;
         }
 
-        this.http.post('http://YOUR_LOCAL_IP:3000/notify-owner', {
+        this.http.post('https://tacomex-2025.onrender.com/notify-owner', {
           title: 'Nuevo Cliente Registrado',
           body: `El cliente ${nuevoClienteAnonimo.nombre} ${nuevoClienteAnonimo.apellido} se ha registrado.`
         }).subscribe({
@@ -537,7 +537,7 @@ export class RegistroComponent {
         return;
       }
 
-      this.http.post('http://YOUR_LOCAL_IP:3000/notify-owner', {
+      this.http.post('https://tacomex-2025.onrender.com/notify-owner', {
         title: 'Nuevo Cliente Registrado',
         body: `El cliente ${nuevoCliente.nombre} ${nuevoCliente.apellido} se ha registrado.`
       }).subscribe({
