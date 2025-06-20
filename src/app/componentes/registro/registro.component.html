@@ -79,12 +79,12 @@
           {{ mensajeExito }}
         </div>
 
-        <div class="register-link" *ngIf="!esAdmin">
+        <div class="register-link" *ngIf="!esAdmin && !esMaitre">
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
         </div>
 
-        <div class="register-link" *ngIf="esAdmin">
+        <div class="register-link" *ngIf="esAdmin || esMaitre">
           <a (click)="volverAlHome()">Volver</a>
         </div>
       </form>
@@ -168,6 +168,10 @@
               [checked]="empleadoForm.get('perfil')?.value === 'bartender'"
               (ionChange)="empleadoForm.get('perfil')?.setValue('bartender')"
             >Bartender</ion-checkbox>
+            <ion-checkbox
+              [checked]="empleadoForm.get('perfil')?.value === 'maitre'"
+              (ionChange)="empleadoForm.get('perfil')?.setValue('maitre')"
+            >Maitre</ion-checkbox>
           </div>
         </ion-item>
         <div class="field-error" *ngIf="empleadoPerfilError">{{ empleadoPerfilError }}</div>
@@ -180,12 +184,12 @@
           {{ mensajeExito }}
         </div>
 
-        <div class="register-link" *ngIf="!esAdmin">
+        <div class="register-link" *ngIf="!esAdmin && !esMaitre">
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
         </div>
 
-        <div class="register-link" *ngIf="esAdmin">
+        <div class="register-link" *ngIf="esAdmin || esMaitre">
           <a (click)="volverAlHome()">Volver</a>
         </div>
       </form>
@@ -268,12 +272,12 @@
           {{ mensajeExitoMesa }}
         </div>
 
-        <div class="register-link" *ngIf="!esAdmin">
+        <div class="register-link" *ngIf="!esAdmin && !esMaitre">
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
         </div>
 
-        <div class="register-link" *ngIf="esAdmin">
+        <div class="register-link" *ngIf="esAdmin || esMaitre">
           <a (click)="volverAlHome()">Volver</a>
         </div>
       </form>
@@ -362,21 +366,31 @@
           {{ mensajeExito }}
         </div>
 
-        <div class="register-link" *ngIf="!esAdmin">
+        <div class="register-link" *ngIf="!esAdmin && !esMaitre">
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
         </div>
 
-        <div class="register-link" *ngIf="esAdmin">
+        <div class="register-link" *ngIf="esAdmin || esMaitre">
           <a (click)="volverAlHome()">Volver</a>
         </div>
       </form>
 
-      <div *ngIf="esAdmin" class="registro-selector">
+      <div *ngIf="esAdmin && perfilUsuario !== 'dueño' && perfilUsuario !== 'supervisor'" class="registro-selector">
         <ion-button size="small" [color]="tipoRegistro==='supervisor' ? 'success' : 'medium'" (click)="setTipoRegistro('supervisor')">Supervisores</ion-button>
         <ion-button size="small" [color]="tipoRegistro==='empleado' ? 'success' : 'medium'" (click)="setTipoRegistro('empleado')">Empleados</ion-button>
         <ion-button size="small" [color]="tipoRegistro==='cliente' ? 'success' : 'medium'" (click)="setTipoRegistro('cliente')">Clientes</ion-button>
         <ion-button size="small" [color]="tipoRegistro==='mesa' ? 'success' : 'medium'" (click)="setTipoRegistro('mesa')">Mesas</ion-button>
+      </div>
+
+      <div *ngIf="esAdmin && (perfilUsuario === 'dueño' || perfilUsuario === 'supervisor')" class="registro-selector">
+        <ion-button size="small" [color]="tipoRegistro==='supervisor' ? 'success' : 'medium'" (click)="setTipoRegistro('supervisor')">Supervisores</ion-button>
+        <ion-button size="small" [color]="tipoRegistro==='empleado' ? 'success' : 'medium'" (click)="setTipoRegistro('empleado')">Empleados</ion-button>
+        <ion-button size="small" [color]="tipoRegistro==='mesa' ? 'success' : 'medium'" (click)="setTipoRegistro('mesa')">Mesas</ion-button>
+      </div>
+
+      <div *ngIf="esMaitre && !esAdmin" class="registro-selector">
+        <ion-button size="small" [color]="tipoRegistro==='cliente' ? 'success' : 'medium'" (click)="setTipoRegistro('cliente')">Clientes</ion-button>
       </div>
     </div>
   </div>

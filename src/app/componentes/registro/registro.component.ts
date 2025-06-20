@@ -67,6 +67,8 @@ export class RegistroComponent {
   emailEnUso: boolean = false;
   tipoRegistro: 'cliente' | 'empleado' | 'supervisor' | 'mesa' = 'cliente';
   esAdmin: boolean = false;
+  esMaitre: boolean = false;
+  perfilUsuario: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -114,6 +116,16 @@ export class RegistroComponent {
     });
 
     this.esAdmin = this.authService.esUsuarioAdmin();
+    this.esMaitre = this.authService.esUsuarioMaitre();
+    this.perfilUsuario = this.authService.getPerfilUsuario();
+
+    if (this.esMaitre && !this.esAdmin) {
+      this.tipoRegistro = 'cliente';
+    }
+  
+    if (this.esAdmin && (this.perfilUsuario === 'dueño' || this.perfilUsuario === 'supervisor')) {
+      this.tipoRegistro = 'supervisor';
+    }
 
     this.setupFormValidation();
   }
@@ -926,6 +938,16 @@ export class RegistroComponent {
   }
 
   setTipoRegistro(tipo: 'cliente' | 'empleado' | 'supervisor' | 'mesa') {
+    if (this.esMaitre && !this.esAdmin && tipo !== 'cliente') {
+      this.tipoRegistro = 'cliente';
+      return;
+    }
+    
+    if (this.esAdmin && (this.perfilUsuario === 'dueño' || this.perfilUsuario === 'supervisor') && tipo === 'cliente') {
+      this.tipoRegistro = 'supervisor';
+      return;
+    }
+    
     this.tipoRegistro = tipo;
     this.mensajeError = '';
     this.mensajeExito = '';

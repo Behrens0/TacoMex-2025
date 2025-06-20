@@ -20,6 +20,10 @@ export const routes: Routes = [
     path: 'registro',
     loadComponent: () => import('./componentes/registro/registro.component').then(m => m.RegistroComponent)
   },
+  {
+    path: 'lista-espera',
+    loadComponent: () => import('./componentes/lista-espera/lista-espera.component').then(m => m.ListaEsperaComponent)
+  },
 ];
 
 

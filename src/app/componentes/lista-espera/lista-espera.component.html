@@ -1,3 +1,54 @@
-<p>
-  lista-espera works!
-</p>
+<ion-content>
+  <div class="lista-espera-container">
+    <div class="header-info">
+      <ion-button fill="clear" class="back-button" (click)="volverAHome()">
+        <ion-icon name="arrow-back"></ion-icon>
+        Volver
+      </ion-button>
+      <h2>Lista de Espera</h2>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+      <p>Cargando lista de espera...</p>
+    </div>
+
+    <div *ngIf="!loading && listaEspera.length === 0" class="empty-state">
+      <ion-icon name="list-outline" class="empty-icon"></ion-icon>
+      <h3>No hay clientes en lista de espera</h3>
+      <p>La lista de espera está vacía</p>
+    </div>
+
+    <div *ngIf="!loading && listaEspera.length > 0" class="table-container">
+      <div class="table-header">
+        <div class="header-cell">Nombre</div>
+        <div class="header-cell">Apellido</div>
+        <div class="header-cell">Correo</div>
+        <div class="header-cell">Fecha de Ingreso</div>
+      </div>
+
+      <div class="table-body">
+        <div 
+          *ngFor="let cliente of listaEspera; let i = index" 
+          class="table-row"
+          [class.odd]="i % 2 === 0"
+          [class.even]="i % 2 === 1">
+          <div class="table-cell nombre">{{ cliente.nombre }}</div>
+          <div class="table-cell apellido">{{ cliente.apellido }}</div>
+          <div class="table-cell correo">{{ cliente.correo }}</div>
+          <div class="table-cell fecha">{{ formatearFecha(cliente.fecha_ingreso) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <ion-button 
+        expand="block" 
+        fill="outline"
+        (click)="cargarListaEspera()"
+        [disabled]="loading">
+        <ion-icon name="refresh"></ion-icon>
+        Actualizar Lista
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
