@@ -1,4 +1,3 @@
-/* === HEADER === */
 .custom-header {
   ion-toolbar {
     --padding-top: 40px;
@@ -6,6 +5,23 @@
     --padding-end: 8px;
     --min-height: 100px;
   }
+}
+
+.logout-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  --color: #ff6b6b;
+  --color-hover: #ff5252;
+  --color-activated: #ff5252;
+  font-weight: 500;
+  --background: rgba(255, 255, 255, 0.9);
+  --border-radius: 20px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
 }
 
 ion-toolbar {
@@ -18,88 +34,8 @@ ion-content {
   --padding-bottom: 80px;
 }
 
-/* === AVATAR Y POPOVER === */
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid #000000;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  object-fit: cover;
-  margin-right: 4px;
-}
-
-.username {
-  font-size: 14px;
-  font-weight: 500;
-  color: #000000;
-}
-
-ion-popover {
-  --min-width: 180px;
-  --max-width: 200px;
-  --width: auto;
-  --padding: 0;
-  --border-radius: 8px;
-  --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-ion-list {
-  padding: 0;
-  margin: 0;
-}
-
-ion-item {
-  --inner-padding-start: 0px;
-  --inner-padding-end: 0px;
-  --padding-start: 8px;
-  --padding-end: 4px; 
-  --padding-top: 4px;
-  --padding-bottom: 4px;
-  --min-height: 28px;
-  --background: transparent;
-  margin: 0;
-}
-
-ion-item ion-icon {
-  font-size: 18px;
-  margin-inline-end: 6px;
-}
-
-.user-popover-header {
-  padding: 2px 6px;
-  min-height: 20px;
-  --background: transparent;
-}
-
-.username-popover {
-  font-size: 16px;
-  color: #1a1a1a;
-  line-height: 1.1;
-  font-weight: 500;
-  padding: 0;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* === FOOTER === */
-ion-footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  z-index: 10;
-}
-
-.footer-nav {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-}
-
 .boton-registro-verde {
-  margin: 2rem auto 0 auto;
+  margin: 6rem auto 0 auto;
   border-radius: 18px;
   --border-radius: 18px;
   --background: #1bb300;

@@ -8,7 +8,7 @@
       <!-- Cliente -->
       <form *ngIf="tipoRegistro==='cliente'" [formGroup]="clienteForm" (ngSubmit)="registrarCliente()">
         <!-- ANONIMO -->
-        <ion-item lines="none">
+        <ion-item lines="none" *ngIf="!esAdmin">
           <ion-label>¿Deseas ser un cliente anónimo?</ion-label>
           <ion-checkbox slot="end" formControlName="anonimo" (ionChange)="alternarAnonimato()"></ion-checkbox>
         </ion-item>
@@ -20,15 +20,15 @@
         </ion-item>
         <div class="field-error" *ngIf="clienteNombreError">{{ clienteNombreError }}</div>
 
-        <ion-item>
-          <ion-icon slot="start" name="person-outline"></ion-icon>
-          <ion-label position="floating">Apellido</ion-label>
-          <ion-input formControlName="apellido"></ion-input>
-        </ion-item>
-        <div class="field-error" *ngIf="clienteApellidoError">{{ clienteApellidoError }}</div>
-
         <!-- SOLO SI NO ES ANONIMO -->
         <ng-container *ngIf="!clienteForm.get('anonimo')?.value">
+          <ion-item>
+            <ion-icon slot="start" name="person-outline"></ion-icon>
+            <ion-label position="floating">Apellido</ion-label>
+            <ion-input formControlName="apellido"></ion-input>
+          </ion-item>
+          <div class="field-error" *ngIf="clienteApellidoError">{{ clienteApellidoError }}</div>
+
           <ion-item>
             <ion-icon slot="start" name="mail-outline"></ion-icon>
             <ion-label position="floating">Correo electrónico</ion-label>
@@ -52,20 +52,21 @@
             </ion-button>
           </ion-item>
           <div class="field-error" *ngIf="clienteDniError">{{ clienteDniError }}</div>
-
-          <ion-item>
-            <ion-icon slot="start" name="camera-outline"></ion-icon>
-            <ion-label>Foto</ion-label>
-            <ion-button slot="end" size="small" class="boton-verde" (click)="fileInput.click()">Subir Imagen</ion-button>
-            <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
-            <input #fileInput type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
-            <ng-container *ngIf="imagenURL">
-              <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
-              <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
-            </ng-container>
-          </ion-item>
-          <div class="field-error" *ngIf="clienteImagenError">{{ clienteImagenError }}</div>
         </ng-container>
+
+        <!-- FOTO (PARA TODOS) -->
+        <ion-item>
+          <ion-icon slot="start" name="camera-outline"></ion-icon>
+          <ion-label>Foto</ion-label>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="fileInput.click()">Subir Imagen</ion-button>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
+          <input #fileInput type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
+          <ng-container *ngIf="imagenURL">
+            <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
+            <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
+          </ng-container>
+        </ion-item>
+        <div class="field-error" *ngIf="clienteImagenError">{{ clienteImagenError }}</div>
 
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
@@ -81,6 +82,10 @@
         <div class="register-link" *ngIf="!esAdmin">
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
+        </div>
+
+        <div class="register-link" *ngIf="esAdmin">
+          <a (click)="volverAlHome()">Volver</a>
         </div>
       </form>
 
@@ -179,6 +184,10 @@
           ¿Ya tenés cuenta?
           <a (click)="irAlLogin()">Iniciar sesión</a>
         </div>
+
+        <div class="register-link" *ngIf="esAdmin">
+          <a (click)="volverAlHome()">Volver</a>
+        </div>
       </form>
       <!-- Formulario de Alta de Mesa -->
       <form *ngIf="tipoRegistro==='mesa'" [formGroup]="mesaForm" (ngSubmit)="registrarMesa()">
@@ -257,6 +266,15 @@
 
         <div *ngIf="mensajeExitoMesa" class="mensaje-exito">
           {{ mensajeExitoMesa }}
+        </div>
+
+        <div class="register-link" *ngIf="!esAdmin">
+          ¿Ya tenés cuenta?
+          <a (click)="irAlLogin()">Iniciar sesión</a>
+        </div>
+
+        <div class="register-link" *ngIf="esAdmin">
+          <a (click)="volverAlHome()">Volver</a>
         </div>
       </form>
       <!-- Supervisor -->
@@ -342,6 +360,15 @@
 
         <div *ngIf="mensajeExito" class="mensaje-exito">
           {{ mensajeExito }}
+        </div>
+
+        <div class="register-link" *ngIf="!esAdmin">
+          ¿Ya tenés cuenta?
+          <a (click)="irAlLogin()">Iniciar sesión</a>
+        </div>
+
+        <div class="register-link" *ngIf="esAdmin">
+          <a (click)="volverAlHome()">Volver</a>
         </div>
       </form>
 

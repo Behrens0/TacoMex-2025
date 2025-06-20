@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../servicios/supabase.service';
 import { AuthService } from 'src/app/servicios/auth.service';
+import { LoadingService } from 'src/app/servicios/loading.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { IonCheckbox } from '@ionic/angular/standalone';
@@ -72,7 +73,8 @@ export class RegistroComponent {
     private router: Router,
     private sb: SupabaseService,
     private authService: AuthService,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private loadingService: LoadingService
   ) {
     this.clienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
@@ -398,15 +400,24 @@ export class RegistroComponent {
   async registrarCliente() {
     this.limpiarErroresCliente();
 
-    this.validarCampoCliente('nombre');
-    this.validarCampoCliente('apellido');
-    this.validarCampoCliente('correo');
-    this.validarCampoCliente('contrasenia');
-    this.validarCampoCliente('dni');
+    if (this.esAnonimo) {
+      this.validarCampoCliente('nombre');
+      this.validarCampoCliente('imagenPerfil');
+      
+      if (this.clienteNombreError || this.clienteImagenError) {
+        return;
+      }
+    } else {
+      this.validarCampoCliente('nombre');
+      this.validarCampoCliente('apellido');
+      this.validarCampoCliente('correo');
+      this.validarCampoCliente('contrasenia');
+      this.validarCampoCliente('dni');
 
-    if (this.clienteNombreError || this.clienteApellidoError || this.clienteCorreoError || 
-        this.clienteContraseniaError || this.clienteDniError) {
-      return;
+      if (this.clienteNombreError || this.clienteApellidoError || this.clienteCorreoError || 
+          this.clienteContraseniaError || this.clienteDniError) {
+        return;
+      }
     }
 
     if (this.clienteForm.invalid) {
@@ -415,9 +426,59 @@ export class RegistroComponent {
     }
 
     if (this.esAnonimo) {
-      this.router.navigate(['/login']);
+      this.loadingService.show();
+      
+      try {
+        const { nombre, apellido } = this.clienteForm.value;
+        const archivo: File = this.clienteForm.value.imagenPerfil;
+
+        let imagenPerfil = '';
+        if (archivo) {
+          const path = await this.sb.subirImagenPerfil(archivo);
+          imagenPerfil = this.sb.supabase.storage.from('usuarios.img').getPublicUrl(path).data.publicUrl;
+        }
+
+        const nuevoClienteAnonimo = {
+          nombre,
+          apellido: apellido || '',
+          correo: `anonimo${Math.floor(Math.random() * 1000000000000)}@tacomex.com`,
+          dni: '00000000',
+          imagenPerfil,
+          anonimo: true
+        };
+
+        const { error } = await this.sb.supabase.from('clientes').insert([nuevoClienteAnonimo]);
+        if (error) {
+          this.mensajeError = 'Error al registrar cliente anónimo' + error.message;
+          this.loadingService.hide();
+          return;
+        }
+
+        this.mensajeExito = 'Registro anónimo exitoso. Bienvenido!';
+        this.clienteForm.reset();
+        this.imagenURL = null;
+        this.loadingService.hide();
+        
+        setTimeout(() => {
+          this.mensajeExito = '';
+        }, 6000);
+        
+        setTimeout(async () => {
+          try {
+            this.router.navigate(['/home']);
+          } catch (error) {
+            console.error('Error en navegación automática:', error);
+          }
+        }, 2000);
+      } catch (e) {
+        this.mensajeError = 'Error inesperado: ' + (e as Error).message;
+        console.error(e);
+        this.loadingService.hide();
+      }
       return;
     }
+
+    this.loadingService.show();
 
     try {
       const { nombre, apellido, correo, contrasenia, dni } = this.clienteForm.value;
@@ -426,6 +487,7 @@ export class RegistroComponent {
       const usuario = await this.authService.registro(correo, contrasenia);
       if (!usuario) {
         this.clienteCorreoError = 'Este correo electrónico ya está en uso';
+        this.loadingService.hide();
         return;
       }
 
@@ -450,16 +512,22 @@ export class RegistroComponent {
         } else {
           this.mensajeError = `Error al registrarse`;
         }
+        this.loadingService.hide();
         return;
       }
 
       this.mensajeExito = 'Registro exitoso. Bienvenido!';
       this.clienteForm.reset();
       this.imagenURL = null;
-      this.router.navigate(['/home']);
+      this.loadingService.hide();
+      
+      setTimeout(() => {
+        this.mensajeExito = '';
+      }, 6000);
     } catch (e) {
       this.mensajeError = 'Error inesperado: ' + (e as Error).message;
       console.error(e);
+      this.loadingService.hide();
     } finally {
       const loading = await this.loadingCtrl.getTop();
       if (loading) {
@@ -488,6 +556,8 @@ export class RegistroComponent {
       return;
     }
 
+    this.loadingService.show();
+
     try {
       const { nombre, apellido, correo, contrasenia, dni, cuil, perfil } = this.empleadoForm.value;
       const archivo: File = this.empleadoForm.value.imagenPerfil;
@@ -495,6 +565,7 @@ export class RegistroComponent {
       const usuario = await this.authService.registro(correo, contrasenia);
       if (!usuario) {
         this.empleadoCorreoError = 'Este correo electrónico ya está en uso';
+        this.loadingService.hide();
         return;
       }
 
@@ -521,15 +592,22 @@ export class RegistroComponent {
         } else {
           this.mensajeError = `Error al registrarse`;
         }
+        this.loadingService.hide();
         return;
       }
 
-      this.mensajeExito = 'Registro exitoso de empleado.';
+      this.mensajeExito = 'Registro exitoso de empleado';
       this.empleadoForm.reset();
       this.imagenURL = null;
+      this.loadingService.hide();
+      
+      setTimeout(() => {
+        this.mensajeExito = '';
+      }, 6000);
     } catch (e) {
       this.mensajeError = 'Error inesperado: ' + (e as Error).message;
       console.error(e);
+      this.loadingService.hide();
     } finally {
       const loading = await this.loadingCtrl.getTop();
       if (loading) {
@@ -558,6 +636,8 @@ export class RegistroComponent {
       return;
     }
 
+    this.loadingService.show();
+
     try {
       const { nombre, apellido, correo, contrasenia, dni, cuil, perfil } = this.supervisorForm.value;
       const archivo: File = this.supervisorForm.value.imagenPerfil;
@@ -565,6 +645,7 @@ export class RegistroComponent {
       const usuario = await this.authService.registro(correo, contrasenia);
       if (!usuario) {
         this.supervisorCorreoError = 'Este correo electrónico ya está en uso';
+        this.loadingService.hide();
         return;
       }
 
@@ -591,15 +672,22 @@ export class RegistroComponent {
         } else {
           this.mensajeError = `Error al registrarse`;
         }
+        this.loadingService.hide();
         return;
       }
 
-      this.mensajeExito = 'Registro exitoso de supervisor.';
+      this.mensajeExito = 'Registro exitoso de supervisor';
       this.supervisorForm.reset();
       this.imagenURL = null;
+      this.loadingService.hide();
+      
+      setTimeout(() => {
+        this.mensajeExito = '';
+      }, 6000);
     } catch (e) {
       this.mensajeError = 'Error inesperado: ' + (e as Error).message;
       console.error(e);
+      this.loadingService.hide();
     } finally {
       const loading = await this.loadingCtrl.getTop();
       if (loading) {
@@ -624,6 +712,8 @@ export class RegistroComponent {
       this.mensajeErrorMesa = 'Por favor completa todos los campos requeridos correctamente.';
       return;
     }
+
+    this.loadingService.show();
 
     try {
       const { numero, comensales, tipo } = this.mesaForm.value;
@@ -660,26 +750,36 @@ export class RegistroComponent {
       const { error } = await this.sb.supabase.from('mesas').insert([nuevaMesa]);
       if (error) {
         this.mensajeErrorMesa = 'Error al registrar la mesa: ' + error.message;
+        this.loadingService.hide();
         return;
       }
 
       this.mensajeExitoMesa = 'Mesa registrada correctamente.';
       this.mesaForm.reset();
       this.imagenMesaURL = null;
+      this.loadingService.hide();
+      
+      setTimeout(() => {
+        this.mensajeExitoMesa = '';
+      }, 6000);
     } catch (e: any) {
       this.mensajeErrorMesa = 'Error inesperado: ' + e.message;
       console.error(e);
+      this.loadingService.hide();
     }
   }
 
   alternarAnonimato() {
     this.esAnonimo = this.clienteForm.get('anonimo')?.value;
     if (this.esAnonimo) {
+      this.clienteForm.get('apellido')?.disable();
+      this.clienteForm.get('apellido')?.setValue('');
       this.clienteForm.get('correo')?.disable();
       this.clienteForm.get('contrasenia')?.disable();
       this.clienteForm.get('dni')?.disable();
-      this.clienteForm.get('imagenPerfil')?.disable();
+      this.clienteForm.get('imagenPerfil')?.enable();
     } else {
+      this.clienteForm.get('apellido')?.enable();
       this.clienteForm.get('correo')?.enable();
       this.clienteForm.get('contrasenia')?.enable();
       this.clienteForm.get('dni')?.enable();
@@ -688,7 +788,15 @@ export class RegistroComponent {
   }
 
   irAlLogin() {
+    this.loadingService.show();
     this.router.navigate(['/login']);
+    this.loadingService.hide();
+  }
+
+  volverAlHome() {
+    this.loadingService.show();
+    this.router.navigate(['/home']);
+    this.loadingService.hide();
   }
 
   onImagenSeleccionada(event: any) {
@@ -770,7 +878,7 @@ export class RegistroComponent {
         this.mensajeError = 'No se detectó ningún código.';
       }
     } catch (error) {
-      this.mensajeError = 'Error al escanear: ' + error;
+      this.mensajeError = 'Error al escanear DNI';
     }
   }
 

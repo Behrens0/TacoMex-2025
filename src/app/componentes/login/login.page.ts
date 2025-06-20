@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/servicios/auth.service';
+import { LoadingService } from 'src/app/servicios/loading.service';
 
 import {
   IonContent,
@@ -44,7 +45,8 @@ export class LoginPage {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private loadingService: LoadingService
   ) {
     this.loginForm = this.fb.group({
       correo: ['', [Validators.required, Validators.email]],
@@ -103,6 +105,8 @@ export class LoginPage {
       return;
     }
 
+    this.loadingService.show();
+
     try {
       const correo = this.loginForm.get('correo')?.value;
       const contrasenia = this.loginForm.get('contrasenia')?.value;
@@ -113,6 +117,7 @@ export class LoginPage {
 
       if (contrasenia.length < 6) {
         this.contraseniaError = 'La contraseña debe tener al menos 6 caracteres';
+        this.loadingService.hide();
         return;
       }
 
@@ -135,23 +140,29 @@ export class LoginPage {
         } else {
           this.errorMessage = 'Correo electrónico o contraseña inválidos';
         }
+        this.loadingService.hide();
         return;
       }
 
       if (!usuario) {
         this.errorMessage = 'Correo electrónico o contraseña inválidos';
+        this.loadingService.hide();
         return;
       }
 
       this.loginForm.reset();
       this.router.navigate(['/home']);
+      this.loadingService.hide();
     } catch (e: any) {
       this.errorMessage = e.message || 'Ocurrió un error al iniciar sesión';
+      this.loadingService.hide();
     }
   }
 
   goToRegister() {
+    this.loadingService.show();
     this.router.navigateByUrl('/registro');
+    this.loadingService.hide();
   }
 
   accesoRapido(type: string) {
