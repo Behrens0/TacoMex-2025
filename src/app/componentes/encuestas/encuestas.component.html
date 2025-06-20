@@ -1,0 +1,234 @@
+<ion-content>
+  <ion-button fill="clear" class="back-button" (click)="volverAHome()">
+    <ion-icon name="arrow-back"></ion-icon>
+    Volver
+  </ion-button>
+
+  <div class="encuesta-container">
+    <h2>Encuesta de Satisfacción</h2>
+    
+    <div *ngIf="mostrarMensajeExito" class="mensaje-exito">
+      <ion-icon name="checkmark-circle"></ion-icon>
+      <span>{{ mensajeExito }}</span>
+    </div>
+    
+    <form *ngIf="!encuestaEnviada" [formGroup]="encuestaForm" (ngSubmit)="enviarEncuesta()">
+      <ion-item>
+        <ion-label position="stacked">
+          Satisfacción General (1-10): {{ encuestaForm.get('satisfaccion_general')?.value }}
+        </ion-label>
+        <ion-range 
+          formControlName="satisfaccion_general"
+          min="1" 
+          max="10" 
+          step="1"
+          snaps="true"
+          color="primary">
+          <ion-label slot="start">1</ion-label>
+          <ion-label slot="end">10</ion-label>
+        </ion-range>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">
+          Calidad de la Comida (1-10): {{ encuestaForm.get('calidad_comida')?.value }}
+        </ion-label>
+        <ion-range 
+          formControlName="calidad_comida"
+          min="1" 
+          max="10" 
+          step="1"
+          snaps="true"
+          color="primary">
+          <ion-label slot="start">1</ion-label>
+          <ion-label slot="end">10</ion-label>
+        </ion-range>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">
+          Calidad del Servicio (1-10): {{ encuestaForm.get('calidad_servicio')?.value }}
+        </ion-label>
+        <ion-range 
+          formControlName="calidad_servicio"
+          min="1" 
+          max="10" 
+          step="1"
+          snaps="true"
+          color="primary">
+          <ion-label slot="start">1</ion-label>
+          <ion-label slot="end">10</ion-label>
+        </ion-range>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">
+          Ambiente (1-10): {{ encuestaForm.get('ambiente')?.value }}
+        </ion-label>
+        <ion-range 
+          formControlName="ambiente"
+          min="1" 
+          max="10" 
+          step="1"
+          snaps="true"
+          color="primary">
+          <ion-label slot="start">1</ion-label>
+          <ion-label slot="end">10</ion-label>
+        </ion-range>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">¿Recomendaría este restaurante?</ion-label>
+        <ion-radio-group formControlName="recomendacion">
+          <ion-item>
+            <ion-radio value="Definitivamente sí"></ion-radio>
+            <ion-label>Definitivamente sí</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="Probablemente sí"></ion-radio>
+            <ion-label>Probablemente sí</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="No estoy seguro"></ion-radio>
+            <ion-label>No estoy seguro</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="Probablemente no"></ion-radio>
+            <ion-label>Probablemente no</ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-radio value="Definitivamente no"></ion-radio>
+            <ion-label>Definitivamente no</ion-label>
+          </ion-item>
+        </ion-radio-group>
+      </ion-item>
+
+      <ion-item>
+        <ion-checkbox formControlName="volverias"></ion-checkbox>
+        <ion-label>¿Volvería a visitar este restaurante?</ion-label>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Tipo de visita</ion-label>
+        <ion-select formControlName="tipo_visita" placeholder="Seleccione el tipo de visita">
+          <ion-select-option value="Cena romántica">Cena romántica</ion-select-option>
+          <ion-select-option value="Cena familiar">Cena familiar</ion-select-option>
+          <ion-select-option value="Cena de negocios">Cena de negocios</ion-select-option>
+          <ion-select-option value="Cena con amigos">Cena con amigos</ion-select-option>
+          <ion-select-option value="Almuerzo">Almuerzo</ion-select-option>
+          <ion-select-option value="Otro">Otro</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Comentarios adicionales (opcional)</ion-label>
+        <ion-textarea 
+          formControlName="comentario"
+          placeholder="Escriba sus comentarios aquí..."
+          rows="4"
+          maxlength="500">
+        </ion-textarea>
+      </ion-item>
+
+      <div class="fotos-section">
+        <h3>Fotos (máximo 3)</h3>
+        <div class="fotos-container">
+          <div *ngFor="let foto of fotos; let i = index" class="foto-item">
+            <ion-img [src]="foto" alt="Foto de la encuesta"></ion-img>
+            <ion-button 
+              fill="clear" 
+              color="danger" 
+              size="small"
+              (click)="eliminarFoto(i)">
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-button>
+          </div>
+          <ion-button 
+            *ngIf="fotos.length < maxFotos"
+            fill="outline" 
+            (click)="tomarFoto()"
+            class="btn-foto">
+            <ion-icon name="camera"></ion-icon>
+            Agregar Foto
+          </ion-button>
+        </div>
+      </div>
+
+      <ion-button 
+        type="submit" 
+        expand="block" 
+        [disabled]="!encuestaForm.valid || loading"
+        class="btn-enviar">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        <span *ngIf="!loading">Enviar Encuesta</span>
+      </ion-button>
+    </form>
+
+    <ion-button 
+      *ngIf="encuestaEnviada"
+      expand="block" 
+      fill="outline"
+      (click)="mostrarEstadisticas()"
+      class="btn-estadisticas">
+      <ion-icon name="bar-chart"></ion-icon>
+      Ver Estadísticas
+    </ion-button>
+
+    <ion-button 
+      *ngIf="encuestaEnviada"
+      expand="block" 
+      fill="clear"
+      (click)="nuevaEncuesta()"
+      class="btn-nueva-encuesta">
+      <ion-icon name="add-circle"></ion-icon>
+      Enviar Otra Encuesta
+    </ion-button>
+
+    <div *ngIf="mostrarGraficos && encuestas.length > 0" class="graficos-section">
+      <h3>Estadísticas de Encuestas</h3>
+      
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Satisfacción General</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="satisfaccionChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Recomendación</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="recomendacionChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>¿Volvería?</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="volveriaChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+    <div *ngIf="mostrarGraficos && encuestas.length === 0" class="no-encuestas">
+      <ion-icon name="stats-chart-outline"></ion-icon>
+      <h3>No hay encuestas para mostrar estadísticas</h3>
+      <p>Complete una encuesta para ver las estadísticas</p>
+    </div>
+  </div>
+</ion-content>

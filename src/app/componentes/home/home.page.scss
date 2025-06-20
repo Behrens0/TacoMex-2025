@@ -77,3 +77,19 @@ ion-content {
     font-size: 20px;
   }
 }
+
+.boton-encuesta {
+  margin: 20px;
+  --background: #9C27B0;
+  --color: white;
+  --border-radius: 10px;
+  --padding-top: 15px;
+  --padding-bottom: 15px;
+  font-weight: bold;
+  font-size: 16px;
+  
+  ion-icon {
+    margin-right: 8px;
+    font-size: 20px;
+  }
+}

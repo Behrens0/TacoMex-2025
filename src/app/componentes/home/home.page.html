@@ -23,6 +23,15 @@
     </ion-button>
 
     <ion-button 
+      *ngIf="perfilUsuario === 'cliente'" 
+      expand="block" 
+      class="boton-encuesta"
+      (click)="irAEncuesta()">
+      <ion-icon name="clipboard-outline"></ion-icon>
+      Encuesta de Satisfacción
+    </ion-button>
+
+    <ion-button 
       *ngIf="perfilUsuario === 'cliente' && isSupported" 
       expand="block" 
       class="boton-escanear-qr"
