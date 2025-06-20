@@ -12,5 +12,23 @@
       (click)="irARegistro()">
       Registro
     </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'maitre'" 
+      expand="block" 
+      class="boton-lista-espera"
+      (click)="irAListaEspera()">
+      <ion-icon name="list-outline"></ion-icon>
+      Lista de Espera
+    </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && isSupported" 
+      expand="block" 
+      class="boton-escanear-qr"
+      (click)="scanQR()">
+      <ion-icon name="qr-code-outline"></ion-icon>
+      Escanear QR para Lista de Espera
+    </ion-button>
   </div>
 </ion-content>

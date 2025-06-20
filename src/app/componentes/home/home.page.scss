@@ -8,20 +8,12 @@
 }
 
 .logout-button {
-  position: fixed;
-  top: 20px;
-  right: 20px;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  --color: #ff0000;
+  font-weight: bold;
   z-index: 1000;
-  --color: #ff6b6b;
-  --color-hover: #ff5252;
-  --color-activated: #ff5252;
-  font-weight: 500;
-  --background: rgba(255, 255, 255, 0.9);
-  --border-radius: 20px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
 }
 
 ion-toolbar {
@@ -34,23 +26,54 @@ ion-content {
   --padding-bottom: 80px;
 }
 
-.boton-registro-verde {
-  margin: 6rem auto 0 auto;
-  border-radius: 18px;
-  --border-radius: 18px;
-  --background: #1bb300;
-  --background-hover: #158a00;
-  --background-activated: #158a00;
-  color: #fff;
-  width: 90%;
-  align-self: center;
-  display: block;
-}
-
 .home-container {
-  min-height: 60vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.boton-registro-verde {
+  --background: #6CC272;
+  --background-hover: #004d0a;
+  --color: #fff;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(14, 100, 1, 0.2);
+  height: 48px;
+  font-size: 1rem;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.boton-escanear-qr {
+  --background: #ff6b35;
+  --background-hover: #e55a2b;
+  --color: #fff;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+  height: 48px;
+  font-size: 1rem;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.boton-lista-espera {
+  margin: 20px;
+  --background: #4CAF50;
+  --color: white;
+  --border-radius: 10px;
+  --padding-top: 15px;
+  --padding-bottom: 15px;
+  font-weight: bold;
+  font-size: 16px;
+  
+  ion-icon {
+    margin-right: 8px;
+    font-size: 20px;
+  }
 }
