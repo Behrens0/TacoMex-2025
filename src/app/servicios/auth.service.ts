@@ -11,6 +11,8 @@ export class AuthService {
   router = inject(Router);
   usuarioActual: User | null = null;
   esAdmin: boolean = false;
+  esMaitre: boolean = false;
+  perfilUsuario: string = '';
 
   constructor() { }
 
@@ -43,6 +45,17 @@ export class AuthService {
       .single();
 
     this.esAdmin = !!supervisor;
+    
+    if (empleado && empleado.perfil === 'maitre') {
+      this.esMaitre = true;
+      this.perfilUsuario = 'maitre';
+    } else if (supervisor) {
+      this.perfilUsuario = 'supervisor';
+    } else if (empleado) {
+      this.perfilUsuario = empleado.perfil;
+    } else if (cliente) {
+      this.perfilUsuario = 'cliente';
+    }
 
     return this.usuarioActual;
   }
@@ -65,10 +78,24 @@ export class AuthService {
     return this.esAdmin;
   }
 
+  esUsuarioMaitre() {
+    return this.esMaitre;
+  }
+
+  puedeAccederARegistro() {
+    return this.esAdmin || this.esMaitre;
+  }
+
+  getPerfilUsuario() {
+    return this.perfilUsuario;
+  }
+
   async signOut() {
     await this.sb.supabase.auth.signOut();
     this.usuarioActual = null;
     this.esAdmin = false;
+    this.esMaitre = false;
+    this.perfilUsuario = '';
   }
 
     async getCurrentUser() {

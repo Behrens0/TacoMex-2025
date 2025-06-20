@@ -36,7 +36,7 @@ export class HomePage {
   ) {}
 
   ngOnInit() {
-    this.mostrarBotonRegistro = this.authService.esUsuarioAdmin() && this.router.url !== '/registro';
+    this.mostrarBotonRegistro = this.authService.puedeAccederARegistro() && this.router.url !== '/registro';
   }
 
   irARegistro() {
