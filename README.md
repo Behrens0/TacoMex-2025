@@ -10,11 +10,13 @@ Disenos login y registro realizados por Matias Bartel(con ayuda de los demas int
 
 Primeros Pasos:
 1- Realizar el login y el splash con su respectivo spinner  ----> Tarea realizada por Matias Bartel. Fecha de comienzo: 4 de junio. Fecha de finalizacion: 4 de junio
-2- Crear las primeras tablas y el proyecto en Supabase ----> Tarea 
+2- Crear las primeras tablas y el proyecto en Supabase ----> Tarea realizada por todo el grupo.
 ![image](https://github.com/user-attachments/assets/349e9c1e-cbf9-4d80-a2e8-471250c28944)
 
 Tarea de Altas:
+- Felix Castelli realiza las altas de dueno y de clientes
+- Tomas Behrens realiza alta de empleado y de empleados
+- Matias Bartel realiza alta de productos y disenos.
 
-Felix Castelli 
 
-Matias Bartel se encargara de 
+
