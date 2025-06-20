@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { provideAuth, getAuth } from '@angular/fire/auth';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 //if (environment.production) {
   //enableProdMode();
 //}
@@ -14,7 +15,8 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(routes),
     //provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideAuth(() => getAuth())
+    provideAuth(() => getAuth()),
+    provideHttpClient(withInterceptorsFromDi())
   ],
 })
 ;

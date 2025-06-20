@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { User } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
+import { PushNotificationService } from './push-notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class AuthService {
   esMaitre: boolean = false;
   perfilUsuario: string = '';
 
-  constructor() { }
+  constructor(private pushNotificationService: PushNotificationService) { }
 
   async logIn(correo: string, contrasenia: string) {
     const { data, error } = await this.sb.supabase.auth.signInWithPassword({
@@ -57,6 +58,9 @@ export class AuthService {
       this.perfilUsuario = 'cliente';
     }
 
+    // Inicializar notificaciones push después del login exitoso
+    await this.pushNotificationService.initializePushNotifications();
+
     return this.usuarioActual;
   }
 
@@ -91,6 +95,9 @@ export class AuthService {
   }
 
   async signOut() {
+    // Limpiar notificaciones push antes del logout
+    await this.pushNotificationService.cleanup();
+    
     await this.sb.supabase.auth.signOut();
     this.usuarioActual = null;
     this.esAdmin = false;
@@ -98,7 +105,7 @@ export class AuthService {
     this.perfilUsuario = '';
   }
 
-    async getCurrentUser() {
+  async getCurrentUser() {
     return await this.sb.supabase.auth.getUser();
   }
 }
