@@ -167,16 +167,13 @@ export class LoginPage {
 
   accesoRapido(type: string) {
     const presets: { [key: string]: { correo: string; contrasenia: string } } = {
-      user: { correo: 'supervisor@prueba.com', contrasenia: '123456' },
-      guest: { correo: 'guest@prueba.com', contrasenia: '123456' },
-      supervisor: { correo: 'supervisor@prueba.com', contrasenia: '123456' },
+      supervisor: { correo: 'carlote@gmail.com', contrasenia: '123456' },
       dueno: { correo: 'tomasbehrens0@gmail.com', contrasenia: '123456' },
-      maitre: { correo: 'maitre@prueba.com', contrasenia: '123456' },
-      mozo: { correo: 'mozo@prueba.com', contrasenia: '123456' },
-      cocinero: { correo: 'cocinero@prueba.com', contrasenia: '123456' },
-      bartender: { correo: 'bartender@prueba.com', contrasenia: '123456' },
-      cliente_registrado: { correo: 'cliente@prueba.com', contrasenia: '123456' },
-      cliente_anonimo: { correo: 'anonimo@prueba.com', contrasenia: '123456' }
+      maitre: { correo: 'carlitos@gmail.com', contrasenia: '123456' },
+      mozo: { correo: 'felix@gmail.com', contrasenia: '123456' },
+      cocinero: { correo: 'c@gmail.com', contrasenia: '123456' },
+      bartender: { correo: 'matiasBartender@gmail.com', contrasenia: '123456' },
+      cliente: { correo: 'carlos@gmail.com', contrasenia: '123456' },
     };
 
     if (presets[type]) {
