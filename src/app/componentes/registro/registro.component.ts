@@ -7,18 +7,18 @@ import { SupabaseService } from '../../servicios/supabase.service';
 import { AuthService } from 'src/app/servicios/auth.service';
 import { LoadingService } from 'src/app/servicios/loading.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
-import { QRCodeComponent } from 'angularx-qrcode';
+import { toDataURL } from 'qrcode';
 import { IonCheckbox } from '@ionic/angular/standalone';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule, QRCodeComponent, IonCheckbox],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule, IonCheckbox],
   templateUrl: './registro.component.html',
   styleUrls: ['./registro.component.scss']
 })
 export class RegistroComponent {
-  @ViewChild('qrMesa', { static: false }) qrMesaComponent!: QRCodeComponent;
   clienteForm: FormGroup;
   empleadoForm: FormGroup;
   supervisorForm: FormGroup;
@@ -74,7 +74,8 @@ export class RegistroComponent {
     private sb: SupabaseService,
     private authService: AuthService,
     private loadingCtrl: LoadingController,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private http: HttpClient
   ) {
     this.clienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
@@ -454,6 +455,14 @@ export class RegistroComponent {
           return;
         }
 
+        this.http.post('http://YOUR_LOCAL_IP:3000/notify-owner', {
+          title: 'Nuevo Cliente Registrado',
+          body: `El cliente ${nuevoClienteAnonimo.nombre} ${nuevoClienteAnonimo.apellido} se ha registrado.`
+        }).subscribe({
+          next: (res) => console.log('Notification request sent', res),
+          error: (err) => console.error('Error sending notification request', err)
+        });
+
         this.mensajeExito = 'Registro anónimo exitoso. Bienvenido!';
         this.clienteForm.reset();
         this.imagenURL = null;
@@ -515,6 +524,14 @@ export class RegistroComponent {
         this.loadingService.hide();
         return;
       }
+
+      this.http.post('http://YOUR_LOCAL_IP:3000/notify-owner', {
+        title: 'Nuevo Cliente Registrado',
+        body: `El cliente ${nuevoCliente.nombre} ${nuevoCliente.apellido} se ha registrado.`
+      }).subscribe({
+        next: (res) => console.log('Notification request sent', res),
+        error: (err) => console.error('Error sending notification request', err)
+      });
 
       this.mensajeExito = 'Registro exitoso. Bienvenido!';
       this.clienteForm.reset();
@@ -732,12 +749,13 @@ export class RegistroComponent {
           .getPublicUrl(data.path).data.publicUrl;
       }
 
-      const canvas: HTMLCanvasElement | null = this.qrMesaComponent.qrcElement.nativeElement.querySelector('canvas');
-      if (!canvas) {
+      try {
+        const qrData = JSON.stringify({ numeroMesa: numero });
+        this.qrMesaURL = await toDataURL(qrData);
+      } catch (err) {
+        console.error(err);
         throw new Error('No se pudo generar el código QR.');
       }
-
-      this.qrMesaURL = canvas.toDataURL('image/png');
 
       const nuevaMesa = {
         numero,
