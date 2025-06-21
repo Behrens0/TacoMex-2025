@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { User } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
-import { PushNotificationService } from './push-notification.service';
+// import { PushNotificationService } from './push-notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +15,9 @@ export class AuthService {
   esMaitre: boolean = false;
   perfilUsuario: string = '';
 
-  constructor(private pushNotificationService: PushNotificationService) { }
+  constructor(
+    // private pushNotificationService: PushNotificationService
+  ) { }
 
   async logIn(correo: string, contrasenia: string) {
     const { data, error } = await this.sb.supabase.auth.signInWithPassword({
@@ -59,11 +61,14 @@ export class AuthService {
     }
 
     // Inicializar notificaciones push después del login exitoso
+    // TEMPORALMENTE DESHABILITADO
+    /*
     try {
       await this.pushNotificationService.initializePushNotifications();
     } catch (error) {
       console.error('Error al inicializar notificaciones push:', error);
     }
+    */
 
     return this.usuarioActual;
   }
@@ -100,11 +105,14 @@ export class AuthService {
 
   async signOut() {
     // Limpiar notificaciones push antes del logout
+    // TEMPORALMENTE DESHABILITADO
+    /*
     try {
       await this.pushNotificationService.cleanup();
     } catch (error) {
       console.error('Error al limpiar notificaciones:', error);
     }
+    */
     
     await this.sb.supabase.auth.signOut();
     this.usuarioActual = null;
@@ -125,12 +133,15 @@ export class AuthService {
   }
 
   async clearAuthAndRedirect() {
+    // Limpiar notificaciones
+    // TEMPORALMENTE DESHABILITADO
+    /*
     try {
-      // Limpiar notificaciones
       await this.pushNotificationService.cleanup();
     } catch (error) {
       console.error('Error al limpiar notificaciones:', error);
     }
+    */
 
     // Limpiar sesión de Supabase
     await this.sb.supabase.auth.signOut();

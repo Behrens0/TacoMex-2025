@@ -467,6 +467,8 @@ export class RegistroComponent {
           return;
         }
 
+        // TEMPORALMENTE DESHABILITADO - Notificaciones push
+        /*
         this.http.post('https://tacomex-2025.onrender.com/notify-owner', {
           title: 'Nuevo Cliente Registrado',
           body: `El cliente ${nuevoClienteAnonimo.nombre} ${nuevoClienteAnonimo.apellido} se ha registrado.`
@@ -474,6 +476,7 @@ export class RegistroComponent {
           next: (res) => console.log('Notification request sent', res),
           error: (err) => console.error('Error sending notification request', err)
         });
+        */
 
         this.mensajeExito = 'Registro anónimo exitoso. Bienvenido!';
         this.clienteForm.reset();
@@ -537,6 +540,8 @@ export class RegistroComponent {
         return;
       }
 
+      // TEMPORALMENTE DESHABILITADO - Notificaciones push
+      /*
       this.http.post('https://tacomex-2025.onrender.com/notify-owner', {
         title: 'Nuevo Cliente Registrado',
         body: `El cliente ${nuevoCliente.nombre} ${nuevoCliente.apellido} se ha registrado.`
@@ -544,6 +549,7 @@ export class RegistroComponent {
         next: (res) => console.log('Notification request sent', res),
         error: (err) => console.error('Error sending notification request', err)
       });
+      */
 
       this.mensajeExito = 'Registro exitoso. Bienvenido!';
       this.clienteForm.reset();

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { PushNotifications } from '@capacitor/push-notifications';
 import { SupabaseService } from './supabase.service';
+// import { Capacitor } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +12,21 @@ export class PushNotificationService {
   ) {}
 
   async initializePushNotifications() {
+    // TEMPORALMENTE DESHABILITADO
+    console.log('Notificaciones push temporalmente deshabilitadas');
+    return;
+    
+    /*
     try {
-      // Verificar si el plugin está disponible
+      // Solo ejecutar en dispositivos móviles
+      if (!Capacitor.isNativePlatform()) {
+        console.log('Notificaciones push solo disponibles en dispositivos móviles');
+        return;
+      }
+
+      // Verificar si el plugin está disponible dinámicamente
+      const { PushNotifications } = await import('@capacitor/push-notifications');
+      
       if (!PushNotifications) {
         console.log('PushNotifications plugin no disponible');
         return;
@@ -49,9 +62,15 @@ export class PushNotificationService {
       console.error('Error al inicializar notificaciones push:', error);
       // No lanzar el error para no romper la app
     }
+    */
   }
 
   private async saveTokenToDatabase(token: string) {
+    // TEMPORALMENTE DESHABILITADO
+    console.log('Guardado de token temporalmente deshabilitado');
+    return;
+    
+    /*
     try {
       const { data: user } = await this.supabase.supabase.auth.getUser();
       
@@ -102,9 +121,15 @@ export class PushNotificationService {
     } catch (error) {
       console.error('Error al guardar token en base de datos:', error);
     }
+    */
   }
 
   async removeTokenFromDatabase() {
+    // TEMPORALMENTE DESHABILITADO
+    console.log('Eliminación de token temporalmente deshabilitada');
+    return;
+    
+    /*
     try {
       const { data: user } = await this.supabase.supabase.auth.getUser();
       
@@ -155,12 +180,28 @@ export class PushNotificationService {
     } catch (error) {
       console.error('Error al eliminar token de base de datos:', error);
     }
+    */
   }
 
   async cleanup() {
+    // TEMPORALMENTE DESHABILITADO
+    console.log('Cleanup de notificaciones temporalmente deshabilitado');
+    return;
+    
+    /*
     try {
-      // Remover listeners
-      await PushNotifications.removeAllListeners();
+      // Solo ejecutar en dispositivos móviles
+      if (!Capacitor.isNativePlatform()) {
+        return;
+      }
+
+      // Verificar si el plugin está disponible dinámicamente
+      const { PushNotifications } = await import('@capacitor/push-notifications');
+      
+      if (PushNotifications) {
+        // Remover listeners
+        await PushNotifications.removeAllListeners();
+      }
       
       // Eliminar token de la base de datos
       await this.removeTokenFromDatabase();
@@ -168,5 +209,6 @@ export class PushNotificationService {
     } catch (error) {
       console.error('Error en cleanup de notificaciones:', error);
     }
+    */
   }
 } 
