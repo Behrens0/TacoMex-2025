@@ -34,6 +34,7 @@
     "@ionic/angular": "^8.0.0",
     "@supabase/supabase-js": "^2.49.4",
     "angularx-qrcode": "^19.0.0",
+    "chart.js": "^4.5.0",
     "firebase": "^11.6.0",
     "ionicons": "^7.4.0",
     "qrcode": "^1.5.4",

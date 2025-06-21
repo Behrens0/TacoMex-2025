@@ -59,6 +59,12 @@ export class HomePage {
     this.loadingService.hide();
   }
 
+  irAEncuesta() {
+    this.loadingService.show();
+    this.router.navigate(['/encuesta']);
+    this.loadingService.hide();
+  }
+
   ionViewWillEnter() {
     this.loadUser();
   }
