@@ -71,7 +71,7 @@
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
         <!-- ENVIAR REGISTRO -->
-        <ion-button expand="block" type="submit" [disabled]="clienteForm.invalid && !clienteForm.get('anonimo')?.value">
+        <ion-button expand="block" type="submit" [disabled]="clienteForm.invalid">
           REGISTRARME
         </ion-button>
 

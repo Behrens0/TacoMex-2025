@@ -136,6 +136,7 @@ export class RegistroComponent {
     this.clienteForm.get('correo')?.valueChanges.subscribe(() => this.validarCampoCliente('correo'));
     this.clienteForm.get('contrasenia')?.valueChanges.subscribe(() => this.validarCampoCliente('contrasenia'));
     this.clienteForm.get('dni')?.valueChanges.subscribe(() => this.validarCampoCliente('dni'));
+    this.clienteForm.get('imagenPerfil')?.valueChanges.subscribe(() => this.validarCampoCliente('imagenPerfil'));
 
     this.empleadoForm.get('nombre')?.valueChanges.subscribe(() => this.validarCampoEmpleado('nombre'));
     this.empleadoForm.get('apellido')?.valueChanges.subscribe(() => this.validarCampoEmpleado('apellido'));
@@ -166,6 +167,7 @@ export class RegistroComponent {
       case 'correo': this.clienteCorreoError = ''; break;
       case 'contrasenia': this.clienteContraseniaError = ''; break;
       case 'dni': this.clienteDniError = ''; break;
+      case 'imagenPerfil': this.clienteImagenError = ''; break;
     }
 
     if (control.value || control.touched) {
@@ -203,6 +205,11 @@ export class RegistroComponent {
             this.clienteDniError = 'El DNI es requerido';
           } else if (control.errors?.['pattern']) {
             this.clienteDniError = 'El DNI debe tener 7 u 8 dígitos';
+          }
+          break;
+        case 'imagenPerfil':
+          if (control.errors?.['required']) {
+            this.clienteImagenError = 'La imagen de perfil es requerida';
           }
           break;
       }
@@ -426,9 +433,10 @@ export class RegistroComponent {
       this.validarCampoCliente('correo');
       this.validarCampoCliente('contrasenia');
       this.validarCampoCliente('dni');
+      this.validarCampoCliente('imagenPerfil');
 
       if (this.clienteNombreError || this.clienteApellidoError || this.clienteCorreoError || 
-          this.clienteContraseniaError || this.clienteDniError) {
+          this.clienteContraseniaError || this.clienteDniError || this.clienteImagenError) {
         return;
       }
     }
