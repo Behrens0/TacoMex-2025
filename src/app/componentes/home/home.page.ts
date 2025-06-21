@@ -64,14 +64,31 @@ export class HomePage {
   }
 
   async loadUser() {
-    const { data, error } = await this.authService.getCurrentUser();
-    this.user = data?.user;
+    try {
+      const { data, error } = await this.authService.getCurrentUser();
+      
+      if (error) {
+        console.error('Error al cargar usuario:', error);
+        // El AuthService ya maneja la redirección al login
+        return;
+      }
+      
+      this.user = data?.user;
 
-    if (!this.user) {
+      if (!this.user) {
+        this.router.navigateByUrl('/login');
+      } else {
+        // Inicializar notificaciones push si el usuario ya está logueado
+        try {
+          await this.pushNotificationService.initializePushNotifications();
+        } catch (error) {
+          console.error('Error al inicializar notificaciones push:', error);
+          // No bloquear la app si fallan las notificaciones
+        }
+      }
+    } catch (error) {
+      console.error('Error inesperado al cargar usuario:', error);
       this.router.navigateByUrl('/login');
-    } else {
-      // Inicializar notificaciones push si el usuario ya está logueado
-      await this.pushNotificationService.initializePushNotifications();
     }
   }
 

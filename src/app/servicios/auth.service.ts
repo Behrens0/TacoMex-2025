@@ -59,7 +59,11 @@ export class AuthService {
     }
 
     // Inicializar notificaciones push después del login exitoso
-    await this.pushNotificationService.initializePushNotifications();
+    try {
+      await this.pushNotificationService.initializePushNotifications();
+    } catch (error) {
+      console.error('Error al inicializar notificaciones push:', error);
+    }
 
     return this.usuarioActual;
   }
@@ -96,7 +100,11 @@ export class AuthService {
 
   async signOut() {
     // Limpiar notificaciones push antes del logout
-    await this.pushNotificationService.cleanup();
+    try {
+      await this.pushNotificationService.cleanup();
+    } catch (error) {
+      console.error('Error al limpiar notificaciones:', error);
+    }
     
     await this.sb.supabase.auth.signOut();
     this.usuarioActual = null;
@@ -106,6 +114,34 @@ export class AuthService {
   }
 
   async getCurrentUser() {
-    return await this.sb.supabase.auth.getUser();
+    try {
+      return await this.sb.supabase.auth.getUser();
+    } catch (error) {
+      console.error('Error al obtener usuario actual:', error);
+      // Si hay error de token, limpiar y redirigir al login
+      await this.clearAuthAndRedirect();
+      return { data: { user: null }, error };
+    }
+  }
+
+  async clearAuthAndRedirect() {
+    try {
+      // Limpiar notificaciones
+      await this.pushNotificationService.cleanup();
+    } catch (error) {
+      console.error('Error al limpiar notificaciones:', error);
+    }
+
+    // Limpiar sesión de Supabase
+    await this.sb.supabase.auth.signOut();
+    
+    // Limpiar variables locales
+    this.usuarioActual = null;
+    this.esAdmin = false;
+    this.esMaitre = false;
+    this.perfilUsuario = '';
+
+    // Redirigir al login
+    this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }

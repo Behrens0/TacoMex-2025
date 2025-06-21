@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { SupabaseService } from './supabase.service';
-import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,12 +8,17 @@ import { AuthService } from './auth.service';
 export class PushNotificationService {
 
   constructor(
-    private supabase: SupabaseService,
-    private authService: AuthService
+    private supabase: SupabaseService
   ) {}
 
   async initializePushNotifications() {
     try {
+      // Verificar si el plugin está disponible
+      if (!PushNotifications) {
+        console.log('PushNotifications plugin no disponible');
+        return;
+      }
+
       // Solicitar permisos
       const permission = await PushNotifications.requestPermissions();
       
@@ -43,12 +47,13 @@ export class PushNotificationService {
       }
     } catch (error) {
       console.error('Error al inicializar notificaciones push:', error);
+      // No lanzar el error para no romper la app
     }
   }
 
   private async saveTokenToDatabase(token: string) {
     try {
-      const { data: user } = await this.authService.getCurrentUser();
+      const { data: user } = await this.supabase.supabase.auth.getUser();
       
       if (!user?.user) {
         console.log('No hay usuario autenticado');
@@ -56,25 +61,30 @@ export class PushNotificationService {
       }
 
       const email = user.user.email;
-      const perfil = this.authService.getPerfilUsuario();
+      
+      // Determinar el perfil del usuario consultando las tablas
+      const { data: supervisor } = await this.supabase.supabase
+        .from('supervisores')
+        .select('perfil')
+        .eq('correo', email)
+        .single();
+
+      const { data: empleado } = await this.supabase.supabase
+        .from('empleados')
+        .select('perfil')
+        .eq('correo', email)
+        .single();
 
       // Determinar en qué tabla guardar el token según el perfil
       let tableName = '';
       let updateData = { fcm_token: token };
 
-      switch (perfil) {
-        case 'dueño':
-        case 'supervisor':
-          tableName = 'supervisores';
-          break;
-        case 'maitre':
-        case 'mesero':
-        case 'cocinero':
-          tableName = 'empleados';
-          break;
-        default:
-          tableName = 'clientes';
-          break;
+      if (supervisor) {
+        tableName = 'supervisores';
+      } else if (empleado) {
+        tableName = 'empleados';
+      } else {
+        tableName = 'clientes';
       }
 
       // Actualizar el token en la base de datos
@@ -96,7 +106,7 @@ export class PushNotificationService {
 
   async removeTokenFromDatabase() {
     try {
-      const { data: user } = await this.authService.getCurrentUser();
+      const { data: user } = await this.supabase.supabase.auth.getUser();
       
       if (!user?.user) {
         console.log('No hay usuario autenticado');
@@ -104,25 +114,30 @@ export class PushNotificationService {
       }
 
       const email = user.user.email;
-      const perfil = this.authService.getPerfilUsuario();
+      
+      // Determinar el perfil del usuario consultando las tablas
+      const { data: supervisor } = await this.supabase.supabase
+        .from('supervisores')
+        .select('perfil')
+        .eq('correo', email)
+        .single();
+
+      const { data: empleado } = await this.supabase.supabase
+        .from('empleados')
+        .select('perfil')
+        .eq('correo', email)
+        .single();
 
       // Determinar en qué tabla eliminar el token según el perfil
       let tableName = '';
       let updateData = { fcm_token: null };
 
-      switch (perfil) {
-        case 'dueño':
-        case 'supervisor':
-          tableName = 'supervisores';
-          break;
-        case 'maitre':
-        case 'mesero':
-        case 'cocinero':
-          tableName = 'empleados';
-          break;
-        default:
-          tableName = 'clientes';
-          break;
+      if (supervisor) {
+        tableName = 'supervisores';
+      } else if (empleado) {
+        tableName = 'empleados';
+      } else {
+        tableName = 'clientes';
       }
 
       // Eliminar el token de la base de datos
