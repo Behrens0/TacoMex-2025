@@ -71,7 +71,7 @@
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
         <!-- ENVIAR REGISTRO -->
-        <ion-button expand="block" type="submit" [disabled]="clienteForm.invalid && !clienteForm.get('anonimo')?.value">
+        <ion-button expand="block" type="submit" [disabled]="clienteForm.invalid">
           REGISTRARME
         </ion-button>
 
@@ -376,6 +376,91 @@
         </div>
       </form>
 
+      <!-- Formulario de Alta de Producto -->
+      <form *ngIf="tipoRegistro==='producto'" [formGroup]="productoForm" (ngSubmit)="registrarProducto()">
+        <!-- NOMBRE DEL PRODUCTO -->
+        <ion-item>
+          <ion-icon slot="start" name="restaurant-outline"></ion-icon>
+          <ion-label position="floating">Nombre del producto</ion-label>
+          <ion-input formControlName="nombre"></ion-input>
+        </ion-item>
+        <div class="field-error" *ngIf="productoNombreError">{{ productoNombreError }}</div>
+
+        <!-- DESCRIPCIÓN -->
+        <ion-item>
+          <ion-icon slot="start" name="document-text-outline"></ion-icon>
+          <ion-label position="floating">Descripción</ion-label>
+          <ion-textarea formControlName="descripcion" rows="3" placeholder="Describe el producto..."></ion-textarea>
+        </ion-item>
+        <div class="field-error" *ngIf="productoDescripcionError">{{ productoDescripcionError }}</div>
+
+        <!-- TIEMPO DE ELABORACIÓN -->
+        <ion-item>
+          <ion-icon slot="start" name="time-outline"></ion-icon>
+          <ion-label position="floating">Tiempo de elaboración (minutos)</ion-label>
+          <ion-input type="number" formControlName="tiempoElaboracion"></ion-input>
+        </ion-item>
+        <div class="field-error" *ngIf="productoTiempoError">{{ productoTiempoError }}</div>
+
+        <!-- PRECIO -->
+        <ion-item>
+          <ion-icon slot="start" name="cash-outline"></ion-icon>
+          <ion-label position="floating">Precio ($)</ion-label>
+          <ion-input type="number" step="0.01" formControlName="precio"></ion-input>
+        </ion-item>
+        <div class="field-error" *ngIf="productoPrecioError">{{ productoPrecioError }}</div>
+
+        <!-- IMÁGENES DEL PRODUCTO -->
+        <ion-item>
+          <ion-icon slot="start" name="images-outline"></ion-icon>
+          <ion-label>Imágenes del producto (3 fotos)</ion-label>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="fileInputProducto.click()">Subir Imágenes</ion-button>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
+          <input #fileInputProducto type="file" accept="image/*" multiple style="display: none" (change)="onImagenSeleccionada($event)" />
+        </ion-item>
+        <div class="field-error" *ngIf="productoImagenesError">{{ productoImagenesError }}</div>
+
+        <!-- PREVIEW DE IMÁGENES -->
+        <div *ngIf="imagenesProductoURLs.length > 0" class="imagenes-preview">
+          <ion-label>Vista previa de imágenes ({{ imagenesProductoArchivos.length }}/3):</ion-label>
+          <div class="imagenes-grid">
+            <div *ngFor="let imagen of imagenesProductoURLs; let i = index" class="imagen-preview">
+              <img [src]="imagen" alt="Preview" />
+              <span class="imagen-numero">{{ i + 1 }}</span>
+              <ion-button 
+                class="boton-eliminar-foto" 
+                size="small" 
+                color="danger" 
+                (click)="eliminarFotoProducto(i)">
+                <ion-icon name="close"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR GENERADO -->
+        <ion-item *ngIf="qrProductoURL">
+          <ion-label>QR generado</ion-label>
+          <img [src]="qrProductoURL" alt="QR Producto" style="width:64px;height:64px;margin-left:8px;" />
+        </ion-item>
+
+        <!-- ERROR -->
+        <div class="error-message" *ngIf="mensajeErrorProducto">{{ mensajeErrorProducto }}</div>
+
+        <!-- ENVIAR REGISTRO -->
+        <ion-button expand="block" type="submit" [disabled]="productoForm.invalid">
+          REGISTRAR PRODUCTO
+        </ion-button>
+
+        <div *ngIf="mensajeExitoProducto" class="mensaje-exito">
+          {{ mensajeExitoProducto }}
+        </div>
+
+        <div class="register-link">
+          <a (click)="volverAlHome()">Volver</a>
+        </div>
+      </form>
+
       <div *ngIf="esAdmin && perfilUsuario !== 'dueño' && perfilUsuario !== 'supervisor'" class="registro-selector">
         <ion-button size="small" [color]="tipoRegistro==='supervisor' ? 'success' : 'medium'" (click)="setTipoRegistro('supervisor')">Supervisores</ion-button>
         <ion-button size="small" [color]="tipoRegistro==='empleado' ? 'success' : 'medium'" (click)="setTipoRegistro('empleado')">Empleados</ion-button>
@@ -391,6 +476,10 @@
 
       <div *ngIf="esMaitre && !esAdmin" class="registro-selector">
         <ion-button size="small" [color]="tipoRegistro==='cliente' ? 'success' : 'medium'" (click)="setTipoRegistro('cliente')">Clientes</ion-button>
+      </div>
+
+      <div *ngIf="(esBartender || esCocinero) && !esAdmin && !esMaitre" class="registro-selector">
+        <ion-button size="small" [color]="tipoRegistro==='producto' ? 'success' : 'medium'" (click)="setTipoRegistro('producto')">Productos</ion-button>
       </div>
     </div>
   </div>

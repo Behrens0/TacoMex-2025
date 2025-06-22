@@ -27,6 +27,8 @@ export class HomePage {
   mostrarBotonRegistro: boolean = false;
   isSupported = false;
   perfilUsuario: string = '';
+  esBartender: boolean = false;
+  esCocinero: boolean = false;
   user: any = null;
 
   constructor(
@@ -41,6 +43,8 @@ export class HomePage {
   ngOnInit() {
     this.mostrarBotonRegistro = this.authService.puedeAccederARegistro() && this.router.url !== '/registro';
     this.perfilUsuario = this.authService.getPerfilUsuario();
+    this.esBartender = this.authService.esUsuarioBartender();
+    this.esCocinero = this.authService.esUsuarioCocinero();
 
     BarcodeScanner.isSupported().then((result) => {
       this.isSupported = result.supported;
@@ -75,7 +79,6 @@ export class HomePage {
       
       if (error) {
         console.error('Error al cargar usuario:', error);
-        // El AuthService ya maneja la redirección al login
         return;
       }
       
@@ -84,6 +87,11 @@ export class HomePage {
       if (!this.user) {
         this.router.navigateByUrl('/login');
       } else {
+        this.perfilUsuario = this.authService.getPerfilUsuario();
+        this.esBartender = this.authService.esUsuarioBartender();
+        this.esCocinero = this.authService.esUsuarioCocinero();
+        this.mostrarBotonRegistro = this.authService.puedeAccederARegistro() && this.router.url !== '/registro';
+        
         // Inicializar notificaciones push si el usuario ya está logueado
         // TEMPORALMENTE DESHABILITADO
         /*

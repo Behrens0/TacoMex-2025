@@ -93,3 +93,24 @@ ion-content {
     font-size: 20px;
   }
 }
+
+.boton-registro-productos {
+  --background: #ff6b35;
+  --color: white;
+  --border-radius: 12px;
+  margin: 10px 0;
+  font-weight: bold;
+  font-size: 16px;
+  height: 50px;
+  --box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+  
+  &:hover {
+    --background: #e55a2b;
+    --box-shadow: 0 6px 12px rgba(255, 107, 53, 0.4);
+  }
+  
+  ion-icon {
+    margin-right: 8px;
+    font-size: 20px;
+  }
+}

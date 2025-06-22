@@ -95,8 +95,16 @@ export class AuthService {
     return this.esMaitre;
   }
 
+  esUsuarioBartender() {
+    return this.perfilUsuario === 'bartender';
+  }
+
+  esUsuarioCocinero() {
+    return this.perfilUsuario === 'cocinero';
+  }
+
   puedeAccederARegistro() {
-    return this.esAdmin || this.esMaitre;
+    return this.esAdmin || this.esMaitre || this.esUsuarioBartender() || this.esUsuarioCocinero();
   }
 
   getPerfilUsuario() {
@@ -126,7 +134,6 @@ export class AuthService {
       return await this.sb.supabase.auth.getUser();
     } catch (error) {
       console.error('Error al obtener usuario actual:', error);
-      // Si hay error de token, limpiar y redirigir al login
       await this.clearAuthAndRedirect();
       return { data: { user: null }, error };
     }
@@ -143,16 +150,14 @@ export class AuthService {
     }
     */
 
-    // Limpiar sesión de Supabase
     await this.sb.supabase.auth.signOut();
     
-    // Limpiar variables locales
     this.usuarioActual = null;
     this.esAdmin = false;
     this.esMaitre = false;
     this.perfilUsuario = '';
 
-    // Redirigir al login
+
     this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }

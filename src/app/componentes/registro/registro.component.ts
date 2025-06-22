@@ -8,13 +8,13 @@ import { AuthService } from 'src/app/servicios/auth.service';
 import { LoadingService } from 'src/app/servicios/loading.service';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { toDataURL } from 'qrcode';
-import { IonCheckbox } from '@ionic/angular/standalone';
+import { IonCheckbox, IonTextarea } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule, IonCheckbox],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule, IonCheckbox, IonTextarea],
   templateUrl: './registro.component.html',
   styleUrls: ['./registro.component.scss']
 })
@@ -23,11 +23,14 @@ export class RegistroComponent {
   empleadoForm: FormGroup;
   supervisorForm: FormGroup;
   mesaForm: FormGroup;
+  productoForm: FormGroup;
 
   mensajeExito: string = '';
   mensajeError: string = '';
   mensajeExitoMesa: string = '';
   mensajeErrorMesa: string = '';
+  mensajeExitoProducto: string = '';
+  mensajeErrorProducto: string = '';
 
   clienteNombreError: string = '';
   clienteApellidoError: string = '';
@@ -59,15 +62,26 @@ export class RegistroComponent {
   mesaTipoError: string = '';
   mesaImagenError: string = '';
 
+  productoNombreError: string = '';
+  productoDescripcionError: string = '';
+  productoTiempoError: string = '';
+  productoPrecioError: string = '';
+  productoImagenesError: string = '';
+
   esAnonimo = false;
   imagenURL: string | null = null;
   imagenMesaURL: string | null = null;
   qrMesaURL: string | null = null;
+  qrProductoURL: string | null = null;
+  imagenesProductoURLs: string[] = [];
+  imagenesProductoArchivos: File[] = [];
 
   emailEnUso: boolean = false;
-  tipoRegistro: 'cliente' | 'empleado' | 'supervisor' | 'mesa' = 'cliente';
+  tipoRegistro: 'cliente' | 'empleado' | 'supervisor' | 'mesa' | 'producto' = 'cliente';
   esAdmin: boolean = false;
   esMaitre: boolean = false;
+  esBartender: boolean = false;
+  esCocinero: boolean = false;
   perfilUsuario: string = '';
 
   constructor(
@@ -114,10 +128,19 @@ export class RegistroComponent {
       tipo: ['', Validators.required],
       imagen: [null, Validators.required]
     });
+    this.productoForm = this.fb.group({
+      nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
+      descripcion: ['', [Validators.required, Validators.minLength(10)]],
+      tiempoElaboracion: ['', [Validators.required, Validators.min(1), Validators.max(480)]],
+      precio: ['', [Validators.required, Validators.min(0.01)]],
+      imagenes: [null, [Validators.required, this.validarTresImagenes.bind(this)]]
+    });
 
     this.esAdmin = this.authService.esUsuarioAdmin();
     this.esMaitre = this.authService.esUsuarioMaitre();
     this.perfilUsuario = this.authService.getPerfilUsuario();
+    this.esBartender = this.perfilUsuario === 'bartender';
+    this.esCocinero = this.perfilUsuario === 'cocinero';
 
     if (this.esMaitre && !this.esAdmin) {
       this.tipoRegistro = 'cliente';
@@ -125,6 +148,10 @@ export class RegistroComponent {
   
     if (this.esAdmin && (this.perfilUsuario === 'dueño' || this.perfilUsuario === 'supervisor')) {
       this.tipoRegistro = 'supervisor';
+    }
+
+    if (this.esBartender || this.esCocinero) {
+      this.tipoRegistro = 'producto';
     }
 
     this.setupFormValidation();
@@ -136,6 +163,7 @@ export class RegistroComponent {
     this.clienteForm.get('correo')?.valueChanges.subscribe(() => this.validarCampoCliente('correo'));
     this.clienteForm.get('contrasenia')?.valueChanges.subscribe(() => this.validarCampoCliente('contrasenia'));
     this.clienteForm.get('dni')?.valueChanges.subscribe(() => this.validarCampoCliente('dni'));
+    this.clienteForm.get('imagenPerfil')?.valueChanges.subscribe(() => this.validarCampoCliente('imagenPerfil'));
 
     this.empleadoForm.get('nombre')?.valueChanges.subscribe(() => this.validarCampoEmpleado('nombre'));
     this.empleadoForm.get('apellido')?.valueChanges.subscribe(() => this.validarCampoEmpleado('apellido'));
@@ -154,6 +182,12 @@ export class RegistroComponent {
     this.mesaForm.get('numero')?.valueChanges.subscribe(() => this.validarCampoMesa('numero'));
     this.mesaForm.get('comensales')?.valueChanges.subscribe(() => this.validarCampoMesa('comensales'));
     this.mesaForm.get('tipo')?.valueChanges.subscribe(() => this.validarCampoMesa('tipo'));
+
+    this.productoForm.get('nombre')?.valueChanges.subscribe(() => this.validarCampoProducto('nombre'));
+    this.productoForm.get('descripcion')?.valueChanges.subscribe(() => this.validarCampoProducto('descripcion'));
+    this.productoForm.get('tiempoElaboracion')?.valueChanges.subscribe(() => this.validarCampoProducto('tiempoElaboracion'));
+    this.productoForm.get('precio')?.valueChanges.subscribe(() => this.validarCampoProducto('precio'));
+    this.productoForm.get('imagenes')?.valueChanges.subscribe(() => this.validarCampoProducto('imagenes'));
   }
 
   validarCampoCliente(campo: string) {
@@ -166,6 +200,7 @@ export class RegistroComponent {
       case 'correo': this.clienteCorreoError = ''; break;
       case 'contrasenia': this.clienteContraseniaError = ''; break;
       case 'dni': this.clienteDniError = ''; break;
+      case 'imagenPerfil': this.clienteImagenError = ''; break;
     }
 
     if (control.value || control.touched) {
@@ -203,6 +238,11 @@ export class RegistroComponent {
             this.clienteDniError = 'El DNI es requerido';
           } else if (control.errors?.['pattern']) {
             this.clienteDniError = 'El DNI debe tener 7 u 8 dígitos';
+          }
+          break;
+        case 'imagenPerfil':
+          if (control.errors?.['required']) {
+            this.clienteImagenError = 'La imagen de perfil es requerida';
           }
           break;
       }
@@ -368,6 +408,61 @@ export class RegistroComponent {
     }
   }
 
+  validarCampoProducto(campo: string) {
+    const control = this.productoForm.get(campo);
+    if (!control) return;
+
+    switch(campo) {
+      case 'nombre': this.productoNombreError = ''; break;
+      case 'descripcion': this.productoDescripcionError = ''; break;
+      case 'tiempoElaboracion': this.productoTiempoError = ''; break;
+      case 'precio': this.productoPrecioError = ''; break;
+      case 'imagenes': this.productoImagenesError = ''; break;
+    }
+
+    if (control.value || control.touched) {
+      switch(campo) {
+        case 'nombre':
+          if (control.errors?.['required']) {
+            this.productoNombreError = 'El nombre del producto es requerido';
+          } else if (control.errors?.['pattern']) {
+            this.productoNombreError = 'El nombre solo puede contener letras';
+          }
+          break;
+        case 'descripcion':
+          if (control.errors?.['required']) {
+            this.productoDescripcionError = 'La descripción es requerida';
+          } else if (control.errors?.['minlength']) {
+            this.productoDescripcionError = 'La descripción debe tener al menos 10 caracteres';
+          }
+          break;
+        case 'tiempoElaboracion':
+          if (control.errors?.['required']) {
+            this.productoTiempoError = 'El tiempo de elaboración es requerido';
+          } else if (control.errors?.['min']) {
+            this.productoTiempoError = 'El tiempo mínimo es 1 minuto';
+          } else if (control.errors?.['max']) {
+            this.productoTiempoError = 'El tiempo máximo es 480 minutos (8 horas)';
+          }
+          break;
+        case 'precio':
+          if (control.errors?.['required']) {
+            this.productoPrecioError = 'El precio es requerido';
+          } else if (control.errors?.['min']) {
+            this.productoPrecioError = 'El precio debe ser mayor a 0';
+          }
+          break;
+        case 'imagenes':
+          if (control.errors?.['required']) {
+            this.productoImagenesError = 'Las imágenes son requeridas';
+          } else if (control.errors?.['validarTresImagenes']) {
+            this.productoImagenesError = 'Debe seleccionar exactamente 3 imágenes';
+          }
+          break;
+      }
+    }
+  }
+
   limpiarErroresCliente() {
     this.mensajeError = '';
     this.clienteNombreError = '';
@@ -410,6 +505,15 @@ export class RegistroComponent {
     this.mesaImagenError = '';
   }
 
+  limpiarErroresProducto() {
+    this.mensajeErrorProducto = '';
+    this.productoNombreError = '';
+    this.productoDescripcionError = '';
+    this.productoTiempoError = '';
+    this.productoPrecioError = '';
+    this.productoImagenesError = '';
+  }
+
   async registrarCliente() {
     this.limpiarErroresCliente();
 
@@ -426,9 +530,10 @@ export class RegistroComponent {
       this.validarCampoCliente('correo');
       this.validarCampoCliente('contrasenia');
       this.validarCampoCliente('dni');
+      this.validarCampoCliente('imagenPerfil');
 
       if (this.clienteNombreError || this.clienteApellidoError || this.clienteCorreoError || 
-          this.clienteContraseniaError || this.clienteDniError) {
+          this.clienteContraseniaError || this.clienteDniError || this.clienteImagenError) {
         return;
       }
     }
@@ -757,13 +862,13 @@ export class RegistroComponent {
       let imagenMesa = '';
       if (archivo) {
         const { data, error } = await this.sb.supabase.storage
-          .from('usuarios.img')
+          .from('imagenes')
           .upload(`mesa-${numero}-${archivo.name}`, archivo, { upsert: true });
 
         if (error) throw new Error(error.message);
 
         imagenMesa = this.sb.supabase.storage
-          .from('usuarios.img')
+          .from('imagenes')
           .getPublicUrl(data.path).data.publicUrl;
       }
 
@@ -805,6 +910,97 @@ export class RegistroComponent {
     }
   }
 
+  async registrarProducto() {
+    this.limpiarErroresProducto();
+    this.qrProductoURL = null;
+
+    this.validarCampoProducto('nombre');
+    this.validarCampoProducto('descripcion');
+    this.validarCampoProducto('tiempoElaboracion');
+    this.validarCampoProducto('precio');
+    this.validarCampoProducto('imagenes');
+
+    if (this.productoNombreError || this.productoDescripcionError || this.productoTiempoError || 
+        this.productoPrecioError || this.productoImagenesError) {
+      return;
+    }
+
+    if (this.productoForm.invalid) {
+      this.mensajeErrorProducto = 'Por favor completa todos los campos requeridos correctamente.';
+      return;
+    }
+
+    this.loadingService.show();
+
+    try {
+      const { nombre, descripcion, tiempoElaboracion, precio } = this.productoForm.value;
+
+      if (this.imagenesProductoArchivos.length !== 3) {
+        this.productoImagenesError = 'Debe seleccionar exactamente 3 imágenes';
+        this.loadingService.hide();
+        return;
+      }
+
+      const imagenesURLs: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        const archivo = this.imagenesProductoArchivos[i];
+        const { data, error } = await this.sb.supabase.storage
+          .from('imagenes')
+          .upload(`producto-${nombre}-${i}-${archivo.name}`, archivo, { upsert: true });
+
+        if (error) throw new Error(error.message);
+
+        const imagenURL = this.sb.supabase.storage
+          .from('imagenes')
+          .getPublicUrl(data.path).data.publicUrl;
+        
+        imagenesURLs.push(imagenURL);
+      }
+
+      try {
+        const qrData = JSON.stringify({ 
+          nombreProducto: nombre,
+          precio: precio,
+          tiempoElaboracion: tiempoElaboracion
+        });
+        this.qrProductoURL = await toDataURL(qrData);
+      } catch (err) {
+        console.error(err);
+        throw new Error('No se pudo generar el código QR del producto.');
+      }
+
+      const nuevoProducto = {
+        nombre,
+        descripcion,
+        tiempo_elaboracion: tiempoElaboracion,
+        precio: parseFloat(precio),
+        imagenes: imagenesURLs,
+        qr: this.qrProductoURL
+      };
+
+      const { error } = await this.sb.supabase.from('productos').insert([nuevoProducto]);
+      if (error) {
+        this.mensajeErrorProducto = 'Error al registrar el producto: ' + error.message;
+        this.loadingService.hide();
+        return;
+      }
+
+      this.mensajeExitoProducto = 'Producto registrado correctamente';
+      this.productoForm.reset();
+      this.imagenesProductoURLs = [];
+      this.imagenesProductoArchivos = [];
+      this.loadingService.hide();
+      
+      setTimeout(() => {
+        this.mensajeExitoProducto = '';
+      }, 6000);
+    } catch (e: any) {
+      this.mensajeErrorProducto = 'Error inesperado: ' + e.message;
+      console.error(e);
+      this.loadingService.hide();
+    }
+  }
+
   alternarAnonimato() {
     this.esAnonimo = this.clienteForm.get('anonimo')?.value;
     if (this.esAnonimo) {
@@ -836,41 +1032,17 @@ export class RegistroComponent {
   }
 
   onImagenSeleccionada(event: any) {
-    const archivo = event.target.files[0];
-    if (archivo) {
-      switch(this.tipoRegistro) {
-        case 'cliente':
-          this.clienteForm.patchValue({ imagenPerfil: archivo });
-          this.clienteForm.get('imagenPerfil')?.updateValueAndValidity();
-          break;
-        case 'empleado':
-          this.empleadoForm.patchValue({ imagenPerfil: archivo });
-          this.empleadoForm.get('imagenPerfil')?.updateValueAndValidity();
-          break;
-        case 'supervisor':
-          this.supervisorForm.patchValue({ imagenPerfil: archivo });
-          this.supervisorForm.get('imagenPerfil')?.updateValueAndValidity();
-          break;
-        case 'mesa':
-          this.mesaForm.patchValue({ imagen: archivo });
-          this.mesaForm.get('imagen')?.updateValueAndValidity();
-          break;
+    if (this.tipoRegistro === 'producto') {
+      const archivos = event.target.files;
+      if (archivos && archivos.length > 0) {
+        this.imagenesProductoArchivos = [];
+        for (let i = 0; i < Math.min(archivos.length, 3); i++) {
+          this.imagenesProductoArchivos.push(archivos[i]);
+        }
+        this.actualizarPreviewProducto();
+        this.actualizarFormularioProducto();
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagenURL = reader.result as string;
-      };
-      reader.readAsDataURL(archivo);
-    }
-  }
-
-  tomarFoto() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-
-    input.onchange = (event: any) => {
+    } else {
       const archivo = event.target.files[0];
       if (archivo) {
         switch(this.tipoRegistro) {
@@ -891,11 +1063,60 @@ export class RegistroComponent {
             this.mesaForm.get('imagen')?.updateValueAndValidity();
             break;
         }
+        
         const reader = new FileReader();
         reader.onload = () => {
           this.imagenURL = reader.result as string;
         };
         reader.readAsDataURL(archivo);
+      }
+    }
+  }
+
+  tomarFoto() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+
+    if (this.tipoRegistro === 'producto') {
+      input.multiple = false;
+    }
+
+    input.onchange = (event: any) => {
+      if (this.tipoRegistro === 'producto') {
+        const archivo = event.target.files[0];
+        if (archivo) {
+          this.agregarFotoProducto(archivo);
+        }
+      } else {
+        const archivo = event.target.files[0];
+        if (archivo) {
+          switch(this.tipoRegistro) {
+            case 'cliente':
+              this.clienteForm.patchValue({ imagenPerfil: archivo });
+              this.clienteForm.get('imagenPerfil')?.updateValueAndValidity();
+              break;
+            case 'empleado':
+              this.empleadoForm.patchValue({ imagenPerfil: archivo });
+              this.empleadoForm.get('imagenPerfil')?.updateValueAndValidity();
+              break;
+            case 'supervisor':
+              this.supervisorForm.patchValue({ imagenPerfil: archivo });
+              this.supervisorForm.get('imagenPerfil')?.updateValueAndValidity();
+              break;
+            case 'mesa':
+              this.mesaForm.patchValue({ imagen: archivo });
+              this.mesaForm.get('imagen')?.updateValueAndValidity();
+              break;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = () => {
+            this.imagenURL = reader.result as string;
+          };
+          reader.readAsDataURL(archivo);
+        }
       }
     };
 
@@ -943,7 +1164,53 @@ export class RegistroComponent {
       .replace(/(^|\s)\S/g, l => l.toUpperCase());
   }
 
-  setTipoRegistro(tipo: 'cliente' | 'empleado' | 'supervisor' | 'mesa') {
+  validarTresImagenes(control: any) {
+    const imagenes = control.value;
+    if (imagenes && imagenes.length !== 3) {
+      return { validarTresImagenes: true };
+    }
+    return null;
+  }
+
+  agregarFotoProducto(archivo: File) {
+    if (this.imagenesProductoArchivos.length >= 3) {
+      this.productoImagenesError = 'Ya tienes 3 imágenes seleccionadas';
+      return;
+    }
+
+    this.imagenesProductoArchivos.push(archivo);
+    this.actualizarPreviewProducto();
+    this.actualizarFormularioProducto();
+  }
+
+  eliminarFotoProducto(index: number) {
+    this.imagenesProductoArchivos.splice(index, 1);
+    this.actualizarPreviewProducto();
+    this.actualizarFormularioProducto();
+  }
+
+  actualizarPreviewProducto() {
+    this.imagenesProductoURLs = [];
+    this.imagenesProductoArchivos.forEach((archivo, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagenesProductoURLs[index] = reader.result as string;
+      };
+      reader.readAsDataURL(archivo);
+    });
+  }
+
+  actualizarFormularioProducto() {
+    const dataTransfer = new DataTransfer();
+    this.imagenesProductoArchivos.forEach(archivo => {
+      dataTransfer.items.add(archivo);
+    });
+    
+    this.productoForm.patchValue({ imagenes: dataTransfer.files });
+    this.productoForm.get('imagenes')?.updateValueAndValidity();
+  }
+
+  setTipoRegistro(tipo: 'cliente' | 'empleado' | 'supervisor' | 'mesa' | 'producto') {
     if (this.esMaitre && !this.esAdmin && tipo !== 'cliente') {
       this.tipoRegistro = 'cliente';
       return;
@@ -951,6 +1218,11 @@ export class RegistroComponent {
     
     if (this.esAdmin && (this.perfilUsuario === 'dueño' || this.perfilUsuario === 'supervisor') && tipo === 'cliente') {
       this.tipoRegistro = 'supervisor';
+      return;
+    }
+
+    if ((this.esBartender || this.esCocinero) && tipo !== 'producto') {
+      this.tipoRegistro = 'producto';
       return;
     }
     
@@ -962,10 +1234,16 @@ export class RegistroComponent {
     this.mensajeExitoMesa = '';
     this.imagenMesaURL = null;
     this.qrMesaURL = null;
+    this.mensajeErrorProducto = '';
+    this.mensajeExitoProducto = '';
+    this.qrProductoURL = null;
+    this.imagenesProductoURLs = [];
+    this.imagenesProductoArchivos = [];
 
     if (tipo !== 'cliente') this.clienteForm.reset();
     if (tipo !== 'empleado') this.empleadoForm.reset();
     if (tipo !== 'supervisor') this.supervisorForm.reset();
     if (tipo !== 'mesa') this.mesaForm.reset();
+    if (tipo !== 'producto') this.productoForm.reset();
   }
 }

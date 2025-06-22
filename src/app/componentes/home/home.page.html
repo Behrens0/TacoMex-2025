@@ -6,11 +6,20 @@
   
   <div class="home-container">
     <ion-button 
-      *ngIf="mostrarBotonRegistro" 
+      *ngIf="mostrarBotonRegistro && !esBartender && !esCocinero" 
       expand="block" 
       class="boton-registro-verde"
       (click)="irARegistro()">
       Registro
+    </ion-button>
+
+    <ion-button 
+      *ngIf="esBartender || esCocinero" 
+      expand="block" 
+      class="boton-registro-productos"
+      (click)="irARegistro()">
+      <ion-icon name="restaurant-outline"></ion-icon>
+      Registrar Producto
     </ion-button>
 
     <ion-button 
