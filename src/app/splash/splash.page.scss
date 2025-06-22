@@ -62,5 +62,64 @@
 }
 
 ion-content.splash-screen {
-  --background: #e9ae47; // Sobrescribe variable CSS de fondo de Ionic
+  --background: #e9ae47;
+}
+
+.splash-top-img {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  animation: slideDown 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+
+  img {
+    max-width: 340px;
+    width: 90vw;
+    min-width: 180px;
+    transition: max-width 0.3s;
+    font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(100px);
+  }
+}
+
+.splash-nombres {
+  position: absolute;
+  bottom: 32px;
+  font-family: 'Pacifico', cursive, Arial, sans-serif;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  text-align: center;
+  color: #fff;
+  font-size: 2em;
+  font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+  font-weight: 700;
+  animation: slideInLeft 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+
+  div {
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    text-shadow: 1px 2px 8px #00000055;
+  }
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-100vw);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
 }
