@@ -401,23 +401,27 @@ export class EncuestasComponent implements OnInit {
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top'
-            }
-          }
-        }
+                    plugins: {
+                      legend: {
+                        labels: {
+                          color: '#fff'
+                        }
+                      },
+                      title: {
+                        color: '#fff'
+                      }
+                    },
+                    scales: {
+                      x: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                      },
+                      y: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                      }
+                    }
+                  }
       });
       console.log('Gráfico de satisfacción general creado exitosamente');
     } catch (error) {
@@ -445,24 +449,28 @@ export class EncuestasComponent implements OnInit {
             borderWidth: 1
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
+options: {
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#fff'
+                }
+              },
+              title: {
+                color: '#fff'
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              },
+              y: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
               }
             }
-          },
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top'
-            }
           }
-        }
       });
       console.log('Gráfico de calidad de comida creado exitosamente');
     } catch (error) {
@@ -490,24 +498,28 @@ export class EncuestasComponent implements OnInit {
             borderWidth: 1
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
+options: {
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#fff'
+                }
+              },
+              title: {
+                color: '#fff'
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              },
+              y: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
               }
             }
-          },
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top'
-            }
           }
-        }
       });
       console.log('Gráfico de calidad de servicio creado exitosamente');
     } catch (error) {
@@ -535,24 +547,28 @@ export class EncuestasComponent implements OnInit {
             borderWidth: 1
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
+options: {
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#fff'
+                }
+              },
+              title: {
+                color: '#fff'
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              },
+              y: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
               }
             }
-          },
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top'
-            }
           }
-        }
       });
       console.log('Gráfico de ambiente creado exitosamente');
     } catch (error) {
@@ -594,16 +610,28 @@ export class EncuestasComponent implements OnInit {
             borderColor: '#fff'
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: 'bottom'
+options: {
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#fff'
+                }
+              },
+              title: {
+                color: '#fff'
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              },
+              y: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              }
             }
           }
-        }
       });
       console.log('Gráfico de recomendación creado exitosamente');
     } catch (error) {
@@ -640,15 +668,27 @@ export class EncuestasComponent implements OnInit {
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: 'bottom'
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#fff'
+                }
+              },
+              title: {
+                color: '#fff'
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              },
+              y: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              }
             }
           }
-        }
       });
       console.log('Gráfico de volvería creado exitosamente');
     } catch (error) {
