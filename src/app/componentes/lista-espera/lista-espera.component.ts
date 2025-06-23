@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonList, IonItem, IonLabel, IonHeader, IonToolbar, IonTitle, IonButton, IonIcon, IonBackButton, IonButtons } from '@ionic/angular/standalone';
+import { IonContent, IonList, IonItem, IonLabel, IonHeader, IonToolbar, IonTitle, IonButton, IonIcon, IonBackButton, IonButtons, IonModal, AlertController } from '@ionic/angular/standalone';
 import { SupabaseService } from '../../servicios/supabase.service';
 import { LoadingService } from '../../servicios/loading.service';
 import { Router } from '@angular/router';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 interface ClienteEnLista {
   id: number;
@@ -11,6 +12,7 @@ interface ClienteEnLista {
   apellido: string;
   correo: string;
   fecha_ingreso: string;
+  mesa_asignada?: string | null;
 }
 
 @Component({
@@ -29,7 +31,8 @@ interface ClienteEnLista {
     IonButton,
     IonIcon,
     IonBackButton,
-    IonButtons
+    IonButtons,
+    IonModal
   ],
   standalone: true
 })
@@ -37,11 +40,19 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
   listaEspera: ClienteEnLista[] = [];
   cargando: boolean = false;
   private intervaloId: any;
+  mostrarModalMesas: boolean = false;
+  mesasDisponibles: any[] = [];
+  mensajeErrorQR: string = '';
+  mostrarModalClientes: boolean = false;
+  clientesDisponibles: any[] = [];
+  mesaSeleccionada: any = null;
+  mensajeErrorAsignacion: string = '';
 
   constructor(
     private supabase: SupabaseService,
     private loadingService: LoadingService,
-    private router: Router
+    private router: Router,
+    private alertController: AlertController
   ) { }
 
   ngOnInit() {
@@ -84,7 +95,7 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
     try {
       const { data, error } = await this.supabase.supabase
         .from('lista_espera')
-        .select('id, nombre, apellido, correo, fecha_ingreso')
+        .select('id, nombre, apellido, correo, fecha_ingreso, mesa_asignada')
         .order('fecha_ingreso', { ascending: true });
 
       if (error) {
@@ -112,17 +123,196 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
   formatearFecha(fecha: string): string {
     try {
       const fechaObj = new Date(fecha);
-      return fechaObj.toLocaleString('es-AR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'America/Argentina/Buenos_Aires'
-      });
+      const dia = fechaObj.getDate().toString().padStart(2, '0');
+      const mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+      const hora = fechaObj.getHours().toString().padStart(2, '0');
+      const minuto = fechaObj.getMinutes().toString().padStart(2, '0');
+      return `${dia}/${mes} ${hora}:${minuto}`;
     } catch (error) {
       return fecha;
     }
+  }
+
+  async abrirModalMesasDisponibles() {
+    this.loadingService.show();
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('mesas')
+        .select('*')
+        .eq('ocupada', false)
+        .order('numero', { ascending: true });
+      
+      if (error) {
+        console.error('Error al cargar mesas:', error);
+        this.mostrarMensajeErrorQR('Error al cargar las mesas disponibles.');
+        return;
+      }
+      
+      this.mesasDisponibles = data || [];
+      this.mostrarModalMesas = true;
+    } catch (error) {
+      console.error('Error inesperado:', error);
+      this.mostrarMensajeErrorQR('Error inesperado al cargar las mesas.');
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  cerrarModalMesasDisponibles() {
+    this.mostrarModalMesas = false;
+  }
+
+  async escanearParaDisponibilidadMesas() {
+    try {
+      this.loadingService.show();
+      const { barcodes } = await BarcodeScanner.scan();
+      if (barcodes.length > 0) {
+        const scannedCode = barcodes[0].displayValue;
+        if (scannedCode === 'disponibilidadMesas') {
+          await this.abrirModalMesasDisponibles();
+        } else {
+          this.mostrarMensajeErrorQR('El QR escaneado no es válido.');
+        }
+      } else {
+        this.mostrarMensajeErrorQR('No se detectó ningún código QR.');
+      }
+    } catch (error) {
+      this.mostrarMensajeErrorQR('Ocurrió un error al escanear el QR.');
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  async asignarClienteAMesa(mesa: any) {
+    try {
+      this.loadingService.show();
+      const { barcodes } = await BarcodeScanner.scan();
+      
+      if (barcodes.length > 0) {
+        const scannedCode = barcodes[0].displayValue;
+        
+        let qrValido = false;
+        
+        try {
+          const qrData = JSON.parse(scannedCode);
+          if (qrData.numeroMesa === mesa.numero) {
+            qrValido = true;
+          }
+        } catch (e) {
+          const expectedPattern = `numeroMesa: ${mesa.numero}`;
+          if (scannedCode.includes(expectedPattern)) {
+            qrValido = true;
+          }
+        }
+        
+        if (qrValido) {
+          await this.mostrarListaClientes(mesa);
+        } else {
+          this.mensajeErrorAsignacion = 'Código QR inválido';
+          setTimeout(() => {
+            this.mensajeErrorAsignacion = '';
+          }, 3000);
+        }
+      } else {
+        this.mensajeErrorAsignacion = 'No se detectó ningún código QR';
+        setTimeout(() => {
+          this.mensajeErrorAsignacion = '';
+        }, 3000);
+      }
+    } catch (error) {
+      this.mensajeErrorAsignacion = 'Error al escanear el QR';
+      setTimeout(() => {
+        this.mensajeErrorAsignacion = '';
+      }, 3000);
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  async mostrarListaClientes(mesa: any) {
+    try {
+      const { data: clientes, error } = await this.supabase.supabase
+        .from('lista_espera')
+        .select('id, nombre, apellido, correo')
+        .is('mesa_asignada', null);
+
+      if (error) {
+        this.mensajeErrorAsignacion = 'Error al cargar clientes';
+        return;
+      }
+
+      if (!clientes || clientes.length === 0) {
+        this.mensajeErrorAsignacion = 'No hay clientes disponibles para asignar';
+        return;
+      }
+
+      this.clientesDisponibles = clientes;
+      this.mesaSeleccionada = mesa;
+      this.mostrarModalClientes = true;
+      
+    } catch (error) {
+      this.mensajeErrorAsignacion = 'Error al mostrar lista de clientes';
+    }
+  }
+
+  async asignarMesaACliente(clienteId: number) {
+    try {
+      this.loadingService.show();
+      
+      const { error: errorCliente } = await this.supabase.supabase
+        .from('lista_espera')
+        .update({ mesa_asignada: this.mesaSeleccionada.numero })
+        .eq('id', clienteId);
+
+      if (errorCliente) {
+        this.mensajeErrorAsignacion = 'Error al asignar cliente a la mesa';
+        return;
+      }
+
+      const { error: errorMesa } = await this.supabase.supabase
+        .from('mesas')
+        .update({ ocupada: true })
+        .eq('numero', this.mesaSeleccionada.numero);
+
+      if (errorMesa) {
+        this.mensajeErrorAsignacion = 'Error al marcar mesa como ocupada';
+        return;
+      }
+
+      this.cerrarModalClientes();
+      this.cerrarModalMesasDisponibles();
+      this.cargarListaEspera();
+      
+      this.mostrarMensajeExito('Cliente asignado correctamente a la mesa.');
+      
+    } catch (error) {
+      this.mensajeErrorAsignacion = 'Error inesperado al asignar mesa';
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  cerrarModalClientes() {
+    this.mostrarModalClientes = false;
+    this.clientesDisponibles = [];
+    this.mesaSeleccionada = null;
+  }
+
+  mostrarMensajeExito(mensaje: string) {
+    const mensajeElement = document.createElement('div');
+    mensajeElement.className = 'qr-success-message';
+    mensajeElement.textContent = mensaje;
+    document.body.appendChild(mensajeElement);
+    
+    setTimeout(() => {
+      document.body.removeChild(mensajeElement);
+    }, 3000);
+  }
+
+  mostrarMensajeErrorQR(mensaje: string) {
+    this.mensajeErrorQR = mensaje;
+    setTimeout(() => {
+      this.mensajeErrorQR = '';
+    }, 4000);
   }
 }

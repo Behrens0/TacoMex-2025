@@ -78,7 +78,7 @@ export class EncuestasComponent implements OnInit {
   encuestaEnviada = false;
   mostrarImagenes = false;
   encuestaSeleccionada: Encuesta | null = null;
-  imagenAmpliada: string | null = null; // <-- Agrega esto
+  imagenAmpliada: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -141,7 +141,7 @@ export class EncuestasComponent implements OnInit {
   }
 
   async cargarEncuestas() {
-    this.loadingService.show(); // Usar el spinner personalizado
+    this.loadingService.show();
     try {
       const tablaCorrecta = await this.verificarTablas();
       if (!tablaCorrecta) {
@@ -181,7 +181,7 @@ export class EncuestasComponent implements OnInit {
       console.error('Error inesperado al cargar encuestas:', error);
       await this.mostrarAlerta('Error', `Error inesperado al cargar las encuestas: ${error}`);
     } finally {
-      this.loadingService.hide(); // Oculta el spinner
+      this.loadingService.hide();
     }
   }
 
@@ -269,7 +269,7 @@ export class EncuestasComponent implements OnInit {
       return;
     }
 
-    this.loadingService.show(); // Spinner al enviar
+    this.loadingService.show();
     
     try {
       const formData = this.encuestaForm.value;
@@ -332,7 +332,7 @@ export class EncuestasComponent implements OnInit {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       await this.mostrarAlerta('Error inesperado', `Error al enviar la encuesta: ${errorMessage}`);
     } finally {
-      this.loadingService.hide(); // Oculta el spinner
+      this.loadingService.hide();
     }
   }
 
@@ -347,11 +347,11 @@ export class EncuestasComponent implements OnInit {
 
   async mostrarEstadisticas() {
     this.mostrarGraficos = true;
-    this.loadingService.show(); // Spinner mientras carga y grafica
+    this.loadingService.show();
     await this.cargarEncuestas();
     setTimeout(() => {
       this.crearGraficos();
-      this.loadingService.hide(); // Oculta el spinner cuando termina
+      this.loadingService.hide();
     }, 500);
   }
 

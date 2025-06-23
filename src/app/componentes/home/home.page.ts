@@ -65,7 +65,7 @@ export class HomePage {
 
   irAEncuesta() {
     this.loadingService.show();
-    this.router.navigate(['/encuesta']);
+    this.router.navigate(['/encuestas']);
     this.loadingService.hide();
   }
 

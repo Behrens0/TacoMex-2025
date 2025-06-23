@@ -514,6 +514,11 @@ export class RegistroComponent {
     this.productoImagenesError = '';
   }
 
+  limpiarMensajeErrorMesa() {
+    this.mensajeErrorMesa = '';
+    this.mensajeExitoMesa = '';
+  }
+
   async registrarCliente() {
     this.limpiarErroresCliente();
 
@@ -539,7 +544,7 @@ export class RegistroComponent {
     }
 
     if (this.clienteForm.invalid) {
-      this.mensajeError = 'Por favor completa todos los campos requeridos correctamente.';
+      this.mensajeError = 'Por favor completa todos los campos requeridos correctamente';
       return;
     }
 
@@ -673,7 +678,7 @@ export class RegistroComponent {
     }
 
     if (this.empleadoForm.invalid) {
-      this.mensajeError = 'Por favor completa todos los campos requeridos correctamente.';
+      this.mensajeError = 'Por favor completa todos los campos requeridos correctamente';
       return;
     }
 
@@ -753,7 +758,7 @@ export class RegistroComponent {
     }
 
     if (this.supervisorForm.invalid) {
-      this.mensajeError = 'Por favor completa todos los campos requeridos correctamente.';
+      this.mensajeError = 'Por favor completa todos los campos requeridos correctamente';
       return;
     }
 
@@ -830,7 +835,7 @@ export class RegistroComponent {
     }
 
     if (this.mesaForm.invalid) {
-      this.mensajeErrorMesa = 'Por favor completa todos los campos requeridos correctamente.';
+      this.mensajeErrorMesa = 'Por favor completa todos los campos requeridos correctamente';
       return;
     }
 
@@ -839,6 +844,17 @@ export class RegistroComponent {
     try {
       const { numero, comensales, tipo } = this.mesaForm.value;
       const archivo: File = this.mesaForm.value.imagen;
+
+      const { data: mesaExistente } = await this.sb.supabase
+        .from('mesas')
+        .select('id')
+        .eq('numero', numero)
+        .single();
+      if (mesaExistente) {
+        this.mensajeErrorMesa = 'Número de mesa ya registrada';
+        this.loadingService.hide();
+        return;
+      }
 
       let imagenMesa = '';
       if (archivo) {
@@ -855,7 +871,15 @@ export class RegistroComponent {
 
       try {
         const qrData = JSON.stringify({ numeroMesa: numero });
-        this.qrMesaURL = await toDataURL(qrData);
+        const qrDataUrl = await toDataURL(qrData, { width: 512 });
+        const qrBlob = dataURLtoBlob(qrDataUrl);
+        const qrFileName = `mesa-${numero}-qr.png`;
+        const { data: qrUpload, error: qrError } = await this.sb.supabase.storage
+          .from('qrs')
+          .upload(qrFileName, qrBlob, { upsert: true });
+        if (qrError) throw new Error(qrError.message);
+        const qrUrl = this.sb.supabase.storage.from('qrs').getPublicUrl(qrFileName).data.publicUrl;
+        this.qrMesaURL = qrUrl;
       } catch (err) {
         console.error(err);
         throw new Error('No se pudo generar el código QR.');
@@ -876,7 +900,7 @@ export class RegistroComponent {
         return;
       }
 
-      this.mensajeExitoMesa = 'Mesa registrada correctamente.';
+      this.mensajeExitoMesa = 'Mesa registrada correctamente';
       this.mesaForm.reset();
       this.imagenMesaURL = null;
       this.loadingService.hide();
@@ -907,7 +931,7 @@ export class RegistroComponent {
     }
 
     if (this.productoForm.invalid) {
-      this.mensajeErrorProducto = 'Por favor completa todos los campos requeridos correctamente.';
+      this.mensajeErrorProducto = 'Por favor completa todos los campos requeridos correctamente';
       return;
     }
 
@@ -944,7 +968,15 @@ export class RegistroComponent {
           precio: precio,
           tiempoElaboracion: tiempoElaboracion
         });
-        this.qrProductoURL = await toDataURL(qrData);
+        const qrDataUrl = await toDataURL(qrData, { width: 512 });
+        const qrBlob = dataURLtoBlob(qrDataUrl);
+        const qrFileName = `producto-${nombre}-qr.png`;
+        const { data: qrUpload, error: qrError } = await this.sb.supabase.storage
+          .from('qrs')
+          .upload(qrFileName, qrBlob, { upsert: true });
+        if (qrError) throw new Error(qrError.message);
+        const qrUrl = this.sb.supabase.storage.from('qrs').getPublicUrl(qrFileName).data.publicUrl;
+        this.qrProductoURL = qrUrl;
       } catch (err) {
         console.error(err);
         throw new Error('No se pudo generar el código QR del producto.');
@@ -1227,4 +1259,16 @@ export class RegistroComponent {
     if (tipo !== 'mesa') this.mesaForm.reset();
     if (tipo !== 'producto') this.productoForm.reset();
   }
+}
+
+function dataURLtoBlob(dataurl: string) {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)![1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
 }

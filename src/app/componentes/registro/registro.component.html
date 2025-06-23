@@ -199,7 +199,7 @@
         <ion-item>
           <ion-icon slot="start" name="grid-outline"></ion-icon>
           <ion-label position="floating">Número de mesa</ion-label>
-          <ion-input type="number" formControlName="numero"></ion-input>
+          <ion-input formControlName="numero" (ionInput)="limpiarMensajeErrorMesa()"></ion-input>
         </ion-item>
         <div class="field-error" *ngIf="mesaNumeroError">{{ mesaNumeroError }}</div>
 
@@ -253,12 +253,6 @@
           </ng-container>
         </ion-item>
         <div class="field-error" *ngIf="mesaImagenError">{{ mesaImagenError }}</div>
-
-        <!-- QR GENERADO -->
-        <ion-item *ngIf="qrMesaURL">
-          <ion-label>QR generado</ion-label>
-          <img [src]="qrMesaURL" alt="QR Mesa" style="width:64px;height:64px;margin-left:8px;" />
-        </ion-item>
 
         <!-- ERROR -->
         <div class="error-message" *ngIf="mensajeErrorMesa">{{ mensajeErrorMesa }}</div>
@@ -437,12 +431,6 @@
             </div>
           </div>
         </div>
-
-        <!-- QR GENERADO -->
-        <ion-item *ngIf="qrProductoURL">
-          <ion-label>QR generado</ion-label>
-          <img [src]="qrProductoURL" alt="QR Producto" style="width:64px;height:64px;margin-left:8px;" />
-        </ion-item>
 
         <!-- ERROR -->
         <div class="error-message" *ngIf="mensajeErrorProducto">{{ mensajeErrorProducto }}</div>

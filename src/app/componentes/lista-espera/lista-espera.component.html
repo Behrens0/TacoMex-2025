@@ -22,8 +22,8 @@
       <div class="table-header">
         <div class="header-cell">Nombre</div>
         <div class="header-cell">Apellido</div>
-        <!-- <div class="header-cell">Correo</div> -->
         <div class="header-cell">Fecha</div>
+        <div class="header-cell">Mesa</div>
       </div>
 
       <div class="table-body">
@@ -33,11 +33,75 @@
           [class.odd]="i % 2 === 0"
           [class.even]="i % 2 === 1">
           <div class="table-cell nombre">{{ cliente.nombre }}</div>
-          <div class="table-cell apellido">{{ cliente.apellido }}</div>
-          <!-- <div class="table-cell correo">{{ cliente.correo }}</div> -->
+          <div class="table-cell apellido">{{ cliente.apellido ? cliente.apellido : '-' }}</div>
           <div class="table-cell fecha">{{ formatearFecha(cliente.fecha_ingreso) }}</div>
+          <div class="table-cell mesa">{{ cliente.mesa_asignada ? cliente.mesa_asignada : '-' }}</div>
         </div>
       </div>
     </div>
+
+    <ion-button expand="block" (click)="escanearParaDisponibilidadMesas()">Mesas disponibles</ion-button>
+    <div *ngIf="mensajeErrorQR" class="qr-error-message">{{ mensajeErrorQR }}</div>
+    <ion-modal [isOpen]="mostrarModalMesas" (didDismiss)="cerrarModalMesasDisponibles()">
+      <ng-template>
+        <ion-content>
+          <div class="modal-title-container">
+            <ion-button fill="clear" class="close-button" (click)="cerrarModalMesasDisponibles()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+            <h2 class="modal-title">Mesas disponibles</h2>
+          </div>
+          <div *ngIf="mesasDisponibles.length > 0" class="mesas-container">
+            <div *ngFor="let mesa of mesasDisponibles" class="mesa-item">
+              <div class="mesa-datos">
+                <div class="mesa-titulo">Mesa N° {{ mesa.numero }}</div>
+                <div class="mesa-info">
+                  {{ mesa.tipo | titlecase }} ({{ mesa.comensales }} comensales)
+                </div>
+              </div>
+              <div *ngIf="mesa.imagen" class="mesa-imagen">
+                <img [src]="mesa.imagen" alt="Imagen Mesa" />
+              </div>
+              <div class="mesa-acciones">
+                <ion-button expand="block" fill="outline" color="success" (click)="asignarClienteAMesa(mesa)">
+                  <ion-icon name="person-add" slot="start"></ion-icon>
+                  Asignar a cliente
+                </ion-button>
+                <div *ngIf="mensajeErrorAsignacion" class="error-asignacion">{{ mensajeErrorAsignacion }}</div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="mesasDisponibles.length === 0" class="modal-empty">
+            No hay mesas disponibles.
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <!-- Modal para lista de clientes -->
+    <ion-modal [isOpen]="mostrarModalClientes" (didDismiss)="cerrarModalClientes()">
+      <ng-template>
+        <ion-content>
+          <div class="modal-title-container">
+            <ion-button fill="clear" class="close-button" (click)="cerrarModalClientes()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+            <h2 class="modal-title">Asignar cliente a Mesa {{ mesaSeleccionada?.numero }}</h2>
+          </div>
+          <div class="clientes-container">
+            <div *ngFor="let cliente of clientesDisponibles" class="cliente-item" (click)="asignarMesaACliente(cliente.id)">
+              <div class="cliente-info">
+                <div class="cliente-nombre">{{ cliente.nombre }} {{ cliente.apellido || '' }}</div>
+                <div class="cliente-correo">{{ cliente.correo }}</div>
+              </div>
+              <ion-icon name="chevron-forward" class="cliente-arrow"></ion-icon>
+            </div>
+          </div>
+          <div *ngIf="clientesDisponibles.length === 0" class="modal-empty">
+            No hay clientes disponibles.
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
   </div>
 </ion-content>
