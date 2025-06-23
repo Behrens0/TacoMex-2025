@@ -175,24 +175,6 @@ ion-content {
   }
 }
 
-.footer-actions {
-  text-align: center;
-  
-  ion-button {
-    --border-color: #6CC272;
-    --color: #6CC272;
-    --border-radius: 8px;
-    --padding-top: 12px;
-    --padding-bottom: 12px;
-    font-weight: 500;
-    
-    ion-icon {
-      margin-right: 8px;
-    }
-  }
-}
-
-/* Responsive design */
 @media (max-width: 768px) {
   .lista-espera-container {
     padding: 15px;

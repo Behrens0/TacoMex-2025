@@ -211,9 +211,30 @@ ion-textarea {
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   
-  h3 {
-    text-align: center;
+  .estadisticas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+    
+    h3 {
+      margin: 0;
+      text-align: left;
+    }
+    
+    .btn-ocultar {
+      --color: #666;
+      --padding-start: 12px;
+      --padding-end: 12px;
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      
+      ion-icon {
+        margin-right: 5px;
+      }
+    }
   }
   
   ion-card {
@@ -237,6 +258,9 @@ ion-textarea {
       
       canvas {
         max-height: 300px;
+        width: 100% !important;
+        height: 300px !important;
+        display: block !important;
       }
     }
   }
@@ -292,10 +316,60 @@ ion-textarea {
   }
   
   .graficos-section {
-    padding: 15px;
+    padding: 10px;
+    
+    .estadisticas-header {
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
+      
+      h3 {
+        text-align: center;
+        font-size: 16px;
+      }
+      
+      .btn-ocultar {
+        align-self: center;
+        font-size: 12px;
+      }
+    }
     
     ion-card-content canvas {
-      max-height: 250px;
+      max-height: 200px;
+    }
+  }
+  
+  .imagenes-section {
+    .imagenes-grid {
+      gap: 8px;
+      
+      .imagen-item .btn-imagen {
+        font-size: 12px;
+        --padding-start: 12px;
+        --padding-end: 12px;
+      }
+    }
+  }
+  
+  .modal-imagenes {
+    padding: 10px;
+    
+    .modal-content {
+      .modal-header {
+        padding: 12px 15px;
+        
+        h4 {
+          font-size: 16px;
+        }
+      }
+      
+      .modal-body {
+        padding: 15px;
+        
+        .imagenes-container .imagen-modal ion-img {
+          max-height: 300px;
+        }
+      }
     }
   }
 }
@@ -329,4 +403,189 @@ ion-textarea {
       max-height: 200px;
     }
   }
+  
+  .imagenes-section {
+    .imagenes-grid {
+      gap: 6px;
+      
+      .imagen-item .btn-imagen {
+        font-size: 11px;
+        --padding-start: 10px;
+        --padding-end: 10px;
+      }
+    }
+  }
+  
+  .modal-imagenes {
+    padding: 5px;
+    
+    .modal-content {
+      .modal-header {
+        padding: 10px 12px;
+        
+        h4 {
+          font-size: 14px;
+        }
+      }
+      
+      .modal-body {
+        padding: 12px;
+        
+        .imagenes-container .imagen-modal ion-img {
+          max-height: 250px;
+        }
+      }
+    }
+  }
+}
+
+.btn-nueva-encuesta {
+  --color: #2196F3;
+  --border-radius: 8px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  
+  ion-icon {
+    margin-right: 8px;
+  }
+}
+
+.imagenes-section {
+  margin-top: 30px;
+  
+  h3 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .imagenes-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    
+    .imagen-item {
+      .btn-imagen {
+        --border-color: #FF9800;
+        --color: #FF9800;
+        --border-radius: 20px;
+        --padding-start: 15px;
+        --padding-end: 15px;
+        --padding-top: 8px;
+        --padding-bottom: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        
+        ion-icon {
+          margin-right: 5px;
+        }
+      }
+    }
+  }
+}
+
+.modal-imagenes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+      
+      h4 {
+        margin: 0;
+        color: #333;
+        font-size: 18px;
+        font-weight: bold;
+      }
+      
+      ion-button {
+        --color: #666;
+        --padding-start: 8px;
+        --padding-end: 8px;
+        --padding-top: 8px;
+        --padding-bottom: 8px;
+        min-width: 32px;
+        height: 32px;
+        
+        ion-icon {
+          font-size: 18px;
+        }
+      }
+    }
+    
+    .modal-body {
+      padding: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+      
+      .imagenes-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        
+        .imagen-modal {
+          text-align: center;
+          
+          ion-img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          }
+          
+          p {
+            margin: 10px 0 0 0;
+            color: #666;
+            font-weight: 500;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.cargando-estadisticas {
+  padding: 25px 10px;
+  
+  ion-icon {
+    font-size: 40px;
+  }
+  
+  h3 {
+    font-size: 14px;
+  }
+  
+  .loading-text {
+    font-size: 0.9rem;
+  }
+}
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
 }

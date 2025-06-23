@@ -8,22 +8,22 @@
       <h2>Lista de Espera</h2>
     </div>
 
-    <div *ngIf="loading" class="loading-container">
+    <div *ngIf="cargando" class="loading-container">
       <p>Cargando lista de espera...</p>
     </div>
 
-    <div *ngIf="!loading && listaEspera.length === 0" class="empty-state">
+    <div *ngIf="!cargando && listaEspera.length === 0" class="empty-state">
       <ion-icon name="list-outline" class="empty-icon"></ion-icon>
       <h3>No hay clientes en lista de espera</h3>
       <p>La lista de espera está vacía</p>
     </div>
 
-    <div *ngIf="!loading && listaEspera.length > 0" class="table-container">
+    <div *ngIf="!cargando && listaEspera.length > 0" class="table-container">
       <div class="table-header">
         <div class="header-cell">Nombre</div>
         <div class="header-cell">Apellido</div>
         <div class="header-cell">Correo</div>
-        <div class="header-cell">Fecha de Ingreso</div>
+        <div class="header-cell">Fecha</div>
       </div>
 
       <div class="table-body">
@@ -38,17 +38,6 @@
           <div class="table-cell fecha">{{ formatearFecha(cliente.fecha_ingreso) }}</div>
         </div>
       </div>
-    </div>
-
-    <div class="footer-actions">
-      <ion-button 
-        expand="block" 
-        fill="outline"
-        (click)="cargarListaEspera()"
-        [disabled]="loading">
-        <ion-icon name="refresh"></ion-icon>
-        Actualizar Lista
-      </ion-button>
     </div>
   </div>
 </ion-content>

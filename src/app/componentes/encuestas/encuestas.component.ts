@@ -77,6 +77,9 @@ export class EncuestasComponent implements OnInit {
   mensajeExito = '';
   mostrarMensajeExito = false;
   encuestaEnviada = false;
+  mostrarImagenes = false;
+  encuestaSeleccionada: Encuesta | null = null;
+  cargandoEstadisticas = false;
 
   constructor(
     private fb: FormBuilder,
@@ -140,21 +143,51 @@ export class EncuestasComponent implements OnInit {
 
   async cargarEncuestas() {
     this.loading = true;
+    console.log('Iniciando carga de encuestas...');
+    
     try {
+      const tablaCorrecta = await this.verificarTablas();
+      
+      if (!tablaCorrecta) {
+        await this.mostrarAlerta('Error', 'No se encontró la tabla de encuestas. Contacte al administrador.');
+        return;
+      }
+      
       const { data, error } = await this.supabase.supabase
-        .from('encuesta_satisfaccion')
-        .select('nombre, apellido, correo, satisfaccion_general, calidad_comida, calidad_servicio, ambiente, recomendacion, volverias, tipo_visita, comentario, imagenes')
-        .order('created_at', { ascending: false });
+        .from(tablaCorrecta)
+        .select('*');
+
+      console.log('Respuesta de Supabase:', { data, error });
 
       if (error) {
         console.error('Error al cargar encuestas:', error);
-        await this.mostrarAlerta('Error', 'No se pudieron cargar las encuestas existentes.');
+        console.error('Detalles del error:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        
+        if (error.code === 'PGRST116') {
+          await this.mostrarAlerta('Error', 'La tabla de encuestas no existe. Contacte al administrador.');
+        } else if (error.code === '42501') {
+          await this.mostrarAlerta('Error', 'No tiene permisos para acceder a las encuestas.');
+        } else {
+          await this.mostrarAlerta('Error', `No se pudieron cargar las encuestas: ${error.message}`);
+        }
       } else {
+        console.log('Encuestas cargadas exitosamente:', data?.length || 0, 'encuestas');
         this.encuestas = data || [];
+        
+        if (this.encuestas.length === 0) {
+          console.log('No hay encuestas en la base de datos');
+        } else {
+          console.log('Primera encuesta:', this.encuestas[0]);
+        }
       }
     } catch (error) {
-      console.error('Error inesperado:', error);
-      await this.mostrarAlerta('Error', 'Error inesperado al cargar las encuestas.');
+      console.error('Error inesperado al cargar encuestas:', error);
+      await this.mostrarAlerta('Error', `Error inesperado al cargar las encuestas: ${error}`);
     } finally {
       this.loading = false;
     }
@@ -300,7 +333,6 @@ export class EncuestasComponent implements OnInit {
           volverias: true
         });
         this.fotos = [];
-        this.mostrarGraficos = true;
         this.encuestaEnviada = true;
       }
     } catch (error) {
@@ -322,41 +354,233 @@ export class EncuestasComponent implements OnInit {
   }
 
   async mostrarEstadisticas() {
+    console.log('Mostrando estadísticas...');
     this.mostrarGraficos = true;
+    this.cargandoEstadisticas = true;
     await this.cargarEncuestas();
+    console.log('Encuestas cargadas:', this.encuestas.length);
+    
     setTimeout(() => {
+      console.log('Iniciando creación de gráficos...');
       this.crearGraficos();
-    }, 100);
+      this.cargandoEstadisticas = false;
+    }, 500);
+  }
+
+  ocultarEstadisticas() {
+    this.mostrarGraficos = false;
+    this.encuestas = [];
+    this.mostrarImagenes = false;
+    this.encuestaSeleccionada = null;
+    this.cargandoEstadisticas = false;
   }
 
   crearGraficos() {
-    if (this.encuestas.length === 0) return;
+    if (this.encuestas.length === 0) {
+      console.log('No hay encuestas para mostrar gráficos');
+      return;
+    }
 
-    const ctx1 = document.getElementById('satisfaccionChart') as HTMLCanvasElement;
-    if (ctx1) {
-      new Chart(ctx1, {
+    console.log('Creando gráficos con', this.encuestas.length, 'encuestas');
+
+    setTimeout(() => {
+      this.crearGraficoSatisfaccion();
+      this.crearGraficoCalidadComida();
+      this.crearGraficoCalidadServicio();
+      this.crearGraficoAmbiente();
+      this.crearGraficoRecomendacion();
+      this.crearGraficoVolveria();
+    }, 200);
+  }
+
+  crearGraficoSatisfaccion() {
+    const ctx = document.getElementById('satisfaccionChart') as HTMLCanvasElement;
+    if (!ctx) {
+      console.error('No se encontró el elemento canvas satisfaccionChart');
+      return;
+    }
+
+    try {
+      new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
           datasets: [{
             label: 'Satisfacción General',
             data: this.calcularDistribucion('satisfaccion_general'),
-            backgroundColor: 'rgba(76, 175, 80, 0.8)'
+            backgroundColor: 'rgba(76, 175, 80, 0.8)',
+            borderColor: 'rgba(76, 175, 80, 1)',
+            borderWidth: 1
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           scales: {
             y: {
-              beginAtZero: true
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
             }
           }
         }
       });
+      console.log('Gráfico de satisfacción general creado exitosamente');
+    } catch (error) {
+      console.error('Error al crear gráfico de satisfacción general:', error);
+    }
+  }
+
+  crearGraficoCalidadComida() {
+    const ctx = document.getElementById('calidadComidaChart') as HTMLCanvasElement;
+    if (!ctx) {
+      console.error('No se encontró el elemento canvas calidadComidaChart');
+      return;
     }
 
+    try {
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+          datasets: [{
+            label: 'Calidad de la Comida',
+            data: this.calcularDistribucion('calidad_comida'),
+            backgroundColor: 'rgba(255, 152, 0, 0.8)',
+            borderColor: 'rgba(255, 152, 0, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          }
+        }
+      });
+      console.log('Gráfico de calidad de comida creado exitosamente');
+    } catch (error) {
+      console.error('Error al crear gráfico de calidad de comida:', error);
+    }
+  }
+
+  crearGraficoCalidadServicio() {
+    const ctx = document.getElementById('calidadServicioChart') as HTMLCanvasElement;
+    if (!ctx) {
+      console.error('No se encontró el elemento canvas calidadServicioChart');
+      return;
+    }
+
+    try {
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+          datasets: [{
+            label: 'Calidad del Servicio',
+            data: this.calcularDistribucion('calidad_servicio'),
+            backgroundColor: 'rgba(33, 150, 243, 0.8)',
+            borderColor: 'rgba(33, 150, 243, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          }
+        }
+      });
+      console.log('Gráfico de calidad de servicio creado exitosamente');
+    } catch (error) {
+      console.error('Error al crear gráfico de calidad de servicio:', error);
+    }
+  }
+
+  crearGraficoAmbiente() {
+    const ctx = document.getElementById('ambienteChart') as HTMLCanvasElement;
+    if (!ctx) {
+      console.error('No se encontró el elemento canvas ambienteChart');
+      return;
+    }
+
+    try {
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+          datasets: [{
+            label: 'Ambiente',
+            data: this.calcularDistribucion('ambiente'),
+            backgroundColor: 'rgba(156, 39, 176, 0.8)',
+            borderColor: 'rgba(156, 39, 176, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          }
+        }
+      });
+      console.log('Gráfico de ambiente creado exitosamente');
+    } catch (error) {
+      console.error('Error al crear gráfico de ambiente:', error);
+    }
+  }
+
+  crearGraficoRecomendacion() {
     const ctx2 = document.getElementById('recomendacionChart') as HTMLCanvasElement;
-    if (ctx2) {
+    if (!ctx2) {
+      console.error('No se encontró el elemento canvas recomendacionChart');
+      return;
+    }
+
+    try {
       const recomendaciones = this.encuestas.map(e => e.recomendacion);
       const distribucion = {
         'Definitivamente sí': recomendaciones.filter(r => r === 'Definitivamente sí').length,
@@ -378,24 +602,43 @@ export class EncuestasComponent implements OnInit {
               'rgba(255, 193, 7, 0.8)',
               'rgba(255, 152, 0, 0.8)',
               'rgba(244, 67, 54, 0.8)'
-            ]
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
           }]
         },
         options: {
-          responsive: true
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom'
+            }
+          }
         }
       });
+      console.log('Gráfico de recomendación creado exitosamente');
+    } catch (error) {
+      console.error('Error al crear gráfico de recomendación:', error);
+    }
+  }
+
+  crearGraficoVolveria() {
+    const ctx = document.getElementById('volveriaChart') as HTMLCanvasElement;
+    if (!ctx) {
+      console.error('No se encontró el elemento canvas volveriaChart');
+      return;
     }
 
-    const ctx3 = document.getElementById('volveriaChart') as HTMLCanvasElement;
-    if (ctx3) {
+    try {
       const volveria = this.encuestas.map(e => e.volverias);
       const distribucion = {
-        'Sí': volveria.filter(v => v).length,
-        'No': volveria.filter(v => !v).length
+        'Sí': volveria.filter(v => v === true).length,
+        'No': volveria.filter(v => v === false).length
       };
 
-      new Chart(ctx3, {
+      new Chart(ctx, {
         type: 'pie',
         data: {
           labels: Object.keys(distribucion),
@@ -404,13 +647,25 @@ export class EncuestasComponent implements OnInit {
             backgroundColor: [
               'rgba(76, 175, 80, 0.8)',
               'rgba(244, 67, 54, 0.8)'
-            ]
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
           }]
         },
         options: {
-          responsive: true
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'bottom'
+            }
+          }
         }
       });
+      console.log('Gráfico de volvería creado exitosamente');
+    } catch (error) {
+      console.error('Error al crear gráfico de volvería:', error);
     }
   }
 
@@ -442,5 +697,47 @@ export class EncuestasComponent implements OnInit {
     this.fotos = [];
     this.mensajeExito = '';
     this.mostrarMensajeExito = false;
+  }
+
+  async verificarTablas() {
+    console.log('Verificando tablas disponibles...');
+    
+    try {
+      const tablas = ['encuesta_satisfaccion', 'encuestas', 'survey', 'encuesta'];
+      
+      for (const tabla of tablas) {
+        try {
+          const { data, error } = await this.supabase.supabase
+            .from(tabla)
+            .select('count')
+            .limit(1);
+          
+          if (!error) {
+            console.log(`✅ Tabla "${tabla}" existe`);
+            return tabla;
+          } else {
+            console.log(`❌ Tabla "${tabla}" no existe:`, error.message);
+          }
+        } catch (e) {
+          console.log(`❌ Error al verificar tabla "${tabla}":`, e);
+        }
+      }
+      
+      console.log('❌ No se encontró ninguna tabla de encuestas');
+      return null;
+    } catch (error) {
+      console.error('Error al verificar tablas:', error);
+      return null;
+    }
+  }
+
+  mostrarImagenesEncuesta(encuesta: Encuesta) {
+    this.encuestaSeleccionada = encuesta;
+    this.mostrarImagenes = true;
+  }
+
+  cerrarImagenes() {
+    this.mostrarImagenes = false;
+    this.encuestaSeleccionada = null;
   }
 }

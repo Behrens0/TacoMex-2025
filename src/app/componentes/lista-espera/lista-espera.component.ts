@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonContent, IonList, IonItem, IonLabel, IonHeader, IonToolbar, IonTitle, IonButton, IonIcon, IonBackButton, IonButtons } from '@ionic/angular/standalone';
 import { SupabaseService } from '../../servicios/supabase.service';
@@ -33,9 +33,10 @@ interface ClienteEnLista {
   ],
   standalone: true
 })
-export class ListaEsperaComponent implements OnInit {
+export class ListaEsperaComponent implements OnInit, OnDestroy {
   listaEspera: ClienteEnLista[] = [];
-  loading: boolean = false;
+  cargando: boolean = false;
+  private intervaloId: any;
 
   constructor(
     private supabase: SupabaseService,
@@ -45,15 +46,40 @@ export class ListaEsperaComponent implements OnInit {
 
   ngOnInit() {
     this.cargarListaEspera();
+    this.iniciarActualizacionAutomatica();
+  }
+
+  ngOnDestroy() {
+    this.detenerActualizacionAutomatica();
   }
 
   ionViewWillEnter() {
     this.cargarListaEspera();
+    this.iniciarActualizacionAutomatica();
   }
 
-  async cargarListaEspera() {
-    this.loading = true;
-    this.loadingService.show();
+  ionViewWillLeave() {
+    this.detenerActualizacionAutomatica();
+  }
+
+  private iniciarActualizacionAutomatica() {
+    this.intervaloId = setInterval(() => {
+      this.cargarListaEspera(false);
+    }, 10000);
+  }
+
+  private detenerActualizacionAutomatica() {
+    if (this.intervaloId) {
+      clearInterval(this.intervaloId);
+      this.intervaloId = null;
+    }
+  }
+
+  async cargarListaEspera(mostrarCargando: boolean = true) {
+    if (mostrarCargando) {
+      this.cargando = true;
+      this.loadingService.show();
+    }
 
     try {
       const { data, error } = await this.supabase.supabase
@@ -71,12 +97,15 @@ export class ListaEsperaComponent implements OnInit {
       console.error('Error inesperado:', error);
       this.listaEspera = [];
     } finally {
-      this.loading = false;
-      this.loadingService.hide();
+      if (mostrarCargando) {
+        this.cargando = false;
+        this.loadingService.hide();
+      }
     }
   }
 
   volverAHome() {
+    this.detenerActualizacionAutomatica();
     this.router.navigate(['/home']);
   }
 
