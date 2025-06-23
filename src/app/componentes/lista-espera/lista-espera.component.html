@@ -22,7 +22,7 @@
       <div class="table-header">
         <div class="header-cell">Nombre</div>
         <div class="header-cell">Apellido</div>
-        <div class="header-cell">Correo</div>
+        <!-- <div class="header-cell">Correo</div> -->
         <div class="header-cell">Fecha</div>
       </div>
 
@@ -34,7 +34,7 @@
           [class.even]="i % 2 === 1">
           <div class="table-cell nombre">{{ cliente.nombre }}</div>
           <div class="table-cell apellido">{{ cliente.apellido }}</div>
-          <div class="table-cell correo">{{ cliente.correo }}</div>
+          <!-- <div class="table-cell correo">{{ cliente.correo }}</div> -->
           <div class="table-cell fecha">{{ formatearFecha(cliente.fecha_ingreso) }}</div>
         </div>
       </div>

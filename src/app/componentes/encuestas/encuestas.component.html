@@ -1,18 +1,20 @@
 <ion-content>
-  <ion-button fill="clear" class="back-button" (click)="volverAHome()">
-    <ion-icon name="arrow-back"></ion-icon>
-    Volver
-  </ion-button>
+  <div class="volver-wrapper">
+    <ion-button fill="clear" class="back-button" (click)="volverAHome()">
+      <ion-icon name="arrow-back"></ion-icon>
+      Volver
+    </ion-button>
+  </div>
 
   <div class="encuesta-container">
-    <h2>Encuesta de Satisfacción</h2>
+    <h2 class="titulo-encuesta">Encuesta de Satisfacción</h2>
     
     <div *ngIf="mostrarMensajeExito" class="mensaje-exito">
       <ion-icon name="checkmark-circle"></ion-icon>
       <span>{{ mensajeExito }}</span>
     </div>
     
-    <form *ngIf="!encuestaEnviada" [formGroup]="encuestaForm" (ngSubmit)="enviarEncuesta()">
+    <form *ngIf="!encuestaEnviada" [formGroup]="encuestaForm" (ngSubmit)="enviarEncuesta()" class="form-centrado form-grande">
       <ion-item>
         <ion-label position="stacked">
           Satisfacción General (1-10): {{ encuestaForm.get('satisfaccion_general')?.value }}
@@ -23,7 +25,7 @@
           max="10" 
           step="1"
           snaps="true"
-          color="primary">
+          >
           <ion-label slot="start">1</ion-label>
           <ion-label slot="end">10</ion-label>
         </ion-range>
@@ -39,7 +41,7 @@
           max="10" 
           step="1"
           snaps="true"
-          color="primary">
+          >
           <ion-label slot="start">1</ion-label>
           <ion-label slot="end">10</ion-label>
         </ion-range>
@@ -55,7 +57,7 @@
           max="10" 
           step="1"
           snaps="true"
-          color="primary">
+          >
           <ion-label slot="start">1</ion-label>
           <ion-label slot="end">10</ion-label>
         </ion-range>
@@ -71,7 +73,7 @@
           max="10" 
           step="1"
           snaps="true"
-          color="primary">
+          >
           <ion-label slot="start">1</ion-label>
           <ion-label slot="end">10</ion-label>
         </ion-range>
@@ -79,33 +81,29 @@
 
       <ion-item>
         <ion-label position="stacked">¿Recomendaría este restaurante?</ion-label>
-        <ion-radio-group formControlName="recomendacion">
-          <ion-item>
-            <ion-radio value="Definitivamente sí"></ion-radio>
-            <ion-label>Definitivamente sí</ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="Probablemente sí"></ion-radio>
-            <ion-label>Probablemente sí</ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="No estoy seguro"></ion-radio>
-            <ion-label>No estoy seguro</ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="Probablemente no"></ion-radio>
-            <ion-label>Probablemente no</ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-radio value="Definitivamente no"></ion-radio>
-            <ion-label>Definitivamente no</ion-label>
-          </ion-item>
+        <ion-radio-group formControlName="recomendacion" class="radio-group-full">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="12" *ngFor="let opcion of [
+                'Definitivamente sí',
+                'Probablemente sí',
+                'No estoy seguro',
+                'Probablemente no',
+                'Definitivamente no'
+              ]">
+                <ion-item lines="none" class="radio-item-full">
+                  <ion-radio slot="start" [value]="opcion"></ion-radio>
+                  <ion-label>{{ opcion }}</ion-label>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </ion-radio-group>
       </ion-item>
 
-      <ion-item>
-        <ion-checkbox formControlName="volverias"></ion-checkbox>
-        <ion-label>¿Volvería a visitar este restaurante?</ion-label>
+      <ion-item lines="none" class="checkbox-item-centrado">
+        <ion-checkbox slot="start" formControlName="volverias"></ion-checkbox>
+        <ion-label class="checkbox-label">¿Volvería a visitar este restaurante?</ion-label>
       </ion-item>
 
       <ion-item>
@@ -124,7 +122,7 @@
         <ion-label position="stacked">Comentarios adicionales (opcional)</ion-label>
         <ion-textarea 
           formControlName="comentario"
-          placeholder="Escriba sus comentarios aquí..."
+          placeholder="  Escriba sus comentarios aquí..."
           rows="4"
           maxlength="500">
         </ion-textarea>
@@ -157,10 +155,9 @@
       <ion-button 
         type="submit" 
         expand="block" 
-        [disabled]="!encuestaForm.valid || loading"
+        [disabled]="!encuestaForm.valid"
         class="btn-enviar">
-        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-        <span *ngIf="!loading">Enviar Encuesta</span>
+        <span>Enviar Encuesta</span>
       </ion-button>
     </form>
 
@@ -169,7 +166,7 @@
       expand="block" 
       fill="outline"
       (click)="mostrarEstadisticas()"
-      class="btn-estadisticas">
+      class="btn-estadisticas btn-blanco">
       <ion-icon name="bar-chart"></ion-icon>
       Ver Estadísticas
     </ion-button>
@@ -184,17 +181,7 @@
       Enviar Otra Encuesta
     </ion-button>
 
-    <div *ngIf="mostrarGraficos && cargandoEstadisticas" class="cargando-estadisticas">
-      <ion-icon name="stats-chart-outline"></ion-icon>
-      <h3>Cargando estadísticas</h3>
-      <div class="loading-text">
-        <span class="loading-dot">.</span>
-        <span class="loading-dot">.</span>
-        <span class="loading-dot">.</span>
-      </div>
-    </div>
-
-    <div *ngIf="mostrarGraficos && !cargandoEstadisticas && encuestas.length > 0" class="graficos-section">
+    <div *ngIf="mostrarGraficos && encuestas.length > 0" class="graficos-section">
       <div class="estadisticas-header">
         <h3>Estadísticas de Encuestas ({{ encuestas.length }} encuestas)</h3>
         <ion-button 
@@ -294,7 +281,7 @@
         </div>
       </div>
 
-      <!-- Modal de Imágenes -->
+      <!-- Modal de Imágenes de usuario (todas las imágenes grandes, una abajo de la otra) -->
       <div *ngIf="mostrarImagenes && encuestaSeleccionada" class="modal-imagenes">
         <div class="modal-content">
           <div class="modal-header">
@@ -304,8 +291,8 @@
             </ion-button>
           </div>
           <div class="modal-body">
-            <div class="imagenes-container">
-              <div *ngFor="let imagen of encuestaSeleccionada.imagenes; let i = index" class="imagen-modal">
+            <div class="imagenes-modal-lista">
+              <div *ngFor="let imagen of encuestaSeleccionada.imagenes; let i = index" class="imagen-modal-grande">
                 <ion-img [src]="imagen" [alt]="'Imagen ' + (i + 1)"></ion-img>
                 <p>Imagen {{ i + 1 }}</p>
               </div>
@@ -313,9 +300,19 @@
           </div>
         </div>
       </div>
+
+      <!-- Modal de imagen ampliada (una columna, imagen grande) -->
+      <div *ngIf="imagenAmpliada" class="modal-imagen-ampliada">
+        <div class="modal-imagen-content">
+          <ion-button fill="clear" size="small" class="cerrar-modal-imagen" (click)="cerrarImagenAmpliada()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+          <img [src]="imagenAmpliada" alt="Imagen ampliada" />
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="mostrarGraficos && !cargandoEstadisticas && encuestas.length === 0" class="no-encuestas">
+    <div *ngIf="mostrarGraficos && encuestas.length === 0" class="no-encuestas">
       <ion-icon name="stats-chart-outline"></ion-icon>
       <h3>No hay encuestas para mostrar estadísticas</h3>
       <p>Complete una encuesta para ver las estadísticas</p>

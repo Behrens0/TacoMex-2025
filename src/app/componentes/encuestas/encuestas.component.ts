@@ -71,7 +71,6 @@ export class EncuestasComponent implements OnInit {
   maxFotos = 3;
   encuestas: Encuesta[] = [];
   mostrarGraficos = false;
-  loading = false;
   user: any = null;
   clientInfo: any = null;
   mensajeExito = '';
@@ -79,7 +78,7 @@ export class EncuestasComponent implements OnInit {
   encuestaEnviada = false;
   mostrarImagenes = false;
   encuestaSeleccionada: Encuesta | null = null;
-  cargandoEstadisticas = false;
+  imagenAmpliada: string | null = null; // <-- Agrega esto
 
   constructor(
     private fb: FormBuilder,
@@ -142,23 +141,16 @@ export class EncuestasComponent implements OnInit {
   }
 
   async cargarEncuestas() {
-    this.loading = true;
-    console.log('Iniciando carga de encuestas...');
-    
+    this.loadingService.show(); // Usar el spinner personalizado
     try {
       const tablaCorrecta = await this.verificarTablas();
-      
       if (!tablaCorrecta) {
         await this.mostrarAlerta('Error', 'No se encontró la tabla de encuestas. Contacte al administrador.');
         return;
       }
-      
       const { data, error } = await this.supabase.supabase
         .from(tablaCorrecta)
         .select('*');
-
-      console.log('Respuesta de Supabase:', { data, error });
-
       if (error) {
         console.error('Error al cargar encuestas:', error);
         console.error('Detalles del error:', {
@@ -189,7 +181,7 @@ export class EncuestasComponent implements OnInit {
       console.error('Error inesperado al cargar encuestas:', error);
       await this.mostrarAlerta('Error', `Error inesperado al cargar las encuestas: ${error}`);
     } finally {
-      this.loading = false;
+      this.loadingService.hide(); // Oculta el spinner
     }
   }
 
@@ -277,7 +269,7 @@ export class EncuestasComponent implements OnInit {
       return;
     }
 
-    this.loadingService.show();
+    this.loadingService.show(); // Spinner al enviar
     
     try {
       const formData = this.encuestaForm.value;
@@ -340,7 +332,7 @@ export class EncuestasComponent implements OnInit {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       await this.mostrarAlerta('Error inesperado', `Error al enviar la encuesta: ${errorMessage}`);
     } finally {
-      this.loadingService.hide();
+      this.loadingService.hide(); // Oculta el spinner
     }
   }
 
@@ -354,16 +346,12 @@ export class EncuestasComponent implements OnInit {
   }
 
   async mostrarEstadisticas() {
-    console.log('Mostrando estadísticas...');
     this.mostrarGraficos = true;
-    this.cargandoEstadisticas = true;
+    this.loadingService.show(); // Spinner mientras carga y grafica
     await this.cargarEncuestas();
-    console.log('Encuestas cargadas:', this.encuestas.length);
-    
     setTimeout(() => {
-      console.log('Iniciando creación de gráficos...');
       this.crearGraficos();
-      this.cargandoEstadisticas = false;
+      this.loadingService.hide(); // Oculta el spinner cuando termina
     }, 500);
   }
 
@@ -372,7 +360,6 @@ export class EncuestasComponent implements OnInit {
     this.encuestas = [];
     this.mostrarImagenes = false;
     this.encuestaSeleccionada = null;
-    this.cargandoEstadisticas = false;
   }
 
   crearGraficos() {
@@ -739,5 +726,13 @@ export class EncuestasComponent implements OnInit {
   cerrarImagenes() {
     this.mostrarImagenes = false;
     this.encuestaSeleccionada = null;
+  }
+
+  abrirImagen(imagen: string) {
+    this.imagenAmpliada = imagen;
+  }
+
+  cerrarImagenAmpliada() { 
+    this.imagenAmpliada = null;
   }
 }
