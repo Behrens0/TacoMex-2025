@@ -572,33 +572,14 @@ export class RegistroComponent {
           return;
         }
 
-        // TEMPORALMENTE DESHABILITADO - Notificaciones push
-        /*
-        this.http.post('https://tacomex-2025.onrender.com/notify-owner', {
-          title: 'Nuevo Cliente Registrado',
-          body: `El cliente ${nuevoClienteAnonimo.nombre} ${nuevoClienteAnonimo.apellido} se ha registrado.`
-        }).subscribe({
-          next: (res) => console.log('Notification request sent', res),
-          error: (err) => console.error('Error sending notification request', err)
-        });
-        */
+        const contraseniaAnonimo = '123456';
+        await this.authService.registro(nuevoClienteAnonimo.correo, contraseniaAnonimo);
 
-        this.mensajeExito = 'Registro anónimo exitoso. Bienvenido!';
-        this.clienteForm.reset();
-        this.imagenURL = null;
+        await this.authService.logIn(nuevoClienteAnonimo.correo, contraseniaAnonimo);
+        this.loadingService.show();
+        this.router.navigate(['/home']);
         this.loadingService.hide();
-        
-        setTimeout(() => {
-          this.mensajeExito = '';
-        }, 6000);
-        
-        setTimeout(async () => {
-          try {
-            this.router.navigate(['/home']);
-          } catch (error) {
-            console.error('Error en navegación automática:', error);
-          }
-        }, 2000);
+        return;
       } catch (e) {
         this.mensajeError = 'Error inesperado: ' + (e as Error).message;
         console.error(e);

@@ -87,10 +87,22 @@ export class HomePage {
       if (!this.user) {
         this.router.navigateByUrl('/login');
       } else {
-        this.perfilUsuario = this.authService.getPerfilUsuario();
-        this.esBartender = this.authService.esUsuarioBartender();
-        this.esCocinero = this.authService.esUsuarioCocinero();
-        this.mostrarBotonRegistro = this.authService.puedeAccederARegistro() && this.router.url !== '/registro';
+        // const correo = this.user.email;
+        // if (correo) {
+        //   const { data: empleado } = await this.supabase.supabase
+        //     .from('empleados')
+        //     .select('id')
+        //     .eq('correo', correo)
+        //     .single();
+        //   if (empleado) {
+        //     this.router.navigate(['/encuestas']);
+        //     return;
+        //   }
+        // }
+        // this.perfilUsuario = this.authService.getPerfilUsuario();
+        // this.esBartender = this.authService.esUsuarioBartender();
+        // this.esCocinero = this.authService.esUsuarioCocinero();
+        // this.mostrarBotonRegistro = this.authService.puedeAccederARegistro() && this.router.url !== '/registro';
         
         // Inicializar notificaciones push si el usuario ya está logueado
         // TEMPORALMENTE DESHABILITADO
