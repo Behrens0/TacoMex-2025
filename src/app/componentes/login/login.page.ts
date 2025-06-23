@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -34,13 +34,14 @@ import {
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss']
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   loginForm: FormGroup;
   errorMessage: string = '';
   correo: string = '';
   contrasenia: string = '';
   correoError: string = '';
   contraseniaError: string = '';
+  showPassword: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -52,6 +53,9 @@ export class LoginPage {
       correo: ['', [Validators.required, Validators.email]],
       contrasenia: ['', Validators.required],
     });
+  }
+
+  ngOnInit() {
 
     this.loginForm.get('correo')?.valueChanges.subscribe(() => {
       this.validarCampo('correo');

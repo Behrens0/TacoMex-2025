@@ -16,7 +16,10 @@
         <ion-item>
           <ion-icon slot="start" name="lock-closed-outline"></ion-icon>
           <ion-label position="floating">Contraseña</ion-label>
-          <ion-input type="password" formControlName="contrasenia"></ion-input>
+          <ion-input [type]="showPassword ? 'text' : 'password'" formControlName="contrasenia"></ion-input>
+          <ion-button fill="clear" slot="end" size="small" (click)="showPassword = !showPassword" tabindex="-1">
+            <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+          </ion-button>
         </ion-item>
         <div class="field-error" *ngIf="contraseniaError">{{ contraseniaError }}</div>
 

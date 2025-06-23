@@ -25,7 +25,7 @@ export const routes: Routes = [
     loadComponent: () => import('./componentes/lista-espera/lista-espera.component').then(m => m.ListaEsperaComponent)
   },
   {
-    path: 'encuesta',
+    path: 'encuestas',
     loadComponent: () => import('./componentes/encuestas/encuestas.component').then(m => m.EncuestasComponent)
   },
 ];
