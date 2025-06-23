@@ -1,8 +1,52 @@
 /* === Fondo general === */
-html, body, .ion-page, ion-content {
-  --background: #0f4400 !important;
-  background: #0f4400 !important;
-  min-height: 100vh;
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100%;
+}
+
+.encuesta-container {
+  padding: 30px 20px 0 20px;
+  max-width: 500px;
+  margin: 0 auto 0 auto;    
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.graficos-section,
+.imagenes-section,
+.imagenes-grid,
+.imagenes-item,
+.no-encuestas {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.img-ampliada-wrapper {
+  background: transparent;
+  padding: 0;             
+  border-radius: 24px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.img-ampliada-wrapper img {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1/1;
+  object-fit: contain;
+  border: 4px solid #fff;
+  border-radius: 18px;
+  background: #23272b;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.10);
 }
 
 /* === Contenedor principal === */
@@ -20,25 +64,25 @@ html, body, .ion-page, ion-content {
 
 /* === Título === */
 .titulo-encuesta {
-  color: #fff;
-  background: #4CAF50;
-  border-radius: 12px;
-  padding: 18px 0;
+  color: #4CAF50;
+  background: none;
+  border-radius: 0;
+  padding: 0;
   width: 100%;
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: bold;
-  margin-bottom: 32px;
-  box-shadow: 0 2px 12px rgba(76, 175, 80, 0.18);
+  margin-bottom: 24px;
+  box-shadow: none;
   letter-spacing: 1px;
 }
 
 /* === Formularios === */
 form {
-  background: white;
+  background: rgb(67, 67, 67);
   border-radius: 12px;
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -194,7 +238,7 @@ h3 {
   margin: 20px 0 15px 0;
 }
 
-/* === Grilla de imágenes (botones de usuarios) === */
+/* === (botones de usuarios) === */
 .imagenes-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -235,7 +279,6 @@ h3 {
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   width: 96vw;
   max-width: 1100px;
-  min-height: 80vh;
   max-height: 96vh;
   overflow-y: auto;
   display: flex;
@@ -246,16 +289,24 @@ h3 {
 .modal-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 32px;
-  width: 90%;
-  max-width: 900px;
+  width: 100%;
+  position: relative;
 }
 .modal-header h4 {
   color: #4CAF50;
   font-size: 1.2rem;
   font-weight: bold;
-  margin: 0;
+  margin: 0 auto;
+  text-align: center;
+  flex: 1;
+}
+.modal-header ion-button {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .imagenes-modal-lista {
@@ -272,46 +323,100 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #fff;
-  border-radius: 18px;
-  padding: 0 0 24px 0;
-  box-shadow: 0 2px 12px rgba(34,139,34,0.12);
+  background: transparent;
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
 }
 
-.imagen-modal-grande ion-img {
+.imagen-modal-img-contenedor {
+  border-radius: 22px;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   max-width: 480px;
-  height: auto;
-  aspect-ratio: 1/1;
+  margin: 0 auto;
+}
+
+.imagen-modal-grande ion-img {
+  width: 320px;
+  height: 320px;
   object-fit: contain;
-  border-radius: 14px;
-  margin: 0 auto 18px auto;
-  box-shadow: 0 2px 8px rgba(34,139,34,0.10);
-  background: #adadad;
+  border-radius: 18px;
+  border: 4px solid #fff;
+  background: #23272b;
   display: block;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.10);
 }
 
 .imagen-modal-grande p {
   color: #4CAF50;
   font-weight: 600;
   font-size: 1.1rem;
-  margin: 0;
-  margin-top: 8px;
+  margin: 18px 0 0 0;
   text-align: center;
   background: transparent;
   width: 100%;
 }
 
+/* Para la imagen ampliada */
+.modal-imagen-content img {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  aspect-ratio: 1/1;
+  object-fit: contain;
+  border-radius: 18px;
+  border: 4px solid #fff;
+  background: #23272b;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.10);
+}
+
+.img-ampliada-wrapper {
+  background: transparent;
+  padding: 0;              
+  border-radius: 24px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.img-ampliada-wrapper img {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1/1;
+  object-fit: contain;
+  border: 4px solid #fff;
+  border-radius: 18px;
+  background: #23272b;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.10);
+}
+
+.modal-imagen-content {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 95vw;
+  max-height: 95vh;
+}
 /* === Botón Volver === */
 .volver-wrapper {
   display: flex;
   justify-content: flex-start;
   width: 100%;
   margin-top: 32px;
-  margin-bottom: 3px;
 }
 
 .back-button {
@@ -327,7 +432,6 @@ h3 {
 @media (max-width: 900px) {
   .modal-content {
     max-width: 99vw;
-    min-height: 70vh;
     padding: 18px 0 18px 0;
   }
   .modal-header {
@@ -362,4 +466,161 @@ h3 {
     aspect-ratio: 1/1;
     margin-bottom: 12px;
   }
+
+  .img-modal-real {
+    width: 90vw;
+    height: auto;
+    max-width: 96vw;
+    max-height: 60vw;
+  }
+}
+
+ion-content {
+  --background: #0f4400 !important;
+  background: #0f4400 !important;
+  min-height: 100vh;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.no-encuestas {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.estadisticas-header h3 {
+  font-size: 1.1rem !important;
+  margin: 10px 0 10px 0 !important;
+}
+
+.btn-foto {
+  --background: #fff;
+  --color: #4CAF50;
+  --border-color: #4CAF50;
+  --border-radius: 8px;
+  font-weight: bold;
+  margin: 0 auto;
+  display: block;
+  text-align: center;
+}
+.fotos-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+}
+
+ion-card {
+  --background: #23272b !important;
+  background: #23272b !important;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+
+ion-card-title{
+  color: #fff !important;
+}
+
+.fotos-section {
+  h3 {
+    color: #4CAF50;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+  .fotos-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.foto-item {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e0e0e0;
+  background: #23272b;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+
+  ion-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+  }
+
+  ion-button {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 10;
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    min-width: 22px;
+    height: 22px;
+    --border-radius: 50%;
+    --background: rgba(255,255,255,0.7);
+
+    ion-icon {
+      font-size: 18px;
+      color: #e53935;
+    }
+  }
+}
+
+.img-modal-real {
+  width: 320px;
+  height: 320px;
+  object-fit: contain;
+  border-radius: 18px;
+  border: 4px solid #111;
+  background: #23272b;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(34,139,34,0.10);
+}
+
+.imagenes-section {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.imagenes-grid {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.imagenes-section,
+.imagenes-grid,
+.graficos-section,
+.encuesta-container,
+ion-content,
+body,
+html {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.imagenes-section {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+ion-content {
+  --padding-bottom: 0 !important;
+  --padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-top: 0 !important;
+  min-height: 100vh !important;
+  height: 100vh !important;
 }
