@@ -392,7 +392,7 @@
         <ion-item>
           <ion-icon slot="start" name="time-outline"></ion-icon>
           <ion-label position="floating">Tiempo de elaboración (minutos)</ion-label>
-          <ion-input type="number" formControlName="tiempoElaboracion"></ion-input>
+          <ion-input type="number" formControlName="tiempoElaboracion" min="1" max="60" inputmode="numeric"></ion-input>
         </ion-item>
         <div class="field-error" *ngIf="productoTiempoError">{{ productoTiempoError }}</div>
 
@@ -403,6 +403,15 @@
           <ion-input type="number" step="0.01" formControlName="precio"></ion-input>
         </ion-item>
         <div class="field-error" *ngIf="productoPrecioError">{{ productoPrecioError }}</div>
+
+        <!-- TIPO DE PRODUCTO -->
+        <ion-item lines="none">
+          <ion-label style="min-width: 40px; margin-right: 0.2rem;">Tipo:</ion-label>
+          <div class="perfil-checkboxes perfil-checkboxes-producto">
+            <label class="checkbox-label"><ion-checkbox [checked]="productoForm.get('tipo')?.value === 'comida'" (ionChange)="productoForm.get('tipo')?.setValue('comida')"></ion-checkbox><span>Comida</span></label><label class="checkbox-label"><ion-checkbox [checked]="productoForm.get('tipo')?.value === 'bebida'" (ionChange)="productoForm.get('tipo')?.setValue('bebida')"></ion-checkbox><span>Bebida</span></label><label class="checkbox-label"><ion-checkbox [checked]="productoForm.get('tipo')?.value === 'postre'" (ionChange)="productoForm.get('tipo')?.setValue('postre')"></ion-checkbox><span>Postre</span></label>
+          </div>
+        </ion-item>
+        <div class="field-error" *ngIf="productoTipoError">{{ productoTipoError }}</div>
 
         <!-- IMÁGENES DEL PRODUCTO -->
         <ion-item>

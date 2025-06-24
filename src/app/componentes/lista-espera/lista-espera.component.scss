@@ -94,7 +94,7 @@ ion-content {
 
 .table-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.4fr 1fr;
+  grid-template-columns: 1fr 1fr 1.4fr 0.8fr;
   background: linear-gradient(90deg, #6CC272 0%, #4CAF50 100%);
   color: #fff;
   font-weight: bold;
@@ -119,7 +119,7 @@ ion-content {
 .table-body {
   .table-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.4fr 1fr;
+    grid-template-columns: 1fr 1fr 1.4fr 0.8fr;
     border-bottom: 1px solid #e0e0e0;
     transition: background 0.2s;
     min-height: 32px;
@@ -168,6 +168,12 @@ ion-content {
         color: #555;
         font-size: 13px;
         word-break: break-all;
+      }
+
+      &.mesa {
+        max-width: 80px;
+        text-align: center;
+        font-weight: 600;
       }
     }
   }
@@ -344,8 +350,8 @@ ion-modal {
   padding: 20px;
   
   .cliente-item {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
+    background: rgba(108, 194, 114, 0.15);
+    border: 2px solid rgba(108, 194, 114, 0.3);
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 12px;
@@ -354,11 +360,12 @@ ion-modal {
     justify-content: space-between;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(108, 194, 114, 0.1);
     
     &:hover {
-      background: #e9ecef;
+      background: rgba(108, 194, 114, 0.25);
       transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(108, 194, 114, 0.2);
     }
     
     .cliente-info {
@@ -367,19 +374,60 @@ ion-modal {
       .cliente-nombre {
         font-size: 16px;
         font-weight: 600;
-        color: #333;
+        color: #2e7d32;
         margin-bottom: 4px;
+        white-space: nowrap;
       }
       
       .cliente-correo {
         font-size: 14px;
-        color: #666;
+        color: #555;
+        white-space: nowrap;
       }
     }
     
     .cliente-arrow {
       color: #6CC272;
       font-size: 20px;
+    }
+    
+    .mesa-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 140px;
+      justify-content: flex-end;
+      padding-left: 35px;
+      
+      .mesa-imagen-small {
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+      
+      ion-button {
+        --border-color: #6CC272;
+        --color: #6CC272;
+        font-weight: 500;
+        font-size: 12px;
+        height: 32px;
+        --padding-start: 12px;
+        --padding-end: 12px;
+        flex-shrink: 0;
+        
+        ion-icon {
+          margin-right: 4px;
+          font-size: 14px;
+        }
+      }
     }
   }
 }

@@ -508,3 +508,19 @@ form[formGroupName="productoForm"] ion-input[type="number"] {
     height: 100px;
   }
 }
+
+.perfil-checkboxes.fila-horizontal {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.perfil-checkboxes-producto {
+  gap: 0.5rem !important;
+}
+
+.perfil-checkboxes-producto .checkbox-label {
+  gap: 0.1rem !important;
+  margin-right: 0.5rem !important;
+}

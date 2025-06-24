@@ -62,6 +62,20 @@ ion-content {
   max-width: 300px;
 }
 
+.boton-escanear-mesa {
+  --background: #4CAF50;
+  --background-hover: #45a049;
+  --color: #fff;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+  height: 48px;
+  font-size: 1rem;
+  min-width: 200px;
+  max-width: 300px;
+  margin-bottom: 1rem;
+}
+
 .boton-lista-espera {
   margin: 20px;
   --background: #4CAF50;
@@ -113,4 +127,329 @@ ion-content {
     margin-right: 8px;
     font-size: 20px;
   }
+}
+
+.qr-error-message {
+  background: #e53935;
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 18px;
+  text-align: center;
+  font-weight: bold;
+  margin: 18px auto 0 auto;
+  max-width: 350px;
+  box-shadow: 0 2px 8px rgba(229,57,53,0.15);
+  letter-spacing: 0.5px;
+}
+
+.mesa-item {
+  background: rgba(108, 194, 114, 0.15);
+  border: 2px solid rgba(108, 194, 114, 0.3);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(108, 194, 114, 0.1);
+  
+  .mesa-datos {
+    text-align: center;
+    margin-bottom: 12px;
+    
+    .mesa-titulo {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2e7d32;
+      margin-bottom: 8px;
+    }
+    
+    .mesa-info {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.4;
+    }
+  }
+  
+  .mesa-imagen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    img {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      object-fit: cover;
+    }
+  }
+
+  .mesa-acciones {
+    margin-top: 12px;
+    text-align: center;
+    
+    ion-button {
+      --border-color: #6CC272;
+      --color: #6CC272;
+      font-weight: 500;
+      font-size: 14px;
+      height: 36px;
+      
+      ion-icon {
+        margin-right: 6px;
+      }
+    }
+    
+    .error-asignacion {
+      color: #e53935;
+      font-size: 12px;
+      margin-top: 8px;
+      font-weight: 500;
+      text-align: center;
+    }
+  }
+}
+
+.modal-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.modal-title-container {
+  color: #6CC272;
+  padding: 56px 20px 8px 20px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin: -20px -20px 8px -20px;
+  
+  .close-button {
+    --color: #6CC272;
+    --background: transparent;
+    margin: 0;
+    padding: 0;
+    min-width: auto;
+    
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+  
+  .modal-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+    color: #6CC272;
+  }
+}
+
+.qr-success-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #4CAF50;
+  color: #fff;
+  border-radius: 12px;
+  padding: 16px 24px;
+  text-align: center;
+  font-weight: bold;
+  z-index: 10000;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+.producto-item {
+  background: rgba(108, 194, 114, 0.15);
+  border: 2px solid rgba(108, 194, 114, 0.3);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(108, 194, 114, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.producto-datos {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.producto-imagen {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.producto-imagen img {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  object-fit: scale-down;
+  background: #fff;
+  display: block;
+}
+
+.producto-titulo {
+  font-size: 18px;
+  font-weight: bold;
+  color: #2e7d32;
+  margin-bottom: 8px;
+}
+
+.producto-info {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.producto-tiempo {
+  font-size: 13px;
+  color: #3880ff;
+  margin-bottom: 2px;
+}
+
+.producto-precio {
+  font-size: 15px;
+  color: #388e3c;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.productos-tipo-titulo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2e7d32;
+  margin-bottom: 8px;
+  margin-top: 0;
+  text-align: left;
+}
+
+.productos-tipo-block {
+  margin-bottom: 16px;
+}
+
+.productos-modal-container {
+  padding: 8px 20px 8px 20px;
+}
+
+.producto-controles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-sumar, .btn-restar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #6CC272;
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-restar {
+  background: #e53935;
+}
+
+.btn-sumar:active, .btn-restar:active {
+  filter: brightness(0.9);
+}
+
+.producto-cantidad {
+  font-size: 18px;
+  font-weight: bold;
+  color: #222;
+  min-width: 24px;
+  text-align: center;
+}
+
+.resumen-pedido-fijo {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: #fff;
+  border-radius: 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 220px;
+  max-width: 90vw;
+  padding: 18px 32px 18px 28px;
+  z-index: 10001;
+  border: 2px solid #6CC272;
+  gap: 32px;
+}
+
+.resumen-precio {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #2e7d32;
+  letter-spacing: 1px;
+}
+
+.resumen-tiempo {
+  font-size: 1.1rem;
+  color: #555;
+  font-weight: 500;
+  margin-left: 18px;
+}
+
+@media (max-width: 700px) {
+  .producto-item {
+    flex-direction: column;
+    min-width: 90vw;
+    max-width: 98vw;
+    gap: 8px;
+  }
+  .producto-imagen img {
+    max-width: 90vw;
+    max-height: 180px;
+  }
+  .resumen-pedido-fijo {
+    min-width: 90vw;
+    padding: 14px 10vw 14px 10vw;
+    gap: 16px;
+  }
+  .resumen-precio {
+    font-size: 1.5rem;
+  }
+  .resumen-tiempo {
+    font-size: 1rem;
+  }
+}
+
+ion-modal, ion-modal ion-content {
+  --background: #fff !important;
+  background: #fff !important;
 }

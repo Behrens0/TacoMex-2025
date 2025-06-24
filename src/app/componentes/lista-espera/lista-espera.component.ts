@@ -99,13 +99,11 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
         .order('fecha_ingreso', { ascending: true });
 
       if (error) {
-        console.error('Error al cargar lista de espera:', error);
         this.listaEspera = [];
       } else {
         this.listaEspera = data || [];
       }
     } catch (error) {
-      console.error('Error inesperado:', error);
       this.listaEspera = [];
     } finally {
       if (mostrarCargando) {
@@ -143,7 +141,6 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
         .order('numero', { ascending: true });
       
       if (error) {
-        console.error('Error al cargar mesas:', error);
         this.mostrarMensajeErrorQR('Error al cargar las mesas disponibles.');
         return;
       }
@@ -151,7 +148,6 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
       this.mesasDisponibles = data || [];
       this.mostrarModalMesas = true;
     } catch (error) {
-      console.error('Error inesperado:', error);
       this.mostrarMensajeErrorQR('Error inesperado al cargar las mesas.');
     } finally {
       this.loadingService.hide();
@@ -186,44 +182,9 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
   async asignarClienteAMesa(mesa: any) {
     try {
       this.loadingService.show();
-      const { barcodes } = await BarcodeScanner.scan();
-      
-      if (barcodes.length > 0) {
-        const scannedCode = barcodes[0].displayValue;
-        
-        let qrValido = false;
-        
-        try {
-          const qrData = JSON.parse(scannedCode);
-          if (qrData.numeroMesa === mesa.numero) {
-            qrValido = true;
-          }
-        } catch (e) {
-          const expectedPattern = `numeroMesa: ${mesa.numero}`;
-          if (scannedCode.includes(expectedPattern)) {
-            qrValido = true;
-          }
-        }
-        
-        if (qrValido) {
-          await this.mostrarListaClientes(mesa);
-        } else {
-          this.mensajeErrorAsignacion = 'Código QR inválido';
-          setTimeout(() => {
-            this.mensajeErrorAsignacion = '';
-          }, 3000);
-        }
-      } else {
-        this.mensajeErrorAsignacion = 'No se detectó ningún código QR';
-        setTimeout(() => {
-          this.mensajeErrorAsignacion = '';
-        }, 3000);
-      }
+      await this.mostrarListaClientes(mesa);
     } catch (error) {
-      this.mensajeErrorAsignacion = 'Error al escanear el QR';
-      setTimeout(() => {
-        this.mensajeErrorAsignacion = '';
-      }, 3000);
+      this.mensajeErrorAsignacion = 'Error al mostrar lista de clientes';
     } finally {
       this.loadingService.hide();
     }
@@ -233,8 +194,8 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
     try {
       const { data: clientes, error } = await this.supabase.supabase
         .from('lista_espera')
-        .select('id, nombre, apellido, correo')
-        .is('mesa_asignada', null);
+        .select('id, nombre, apellido, correo, fecha_ingreso, mesa_asignada')
+        .or('mesa_asignada.is.null,mesa_asignada.eq.');
 
       if (error) {
         this.mensajeErrorAsignacion = 'Error al cargar clientes';

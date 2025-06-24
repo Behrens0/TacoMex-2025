@@ -66,7 +66,7 @@ export class AuthService {
     try {
       await this.pushNotificationService.initializePushNotifications();
     } catch (error) {
-      console.error('Error al inicializar notificaciones push:', error);
+      // No bloquear la app si fallan las notificaciones
     }
     */
 
@@ -133,7 +133,6 @@ export class AuthService {
     try {
       return await this.sb.supabase.auth.getUser();
     } catch (error) {
-      console.error('Error al obtener usuario actual:', error);
       await this.clearAuthAndRedirect();
       return { data: { user: null }, error };
     }
@@ -146,7 +145,7 @@ export class AuthService {
     try {
       await this.pushNotificationService.cleanup();
     } catch (error) {
-      console.error('Error al limpiar notificaciones:', error);
+      // No bloquear la app si fallan las notificaciones
     }
     */
 
@@ -156,7 +155,6 @@ export class AuthService {
     this.esAdmin = false;
     this.esMaitre = false;
     this.perfilUsuario = '';
-
 
     this.router.navigateByUrl('/login', { replaceUrl: true });
   }

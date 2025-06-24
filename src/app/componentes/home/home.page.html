@@ -1,5 +1,5 @@
 <ion-content>
-  <ion-button (click)="logout()" fill="clear" class="logout-button">
+  <ion-button (click)="cerrarSesion()" fill="clear" class="logout-button">
     <ion-icon name="log-out"></ion-icon>
     Cerrar sesión
   </ion-button>
@@ -41,12 +41,64 @@
     </ion-button>
 
     <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && mostrarBotonEscanearMesa" 
+      expand="block" 
+      class="boton-escanear-mesa"
+      (click)="escanearMesaAsignada()">
+      <ion-icon name="qr-code-outline"></ion-icon>
+      Escanear Mesa {{ mesaAsignada }}
+    </ion-button>
+    <div *ngIf="mensajeErrorQR" class="qr-error-message">{{ mensajeErrorQR }}</div>
+
+    <ion-button 
       *ngIf="perfilUsuario === 'cliente' && isSupported" 
       expand="block" 
       class="boton-escanear-qr"
-      (click)="scanQR()">
+      (click)="escanearQR()">
       <ion-icon name="qr-code-outline"></ion-icon>
       Escanear QR para Solicitar Mesa
     </ion-button>
   </div>
+
+  <ion-modal [isOpen]="mostrarModalProductos" (didDismiss)="cerrarModalProductosMesa()">
+    <ng-template>
+      <ion-content>
+        <div class="modal-title-container">
+          <ion-button fill="clear" class="close-button" (click)="cerrarModalProductosMesa()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+          <h2 class="modal-title">Menú de la Mesa</h2>
+        </div>
+        <div class="productos-modal-container">
+          <ng-container *ngFor="let tipo of ['comida', 'bebida', 'postre']">
+            <div *ngIf="productosPorTipo[tipo].length > 0" class="productos-tipo-block">
+              <h3 class="productos-tipo-titulo">{{ tipo | titlecase }}</h3>
+              <div class="productos-grid">
+                <div *ngFor="let producto of productosPorTipo[tipo]" class="producto-item">
+                  <div class="producto-datos">
+                    <div class="producto-titulo">{{ producto.nombre }}</div>
+                    <div class="producto-info">{{ producto.descripcion }}</div>
+                    <div class="producto-tiempo">⏱ {{ producto.tiempo_elaboracion }} min</div>
+                    <div class="producto-precio">💲{{ producto.precio | number:'1.2-2' }}</div>
+                  </div>
+                  <div class="producto-imagen">
+                    <img *ngFor="let img of producto.imagenes" [src]="img" alt="Foto producto" />
+                  </div>
+                  <div class="producto-controles">
+                    <button class="btn-restar" (click)="restarProducto(producto)">-</button>
+                    <span class="producto-cantidad" *ngIf="getCantidadSeleccionada(producto) > 0">{{ getCantidadSeleccionada(producto) }}</span>
+                    <button class="btn-sumar" (click)="sumarProducto(producto)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </ion-content>
+      <div class="resumen-pedido-fijo">
+        <div class="resumen-precio">${{ getTotalPrecio() | number:'1.2-2' }}</div>
+        <div class="resumen-tiempo">⏱ {{ getTotalTiempo() }} min</div>
+      </div>
+    </ng-template>
+  </ion-modal>
 </ion-content>

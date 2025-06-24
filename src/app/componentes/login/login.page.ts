@@ -129,7 +129,6 @@ export class LoginPage implements OnInit {
       try {
         usuario = await this.authService.logIn(correo, contrasenia);
       } catch (error: any) {
-        console.log('Error de login:', error);
         
         if (error?.message === 'Invalid login credentials') {
           this.errorMessage = 'Correo electrónico o contraseña inválidos';

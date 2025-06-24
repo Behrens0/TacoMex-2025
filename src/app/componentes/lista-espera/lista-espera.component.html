@@ -35,7 +35,7 @@
           <div class="table-cell nombre">{{ cliente.nombre }}</div>
           <div class="table-cell apellido">{{ cliente.apellido ? cliente.apellido : '-' }}</div>
           <div class="table-cell fecha">{{ formatearFecha(cliente.fecha_ingreso) }}</div>
-          <div class="table-cell mesa">{{ cliente.mesa_asignada ? cliente.mesa_asignada : '-' }}</div>
+          <div class="table-cell mesa">{{ cliente.mesa_asignada && cliente.mesa_asignada !== '' ? cliente.mesa_asignada : '-' }}</div>
         </div>
       </div>
     </div>
@@ -51,23 +51,20 @@
             </ion-button>
             <h2 class="modal-title">Mesas disponibles</h2>
           </div>
-          <div *ngIf="mesasDisponibles.length > 0" class="mesas-container">
-            <div *ngFor="let mesa of mesasDisponibles" class="mesa-item">
-              <div class="mesa-datos">
-                <div class="mesa-titulo">Mesa N° {{ mesa.numero }}</div>
-                <div class="mesa-info">
-                  {{ mesa.tipo | titlecase }} ({{ mesa.comensales }} comensales)
+          <div class="clientes-container">
+            <div *ngFor="let mesa of mesasDisponibles" class="cliente-item">
+              <div class="cliente-info">
+                <div class="cliente-nombre">Mesa N° {{ mesa.numero }}</div>
+                <div class="cliente-correo">{{ mesa.tipo | titlecase }}<br>({{ mesa.comensales }} personas)</div>
+              </div>
+              <div class="mesa-actions">
+                <div *ngIf="mesa.imagen" class="mesa-imagen-small">
+                  <img [src]="mesa.imagen" alt="Imagen Mesa" />
                 </div>
-              </div>
-              <div *ngIf="mesa.imagen" class="mesa-imagen">
-                <img [src]="mesa.imagen" alt="Imagen Mesa" />
-              </div>
-              <div class="mesa-acciones">
-                <ion-button expand="block" fill="outline" color="success" (click)="asignarClienteAMesa(mesa)">
+                <ion-button fill="outline" color="success" size="small" (click)="asignarClienteAMesa(mesa)">
                   <ion-icon name="person-add" slot="start"></ion-icon>
-                  Asignar a cliente
+                  Asignar
                 </ion-button>
-                <div *ngIf="mensajeErrorAsignacion" class="error-asignacion">{{ mensajeErrorAsignacion }}</div>
               </div>
             </div>
           </div>
@@ -92,7 +89,7 @@
             <div *ngFor="let cliente of clientesDisponibles" class="cliente-item" (click)="asignarMesaACliente(cliente.id)">
               <div class="cliente-info">
                 <div class="cliente-nombre">{{ cliente.nombre }} {{ cliente.apellido || '' }}</div>
-                <div class="cliente-correo">{{ cliente.correo }}</div>
+                <div class="cliente-correo">{{ formatearFecha(cliente.fecha_ingreso) }}</div>
               </div>
               <ion-icon name="chevron-forward" class="cliente-arrow"></ion-icon>
             </div>

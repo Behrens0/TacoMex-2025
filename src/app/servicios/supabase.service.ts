@@ -43,8 +43,6 @@ export class SupabaseService {
       const timestamp = new Date().getTime();
       const fileName = `encuesta_${emailCliente.replace('@', '_at_')}_${timestamp}_${index}.jpg`;
       
-      console.log('Subiendo imagen:', fileName);
-      
       const { data, error } = await this.supabase.storage
         .from('encuestas.img')
         .upload(fileName, archivo, {
@@ -53,7 +51,6 @@ export class SupabaseService {
         });
 
       if (error) {
-        console.error('Error en upload:', error);
         throw new Error(`Error al subir la imagen de encuesta: ${error.message}`);
       }
 
@@ -69,10 +66,8 @@ export class SupabaseService {
         throw new Error('No se pudo obtener la URL pública de la imagen');
       }
 
-      console.log('Imagen subida exitosamente:', urlData.publicUrl);
       return urlData.publicUrl;
     } catch (error) {
-      console.error('Error en subirImagenEncuesta:', error);
       if (error instanceof Error) {
         throw new Error(`Error al subir imagen de encuesta: ${error.message}`);
       } else {

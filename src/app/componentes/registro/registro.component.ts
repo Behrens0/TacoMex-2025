@@ -67,6 +67,7 @@ export class RegistroComponent {
   productoTiempoError: string = '';
   productoPrecioError: string = '';
   productoImagenesError: string = '';
+  productoTipoError: string = '';
 
   esAnonimo = false;
   imagenURL: string | null = null;
@@ -131,8 +132,9 @@ export class RegistroComponent {
     this.productoForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
       descripcion: ['', [Validators.required, Validators.minLength(10)]],
-      tiempoElaboracion: ['', [Validators.required, Validators.min(1), Validators.max(480)]],
+      tiempoElaboracion: ['', [Validators.required]],
       precio: ['', [Validators.required, Validators.min(0.01)]],
+      tipo: ['', Validators.required],
       imagenes: [null, [Validators.required, this.validarTresImagenes.bind(this)]]
     });
 
@@ -185,8 +187,29 @@ export class RegistroComponent {
 
     this.productoForm.get('nombre')?.valueChanges.subscribe(() => this.validarCampoProducto('nombre'));
     this.productoForm.get('descripcion')?.valueChanges.subscribe(() => this.validarCampoProducto('descripcion'));
-    this.productoForm.get('tiempoElaboracion')?.valueChanges.subscribe(() => this.validarCampoProducto('tiempoElaboracion'));
+    this.productoForm.get('tiempoElaboracion')?.valueChanges.subscribe((valor: string) => {
+      if (typeof valor === 'string') {
+        let soloNumeros = valor.replace(/\D/g, '').slice(0, 4);
+        let formateado = '';
+        if (soloNumeros.length === 1) {
+          formateado = `00:0${soloNumeros}`;
+        } else if (soloNumeros.length === 2) {
+          formateado = `00:${soloNumeros}`;
+        } else if (soloNumeros.length === 3) {
+          formateado = `0${soloNumeros[0]}:${soloNumeros.slice(1, 3)}`;
+        } else if (soloNumeros.length === 4) {
+          formateado = `${soloNumeros.slice(0, 2)}:${soloNumeros.slice(2, 4)}`;
+        } else {
+          formateado = soloNumeros;
+        }
+        if (valor !== formateado) {
+          this.productoForm.get('tiempoElaboracion')?.setValue(formateado, { emitEvent: false });
+        }
+      }
+      this.validarCampoProducto('tiempoElaboracion');
+    });
     this.productoForm.get('precio')?.valueChanges.subscribe(() => this.validarCampoProducto('precio'));
+    this.productoForm.get('tipo')?.valueChanges.subscribe(() => this.validarCampoProducto('tipo'));
     this.productoForm.get('imagenes')?.valueChanges.subscribe(() => this.validarCampoProducto('imagenes'));
   }
 
@@ -417,6 +440,7 @@ export class RegistroComponent {
       case 'descripcion': this.productoDescripcionError = ''; break;
       case 'tiempoElaboracion': this.productoTiempoError = ''; break;
       case 'precio': this.productoPrecioError = ''; break;
+      case 'tipo': this.productoTipoError = ''; break;
       case 'imagenes': this.productoImagenesError = ''; break;
     }
 
@@ -436,20 +460,25 @@ export class RegistroComponent {
             this.productoDescripcionError = 'La descripción debe tener al menos 10 caracteres';
           }
           break;
-        case 'tiempoElaboracion':
-          if (control.errors?.['required']) {
+        case 'tiempoElaboracion': {
+          const valor = control.value;
+          if (!valor || isNaN(valor)) {
             this.productoTiempoError = 'El tiempo de elaboración es requerido';
-          } else if (control.errors?.['min']) {
-            this.productoTiempoError = 'El tiempo mínimo es 1 minuto';
-          } else if (control.errors?.['max']) {
-            this.productoTiempoError = 'El tiempo máximo es 480 minutos (8 horas)';
+          } else if (valor < 1 || valor > 60) {
+            this.productoTiempoError = 'El tiempo debe ser entre 1 y 60 minutos';
           }
           break;
+        }
         case 'precio':
           if (control.errors?.['required']) {
             this.productoPrecioError = 'El precio es requerido';
           } else if (control.errors?.['min']) {
             this.productoPrecioError = 'El precio debe ser mayor a 0';
+          }
+          break;
+        case 'tipo':
+          if (control.errors?.['required']) {
+            this.productoTipoError = 'El tipo de producto es requerido';
           }
           break;
         case 'imagenes':
@@ -512,6 +541,7 @@ export class RegistroComponent {
     this.productoTiempoError = '';
     this.productoPrecioError = '';
     this.productoImagenesError = '';
+    this.productoTipoError = '';
   }
 
   limpiarMensajeErrorMesa() {
@@ -923,10 +953,11 @@ export class RegistroComponent {
     this.validarCampoProducto('descripcion');
     this.validarCampoProducto('tiempoElaboracion');
     this.validarCampoProducto('precio');
+    this.validarCampoProducto('tipo');
     this.validarCampoProducto('imagenes');
 
     if (this.productoNombreError || this.productoDescripcionError || this.productoTiempoError || 
-        this.productoPrecioError || this.productoImagenesError) {
+        this.productoPrecioError || this.productoImagenesError || this.productoTipoError) {
       return;
     }
 
@@ -938,7 +969,7 @@ export class RegistroComponent {
     this.loadingService.show();
 
     try {
-      const { nombre, descripcion, tiempoElaboracion, precio } = this.productoForm.value;
+      const { nombre, descripcion, tiempoElaboracion, precio, tipo } = this.productoForm.value;
 
       if (this.imagenesProductoArchivos.length !== 3) {
         this.productoImagenesError = 'Debe seleccionar exactamente 3 imágenes';
@@ -966,7 +997,7 @@ export class RegistroComponent {
         const qrData = JSON.stringify({ 
           nombreProducto: nombre,
           precio: precio,
-          tiempoElaboracion: tiempoElaboracion
+          tiempoElaboracion: tiempoElaboracion,
         });
         const qrDataUrl = await toDataURL(qrData, { width: 512 });
         const qrBlob = dataURLtoBlob(qrDataUrl);
@@ -987,6 +1018,7 @@ export class RegistroComponent {
         descripcion,
         tiempo_elaboracion: tiempoElaboracion,
         precio: parseFloat(precio),
+        tipo,
         imagenes: imagenesURLs,
         qr: this.qrProductoURL
       };

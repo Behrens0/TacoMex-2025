@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from 'src/app/servicios/supabase.service';
 import { AuthService } from 'src/app/servicios/auth.service';
@@ -7,8 +7,9 @@ import { LoadingService } from 'src/app/servicios/loading.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonButton, IonIcon, AlertController } from '@ionic/angular/standalone';
+import { IonContent, IonButton, IonIcon, AlertController, ModalController, IonModal } from '@ionic/angular/standalone';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-home',
@@ -20,16 +21,24 @@ import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
     RouterModule,
     CommonModule,
     IonContent,
-    IonIcon
-],
+    IonIcon,
+    IonModal
+  ],
 })
-export class HomePage {
+export class HomePage implements OnInit, OnDestroy {
   mostrarBotonRegistro: boolean = false;
   isSupported = false;
   perfilUsuario: string = '';
   esBartender: boolean = false;
   esCocinero: boolean = false;
-  user: any = null;
+  usuario: any = null;
+  mesaAsignada: any = null;
+  mostrarBotonEscanearMesa: boolean = false;
+  mensajeErrorQR: string = '';
+  private realtimeChannel: RealtimeChannel | null = null;
+  mostrarModalProductos: boolean = false;
+  productosPorTipo: { [key: string]: any[]; comida: any[]; bebida: any[]; postre: any[] } = { comida: [], bebida: [], postre: [] };
+  seleccionProductos: { [id: string]: { producto: any, cantidad: number } } = {};
 
   constructor(
     private authService: AuthService,
@@ -37,6 +46,7 @@ export class HomePage {
     private router: Router,
     private loadingService: LoadingService,
     private alertController: AlertController,
+    private modalController: ModalController
     // private pushNotificationService: PushNotificationService
   ) {}
 
@@ -70,23 +80,27 @@ export class HomePage {
   }
 
   ionViewWillEnter() {
-    this.loadUser();
+    this.cargarUsuario();
   }
 
-  async loadUser() {
+  async cargarUsuario() {
     try {
       const { data, error } = await this.authService.getCurrentUser();
       
       if (error) {
-        console.error('Error al cargar usuario:', error);
         return;
       }
       
-      this.user = data?.user;
+      this.usuario = data?.user;
 
-      if (!this.user) {
+      if (!this.usuario) {
         this.router.navigateByUrl('/login');
       } else {
+        if (this.perfilUsuario === 'cliente') {
+          await this.verificarMesaAsignada();
+          this.suscribirseACambiosMesa();
+        }
+        
         // const correo = this.user.email;
         // if (correo) {
         //   const { data: empleado } = await this.supabase.supabase
@@ -116,12 +130,36 @@ export class HomePage {
         */
       }
     } catch (error) {
-      console.error('Error inesperado al cargar usuario:', error);
       this.router.navigateByUrl('/login');
     }
   }
 
-  async logout() {
+  async verificarMesaAsignada() {
+    try {
+      const { data: clienteEnLista, error } = await this.supabase.supabase
+        .from('lista_espera')
+        .select('mesa_asignada')
+        .eq('correo', this.usuario.email)
+        .not('mesa_asignada', 'is', null)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        return;
+      }
+
+      if (clienteEnLista && clienteEnLista.mesa_asignada) {
+        this.mesaAsignada = clienteEnLista.mesa_asignada;
+        this.mostrarBotonEscanearMesa = true;
+      } else {
+        this.mesaAsignada = null;
+        this.mostrarBotonEscanearMesa = false;
+      }
+    } catch (error) {
+      return;
+    }
+  }
+
+  async cerrarSesion() {
     this.loadingService.show();
     await this.authService.signOut();
     this.router.navigateByUrl('/login', { replaceUrl: true });
@@ -132,67 +170,66 @@ export class HomePage {
     this.router.navigate([route]);
   }
 
-  async scanQR() {
+  async escanearQR() {
     this.loadingService.show();
     
     try {
       const { barcodes } = await BarcodeScanner.scan();
       
       if (barcodes.length > 0) {
-        const scannedCode = barcodes[0].displayValue;
-        await this.processScannedCode(scannedCode);
+        const codigoEscaneado = barcodes[0].displayValue;
+        await this.procesarCodigoEscaneado(codigoEscaneado);
       } else {
-        await this.showAlert('Error', 'No se detectó ningún código QR.');
+        await this.mostrarAlerta('Error', 'No se detectó ningún código QR.');
       }
     } catch (error) {
-      console.error('Error al escanear:', error);
-      await this.showAlert('Error', 'Error al escanear el código QR.');
+      await this.mostrarAlerta('Error', 'Error al escanear el código QR.');
     } finally {
       this.loadingService.hide();
     }
   }
 
-  async processScannedCode(code: string) {
-    const expectedCode = 'b71c9d3a4e1f5a62c3340b87df0e8a129cab6e3d';
+  async procesarCodigoEscaneado(codigo: string) {
+    const codigoEsperado = 'b71c9d3a4e1f5a62c3340b87df0e8a129cab6e3d';
     
-    if (code === expectedCode) {
+    if (codigo === codigoEsperado) {
       await this.agregarAListaEspera();
     } else {
-      await this.showAlert('Código inválido', 'El código QR escaneado no es válido para la lista de espera.');
+      await this.mostrarAlerta('Código inválido', 'El código QR escaneado no es válido para la lista de espera.');
     }
   }
 
   async agregarAListaEspera() {
     try {
-      if (!this.user) {
-        await this.showAlert('Error', 'No se pudo obtener la información del usuario.');
+      if (!this.usuario) {
+        await this.mostrarAlerta('Error', 'No se pudo obtener la información del usuario.');
         return;
       }
 
       const { data: clienteEnLista } = await this.supabase.supabase
         .from('lista_espera')
         .select('*')
-        .eq('correo', this.user.email)
+        .eq('correo', this.usuario.email)
         .single();
 
       if (clienteEnLista) {
-        await this.showAlert('Ya en Lista', 'Ya estás en la lista de espera.');
+        await this.mostrarAlerta('Ya en Lista', 'Ya estás en la lista de espera.');
         return;
       }
 
       const { data: cliente, error: errorCliente } = await this.supabase.supabase
         .from('clientes')
         .select('nombre, apellido, correo')
-        .eq('correo', this.user.email)
+        .eq('correo', this.usuario.email)
         .single();
 
       if (errorCliente || !cliente) {
-        await this.showAlert('Error', 'No se pudo obtener la información del cliente.');
+        await this.mostrarAlerta('Error', 'No se pudo obtener la información del cliente.');
         return;
       }
 
-      const now = new Date();
-      const fechaFormateada = now.toLocaleString('es-AR', {
+      const ahora = new Date();
+      const fechaFormateada = ahora.toLocaleString('es-AR', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -216,24 +253,183 @@ export class HomePage {
         }]);
 
       if (errorInsert) {
-        await this.showAlert('Error', 'No se pudo agregar a la lista de espera: ' + errorInsert.message);
+        await this.mostrarAlerta('Error', 'No se pudo agregar a la lista de espera: ' + errorInsert.message);
         return;
       }
 
-      await this.showAlert('Éxito', 'Has sido agregado exitosamente a la lista de espera.');
+      await this.mostrarAlerta('Éxito', 'Has sido agregado exitosamente a la lista de espera.');
       
     } catch (error) {
-      console.error('Error al agregar a lista de espera:', error);
-      await this.showAlert('Error', 'Error inesperado al agregar a la lista de espera.');
+      await this.mostrarAlerta('Error', 'Error inesperado al agregar a la lista de espera.');
     }
   }
 
-  async showAlert(titulo: string, mensaje: string) {
+  async mostrarAlerta(titulo: string, mensaje: string) {
     const alert = await this.alertController.create({
       header: titulo,
       message: mensaje,
       buttons: ['OK']
     });
     await alert.present();
+  }
+
+  async escanearMesaAsignada() {
+    this.loadingService.show();
+    
+    try {
+      const { barcodes } = await BarcodeScanner.scan();
+      
+      if (barcodes.length > 0) {
+        const codigoEscaneado = barcodes[0].displayValue;
+        await this.validarMesaEscaneada(codigoEscaneado);
+      } else {
+        this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
+      }
+    } catch (error) {
+      this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  async validarMesaEscaneada(codigoEscaneado: string) {
+    let qrValido = false;
+    try {
+      const datosQR = JSON.parse(codigoEscaneado);
+      if (datosQR.numeroMesa === parseInt(this.mesaAsignada)) {
+        qrValido = true;
+      }
+    } catch (e) {
+      const patronEsperado = `numeroMesa: ${this.mesaAsignada}`;
+      if (codigoEscaneado.includes(patronEsperado)) {
+        qrValido = true;
+      }
+    }
+    if (!qrValido) {
+      this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
+    } else {
+      await this.abrirModalProductosMesa();
+    }
+  }
+
+  mostrarMensajeError(mensaje: string) {
+    this.mensajeErrorQR = mensaje;
+    setTimeout(() => {
+      this.mensajeErrorQR = '';
+    }, 5000);
+  }
+
+  ngOnDestroy() {
+    if (this.realtimeChannel) {
+      this.supabase.supabase.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
+    }
+  }
+
+  async suscribirseACambiosMesa() {
+    if (!this.usuario || this.perfilUsuario !== 'cliente') {
+      return;
+    }
+
+    try {
+      if (this.realtimeChannel) {
+        await this.supabase.supabase.removeChannel(this.realtimeChannel);
+      }
+
+      this.realtimeChannel = this.supabase.supabase
+        .channel('mesa-asignada-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'lista_espera',
+            filter: `correo=eq.${this.usuario.email}`
+          },
+          async (payload) => {
+            if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+              const mesaAsignada = payload.new?.['mesa_asignada'];
+              
+              if (mesaAsignada && mesaAsignada !== '') {
+                this.mesaAsignada = mesaAsignada;
+                this.mostrarBotonEscanearMesa = true;
+              } else {
+                this.mesaAsignada = null;
+                this.mostrarBotonEscanearMesa = false;
+              }
+            } else if (payload.eventType === 'DELETE') {
+              this.mesaAsignada = null;
+              this.mostrarBotonEscanearMesa = false;
+            }
+          }
+        )
+        .subscribe();
+
+    } catch (error) {
+      return;
+    }
+  }
+
+  async abrirModalProductosMesa() {
+    this.loadingService.show();
+    try {
+      const { data: productos, error } = await this.supabase.supabase
+        .from('productos')
+        .select('*');
+      if (error) {
+        await this.mostrarAlerta('Error', 'No se pudieron cargar los productos.');
+        return;
+      }
+      this.productosPorTipo = { comida: [], bebida: [], postre: [] };
+      for (const prod of productos) {
+        if (prod.tipo === 'comida') this.productosPorTipo.comida.push(prod);
+        else if (prod.tipo === 'bebida') this.productosPorTipo.bebida.push(prod);
+        else if (prod.tipo === 'postre') this.productosPorTipo.postre.push(prod);
+      }
+      this.mostrarModalProductos = true;
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  cerrarModalProductosMesa() {
+    this.mostrarModalProductos = false;
+  }
+
+  sumarProducto(producto: any) {
+    if (!this.seleccionProductos[producto.id]) {
+      this.seleccionProductos[producto.id] = { producto, cantidad: 1 };
+    } else {
+      this.seleccionProductos[producto.id].cantidad++;
+    }
+  }
+
+  restarProducto(producto: any) {
+    if (this.seleccionProductos[producto.id]) {
+      this.seleccionProductos[producto.id].cantidad--;
+      if (this.seleccionProductos[producto.id].cantidad <= 0) {
+        delete this.seleccionProductos[producto.id];
+      }
+    }
+  }
+
+  getCantidadSeleccionada(producto: any): number {
+    return this.seleccionProductos[producto.id]?.cantidad || 0;
+  }
+
+  getTotalPrecio(): number {
+    return Object.values(this.seleccionProductos).reduce((acc, sel) => acc + sel.producto.precio * sel.cantidad, 0);
+  }
+
+  getTotalTiempo(): number {
+    const maxPorTipo: { [tipo: string]: number } = { comida: 0, bebida: 0, postre: 0 };
+    Object.values(this.seleccionProductos).forEach(sel => {
+      const tipo = sel.producto.tipo;
+      const tiempo = Number(sel.producto.tiempo_elaboracion);
+      if (maxPorTipo[tipo] !== undefined && tiempo > maxPorTipo[tipo]) {
+        maxPorTipo[tipo] = tiempo;
+      }
+    });
+    return maxPorTipo['comida'] + maxPorTipo['bebida'] + maxPorTipo['postre'];
   }
 }
