@@ -136,46 +136,55 @@
         </ion-item>
         <div class="field-error" *ngIf="empleadoCuilError">{{ empleadoCuilError }}</div>
 
+        <!-- FOTO DEL EMPLEADO -->
         <ion-item>
           <ion-icon slot="start" name="camera-outline"></ion-icon>
           <ion-label>Foto</ion-label>
-          <ion-button slot="end" size="small" class="boton-verde" (click)="fileInput.click()">Subir Imagen</ion-button>
+          <ion-button slot="end" size="small" class="boton-verde" (click)="fileInputEmpleado.click()">Subir Imagen</ion-button>
           <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
-          <input #fileInput type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
-          <ng-container *ngIf="imagenURL">
-            <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
-            <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
-          </ng-container>
+          <input #fileInputEmpleado type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
         </ion-item>
-        <div class="field-error" *ngIf="empleadoImagenError">{{ empleadoImagenError }}</div>
         
-
-        <!-- ERROR -->
-        <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
-
+        
+        <!-- CHECKBOXES PERFIL EN UNA SOLA FILA -->
         <ion-item lines="none">
           <ion-label>Perfil</ion-label>
-          <div class="perfil-checkboxes">
-            <ion-checkbox
-              [checked]="empleadoForm.get('perfil')?.value === 'mozo'"
-              (ionChange)="empleadoForm.get('perfil')?.setValue('mozo')"
-            >Mozo</ion-checkbox>
-            <ion-checkbox
-              [checked]="empleadoForm.get('perfil')?.value === 'cocinero'"
-              (ionChange)="empleadoForm.get('perfil')?.setValue('cocinero')"
-            >Cocinero</ion-checkbox>
-            <ion-checkbox
-              [checked]="empleadoForm.get('perfil')?.value === 'bartender'"
-              (ionChange)="empleadoForm.get('perfil')?.setValue('bartender')"
-            >Bartender</ion-checkbox>
-            <ion-checkbox
-              [checked]="empleadoForm.get('perfil')?.value === 'maitre'"
-              (ionChange)="empleadoForm.get('perfil')?.setValue('maitre')"
-            >Maitre</ion-checkbox>
+          <div class="perfil-checkboxes fila-horizontal">
+            <div class="perfil-opcion">
+              <ion-checkbox class="checkbox-perfil" [checked]="empleadoForm.get('perfil')?.value === 'mozo'" (ionChange)="empleadoForm.get('perfil')?.setValue('mozo')"></ion-checkbox>
+              <span class="texto-perfil">Mozo</span>
+            </div>
+            <div class="perfil-opcion">
+              <ion-checkbox class="checkbox-perfil" [checked]="empleadoForm.get('perfil')?.value === 'cocinero'" (ionChange)="empleadoForm.get('perfil')?.setValue('cocinero')"></ion-checkbox>
+              <span class="texto-perfil">Cocinero</span>
+            </div>
+            <div class="perfil-opcion">
+              <ion-checkbox class="checkbox-perfil" [checked]="empleadoForm.get('perfil')?.value === 'bartender'" (ionChange)="empleadoForm.get('perfil')?.setValue('bartender')"></ion-checkbox>
+              <span class="texto-perfil">Bartender</span>
+            </div>
+            <div class="perfil-opcion">
+              <ion-checkbox class="checkbox-perfil" [checked]="empleadoForm.get('perfil')?.value === 'maitre'" (ionChange)="empleadoForm.get('perfil')?.setValue('maitre')"></ion-checkbox>
+              <span class="texto-perfil">Maitre</span>
+            </div>
           </div>
         </ion-item>
         <div class="field-error" *ngIf="empleadoPerfilError">{{ empleadoPerfilError }}</div>
-
+        
+        <!-- ERROR -->
+        <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
+        
+        <!-- PREVIEW DE IMAGEN EMPLEADO -->
+        <div *ngIf="imagenURLEmpleado" class="imagen-preview-única">
+          <ion-label>Vista previa:</ion-label>
+          <div class="preview-wrapper">
+            <img [src]="imagenURLEmpleado" alt="Preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 8px;"/>
+            <ion-button class="boton-eliminar-foto" size="small" color="danger" (click)="eliminarFotoEmpleado()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+        <div class="field-error" *ngIf="empleadoImagenError">{{ empleadoImagenError }}</div>
+        
         <ion-button expand="block" type="submit" [disabled]="empleadoForm.invalid">
           REGISTRAR EMPLEADO
         </ion-button>
@@ -247,12 +256,19 @@
           <ion-button slot="end" size="small" class="boton-verde" (click)="fileInputMesa.click()">Subir Imagen</ion-button>
           <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
           <input #fileInputMesa type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
-          <ng-container *ngIf="imagenURL">
-            <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
-            <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
-          </ng-container>
         </ion-item>
         <div class="field-error" *ngIf="mesaImagenError">{{ mesaImagenError }}</div>
+
+        <!-- PREVIEW DE IMAGEN MESA -->
+        <div *ngIf="imagenMesaURL" class="imagen-preview-única" style="margin-top: 10px;">
+          <ion-label>Vista previa:</ion-label>
+          <div class="preview-wrapper" style="display: flex; align-items: center;">
+            <img [src]="imagenMesaURL" alt="Preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 8px;" />
+            <ion-button class="boton-eliminar-foto" size="small" color="danger" (click)="eliminarFotoMesa()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
 
         <!-- ERROR -->
         <div class="error-message" *ngIf="mensajeErrorMesa">{{ mensajeErrorMesa }}</div>
@@ -275,6 +291,8 @@
           <a (click)="volverAlHome()">Volver</a>
         </div>
       </form>
+
+      
       <!-- Supervisor -->
       <form *ngIf="tipoRegistro==='supervisor'" [formGroup]="supervisorForm" (ngSubmit)="registrarSupervisor()">
         <ion-item>
@@ -324,31 +342,45 @@
 
         <ion-item lines="none">
           <ion-label>Perfil</ion-label>
-          <div class="perfil-checkboxes">
-            <ion-checkbox
-              [checked]="supervisorForm.get('perfil')?.value === 'dueño'"
-              (ionChange)="supervisorForm.get('perfil')?.setValue('dueño')"
-            >Dueño</ion-checkbox>
-            <ion-checkbox
-              [checked]="supervisorForm.get('perfil')?.value === 'supervisor'"
-              (ionChange)="supervisorForm.get('perfil')?.setValue('supervisor')"
-            >Supervisor</ion-checkbox>
+          <div class="perfil-checkboxes fila-horizontal">
+            <div class="perfil-opcion">
+              <ion-checkbox
+                [checked]="supervisorForm.get('perfil')?.value === 'dueño'"
+                (ionChange)="supervisorForm.get('perfil')?.setValue('dueño')"
+              ></ion-checkbox>
+              <span class="texto-perfil">Dueño</span>
+            </div>
+            <div class="perfil-opcion">
+              <ion-checkbox
+                [checked]="supervisorForm.get('perfil')?.value === 'supervisor'"
+                (ionChange)="supervisorForm.get('perfil')?.setValue('supervisor')"
+              ></ion-checkbox>
+              <span class="texto-perfil">Supervisor</span>
+            </div>
           </div>
         </ion-item>
         <div class="field-error" *ngIf="supervisorPerfilError">{{ supervisorPerfilError }}</div>
 
+        <!-- FOTO DEL SUPERVISOR -->
         <ion-item>
           <ion-icon slot="start" name="camera-outline"></ion-icon>
           <ion-label>Foto</ion-label>
           <ion-button slot="end" size="small" class="boton-verde" (click)="fileInputSupervisor.click()">Subir Imagen</ion-button>
           <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
-          <input #fileInputSupervisor type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
-          <ng-container *ngIf="imagenURL">
-            <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
-            <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
-          </ng-container>
+          <input #fileInputSupervisor type="file" accept="image/*" style="display: none" (change)="onImagenSupervisorSeleccionada($event)" />
         </ion-item>
         <div class="field-error" *ngIf="supervisorImagenError">{{ supervisorImagenError }}</div>
+
+        <!-- PREVIEW DE IMAGEN SUPERVISOR -->
+        <div *ngIf="imagenSupervisorURL" class="imagen-preview-única" style="margin-top: 10px;">
+          <ion-label>Vista previa:</ion-label>
+          <div class="preview-wrapper" style="display: flex; align-items: center;">
+            <img [src]="imagenSupervisorURL" alt="Preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 8px;" />
+            <ion-button class="boton-eliminar-foto" size="small" color="danger" (click)="eliminarFotoSupervisor()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
 
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>
 
@@ -423,7 +455,7 @@
         </ion-item>
         <div class="field-error" *ngIf="productoImagenesError">{{ productoImagenesError }}</div>
 
-        <!-- PREVIEW DE IMÁGENES -->
+        <!-- PREVIEW DE IMÁGENES PRODUCTO -->
         <div *ngIf="imagenesProductoURLs.length > 0" class="imagenes-preview">
           <ion-label>Vista previa de imágenes ({{ imagenesProductoArchivos.length }}/3):</ion-label>
           <div class="imagenes-grid">

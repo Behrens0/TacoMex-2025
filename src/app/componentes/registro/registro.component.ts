@@ -70,7 +70,11 @@ export class RegistroComponent {
   productoTipoError: string = '';
 
   esAnonimo = false;
-  imagenURL: string | null = null;
+  imagenURL: string | null = null; // Cliente
+  imagenURLEmpleado: string | null = null; // Empleado
+  imagenURLSupervisor: string | null = null; // Supervisor
+  imagenURLCliente: string | null = null; // Supervisor
+
   imagenMesaURL: string | null = null;
   qrMesaURL: string | null = null;
   qrProductoURL: string | null = null;
@@ -84,6 +88,12 @@ export class RegistroComponent {
   esBartender: boolean = false;
   esCocinero: boolean = false;
   perfilUsuario: string = '';
+
+  imagenesMesaURLs: string[] = [];
+  imagenesMesaArchivos: File[] = [];
+
+  imagenSupervisorArchivo: File | null = null;
+  imagenSupervisorURL: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -159,6 +169,7 @@ export class RegistroComponent {
     this.setupFormValidation();
   }
 
+  
   setupFormValidation() {
     this.clienteForm.get('nombre')?.valueChanges.subscribe(() => this.validarCampoCliente('nombre'));
     this.clienteForm.get('apellido')?.valueChanges.subscribe(() => this.validarCampoCliente('apellido'));
@@ -1077,43 +1088,48 @@ export class RegistroComponent {
   }
 
   onImagenSeleccionada(event: any) {
-    if (this.tipoRegistro === 'producto') {
-      const archivos = event.target.files;
-      if (archivos && archivos.length > 0) {
-        this.imagenesProductoArchivos = [];
-        for (let i = 0; i < Math.min(archivos.length, 3); i++) {
-          this.imagenesProductoArchivos.push(archivos[i]);
-        }
-        this.actualizarPreviewProducto();
-        this.actualizarFormularioProducto();
-      }
-    } else {
-      const archivo = event.target.files[0];
-      if (archivo) {
+    const archivo = event.target.files[0];
+    if (archivo) {
+      let reader = new FileReader();
+      reader.onload = () => {
         switch(this.tipoRegistro) {
-          case 'cliente':
-            this.clienteForm.patchValue({ imagenPerfil: archivo });
-            this.clienteForm.get('imagenPerfil')?.updateValueAndValidity();
+          case 'mesa':
+            this.imagenMesaURL = reader.result as string;
+            alert('URL de imagen mesa: ' + this.imagenMesaURL);
             break;
           case 'empleado':
-            this.empleadoForm.patchValue({ imagenPerfil: archivo });
-            this.empleadoForm.get('imagenPerfil')?.updateValueAndValidity();
+            this.imagenURLEmpleado = reader.result as string;
+            alert('URL de imagen empleado: ' + this.imagenURLEmpleado);
             break;
           case 'supervisor':
-            this.supervisorForm.patchValue({ imagenPerfil: archivo });
-            this.supervisorForm.get('imagenPerfil')?.updateValueAndValidity();
+            this.imagenSupervisorURL = reader.result as string;
+            alert('URL de imagen supervisor: ' + this.imagenSupervisorURL);
             break;
-          case 'mesa':
-            this.mesaForm.patchValue({ imagen: archivo });
-            this.mesaForm.get('imagen')?.updateValueAndValidity();
+          case 'cliente':
+            this.imagenURL = reader.result as string;
+            alert('URL de imagen cliente: ' + this.imagenURL);
             break;
         }
-        
-        const reader = new FileReader();
-        reader.onload = () => {
-          this.imagenURL = reader.result as string;
-        };
-        reader.readAsDataURL(archivo);
+      };
+      reader.readAsDataURL(archivo);
+
+      switch(this.tipoRegistro) {
+        case 'mesa':
+          this.mesaForm.patchValue({ imagen: archivo });
+          this.mesaForm.get('imagen')?.updateValueAndValidity();
+          break;
+        case 'empleado':
+          this.empleadoForm.patchValue({ imagenPerfil: archivo });
+          this.empleadoForm.get('imagenPerfil')?.updateValueAndValidity();
+          break;
+        case 'supervisor':
+          this.supervisorForm.patchValue({ imagenPerfil: archivo });
+          this.supervisorForm.get('imagenPerfil')?.updateValueAndValidity();
+          break;
+        case 'cliente':
+          this.clienteForm.patchValue({ imagenPerfil: archivo });
+          this.clienteForm.get('imagenPerfil')?.updateValueAndValidity();
+          break;
       }
     }
   }
@@ -1158,7 +1174,20 @@ export class RegistroComponent {
           
           const reader = new FileReader();
           reader.onload = () => {
-            this.imagenURL = reader.result as string;
+            switch(this.tipoRegistro) {
+              case 'cliente':
+                this.imagenURL = reader.result as string;
+                break;
+              case 'empleado':
+                this.imagenURLEmpleado = reader.result as string;
+                break;
+              case 'supervisor':
+                this.imagenSupervisorURL = reader.result as string;
+                break;
+              case 'mesa':
+                this.imagenMesaURL = reader.result as string;
+                break;
+            }
           };
           reader.readAsDataURL(archivo);
         }
@@ -1234,6 +1263,18 @@ export class RegistroComponent {
     this.actualizarFormularioProducto();
   }
 
+  eliminarFotoCliente() {
+    this.imagenURL = null;
+    this.clienteForm.patchValue({ imagenPerfil: null });
+    this.clienteForm.get('imagenPerfil')?.updateValueAndValidity();
+  }
+
+  eliminarFotoEmpleado() {
+    this.imagenURLEmpleado = null;
+    this.empleadoForm.patchValue({ imagenPerfil: null });
+    this.empleadoForm.get('imagenPerfil')?.updateValueAndValidity();
+  }
+
   actualizarPreviewProducto() {
     this.imagenesProductoURLs = [];
     this.imagenesProductoArchivos.forEach((archivo, index) => {
@@ -1291,6 +1332,47 @@ export class RegistroComponent {
     if (tipo !== 'mesa') this.mesaForm.reset();
     if (tipo !== 'producto') this.productoForm.reset();
   }
+
+  onImagenSupervisorSeleccionada(event: any) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) {
+      this.supervisorImagenError = 'No se seleccionó ninguna imagen.';
+      return;
+    }
+
+    this.imagenSupervisorArchivo = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagenSupervisorURL = reader.result as string;
+      console.log('Imagen cargada:', this.imagenSupervisorURL); // Debug
+    };
+    reader.readAsDataURL(file);
+  }
+
+  eliminarFotoSupervisor() {
+    this.imagenSupervisorArchivo = null;
+    this.imagenSupervisorURL = null;
+  }
+
+  onImagenMesaSeleccionada(event: any) {
+    const files = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagenesMesaURLs.push(e.target.result);
+      };
+      reader.readAsDataURL(files[i]);
+      this.imagenesMesaArchivos.push(files[i]);
+    }
+  }
+
+  eliminarFotoMesa() {
+    this.imagenMesaURL = null;
+    this.mesaForm.patchValue({ imagen: null });
+    this.mesaForm.get('imagen')?.updateValueAndValidity();
+  }
+
 }
 
 function dataURLtoBlob(dataurl: string) {
@@ -1304,3 +1386,4 @@ function dataURLtoBlob(dataurl: string) {
   }
   return new Blob([u8arr], { type: mime });
 }
+

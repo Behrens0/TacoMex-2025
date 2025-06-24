@@ -45,6 +45,18 @@ export class HomePage implements OnInit, OnDestroy {
   consultaMozo: string = '';
   mostrarErrorConsultaMozo: boolean = false;
   animandoSalidaModalConsultaMozo: boolean = false;
+  mostrarModalConsultasMozo: boolean = false;
+  consultasMozo: any[] = [];
+  cargandoConsultasMozo: boolean = false;
+  respuestaMozoPorId: { [id: string]: string } = {};
+  errorRespuestaMozoPorId: { [id: string]: string } = {};
+  mostrarRespuestaId: number | null = null;
+  mostrarModalConsultasCliente: boolean = false;
+  consultasCliente: any[] = [];
+  cargandoConsultasCliente: boolean = false;
+  consultaClienteTexto: string = '';
+  errorConsultaCliente: string = '';
+  intervaloConsultasMozo: any = null;
 
   constructor(
     private authService: AuthService,
@@ -478,6 +490,180 @@ export class HomePage implements OnInit, OnDestroy {
       }
     } catch (e) {
       this.mostrarAlerta('Error', 'No se pudo enviar la consulta.');
+    }
+  }
+
+  abrirModalConsultasMozo() {
+    this.mostrarModalConsultasMozo = true;
+    this.cargarConsultasMozo();
+    if (this.intervaloConsultasMozo) {
+      clearInterval(this.intervaloConsultasMozo);
+    }
+    this.intervaloConsultasMozo = setInterval(() => this.cargarConsultasMozo(true), 5000);
+  }
+
+  cerrarModalConsultasMozo() {
+    this.mostrarModalConsultasMozo = false;
+    this.respuestaMozoPorId = {};
+    this.errorRespuestaMozoPorId = {};
+    if (this.intervaloConsultasMozo) {
+      clearInterval(this.intervaloConsultasMozo);
+      this.intervaloConsultasMozo = null;
+    }
+  }
+
+  async cargarConsultasMozo(polling: boolean = false) {
+    let mostrarLoading = !polling;
+    let prevIds = this.consultasMozo?.map(c => c.id).join(',') || '';
+    const { data, error } = await this.supabase.supabase
+      .from('consultas_a_mozo')
+      .select('*')
+      .order('hora', { ascending: false });
+    if (!error) {
+      const newIds = data?.map((c: any) => c.id).join(',') || '';
+      if (polling && (newIds !== prevIds || data.length !== this.consultasMozo.length)) {
+        mostrarLoading = true;
+      }
+      if (mostrarLoading) this.cargandoConsultasMozo = true;
+      this.consultasMozo = data;
+      if (mostrarLoading) setTimeout(() => { this.cargandoConsultasMozo = false; }, 600);
+    }
+    if (!mostrarLoading) this.cargandoConsultasMozo = false;
+  }
+
+  async enviarRespuestaMozo(consulta: any) {
+    const id = consulta.id;
+    const respuesta = this.respuestaMozoPorId[id]?.trim() || '';
+    if (!respuesta) {
+      this.errorRespuestaMozoPorId[id] = 'Debe ingresar una respuesta.';
+      return;
+    }
+    this.errorRespuestaMozoPorId[id] = '';
+    const ahora = new Date();
+    const fechaFormateada = ahora.toLocaleString('es-AR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'America/Argentina/Buenos_Aires'
+    });
+    const [fecha, hora] = fechaFormateada.replace(',', '').split(' ');
+    const [dia, mes, anio] = fecha.split('/');
+    const horaFinal = `${anio}-${mes}-${dia} ${hora}`;
+    const usuario = this.usuario;
+    let nombreMozo = '';
+    if (usuario && usuario.email) {
+      const { data: mozo } = await this.supabase.supabase
+        .from('empleados')
+        .select('nombre,apellido')
+        .eq('correo', usuario.email)
+        .single();
+      if (mozo) {
+        nombreMozo = mozo.nombre + ' ' + mozo.apellido;
+      }
+    }
+    const { error } = await this.supabase.supabase
+      .from('consultas_a_mozo')
+      .update({
+        respuesta: respuesta,
+        hora_respuesta: horaFinal,
+        mozo: nombreMozo
+      })
+      .eq('id', id);
+    if (!error) {
+      this.cargarConsultasMozo();
+      this.respuestaMozoPorId[id] = '';
+      this.errorRespuestaMozoPorId[id] = '';
+      this.mostrarRespuestaId = null;
+    } else {
+      this.errorRespuestaMozoPorId[id] = 'Error al enviar la respuesta.';
+    }
+  }
+
+  formatearHoraConsulta(fecha: string): string {
+    if (!fecha) return '';
+    try {
+      const d = new Date(fecha);
+      const dia = d.getDate().toString().padStart(2, '0');
+      const mes = (d.getMonth() + 1).toString().padStart(2, '0');
+      const hora = d.getHours().toString().padStart(2, '0');
+      const minuto = d.getMinutes().toString().padStart(2, '0');
+      return `${dia}/${mes} ${hora}:${minuto}`;
+    } catch {
+      return fecha;
+    }
+  }
+
+  abrirModalConsultasCliente() {
+    this.mostrarModalConsultasCliente = true;
+    this.cargarConsultasCliente();
+    this.consultaClienteTexto = '';
+    this.errorConsultaCliente = '';
+  }
+
+  cerrarModalConsultasCliente() {
+    this.mostrarModalConsultasCliente = false;
+    this.consultaClienteTexto = '';
+    this.errorConsultaCliente = '';
+  }
+
+  async cargarConsultasCliente() {
+    this.cargandoConsultasCliente = true;
+    const correo = this.usuario?.email;
+    let consultas: any[] = [];
+    if (correo) {
+      const { data, error } = await this.supabase.supabase
+        .from('consultas_a_mozo')
+        .select('*')
+        .eq('correo', correo)
+        .order('hora', { ascending: false });
+      if (!error) {
+        consultas = data;
+      }
+    }
+    this.consultasCliente = consultas;
+    this.cargandoConsultasCliente = false;
+  }
+
+  async enviarConsultaCliente() {
+    if (!this.consultaClienteTexto.trim() || this.consultaClienteTexto.trim().length < 10) {
+      this.errorConsultaCliente = 'La consulta debe tener al menos 10 caracteres.';
+      return;
+    }
+    this.errorConsultaCliente = '';
+    const ahora = new Date();
+    const fechaFormateada = ahora.toLocaleString('es-AR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'America/Argentina/Buenos_Aires'
+    });
+    const [fecha, hora] = fechaFormateada.replace(',', '').split(' ');
+    const [dia, mes, anio] = fecha.split('/');
+    const horaFinal = `${anio}-${mes}-${dia} ${hora}`;
+    const mesa = this.mesaAsignada ? String(this.mesaAsignada) : '';
+    const correo = this.usuario?.email || '';
+    const { error } = await this.supabase.supabase
+      .from('consultas_a_mozo')
+      .insert([
+        {
+          consulta: this.consultaClienteTexto.trim(),
+          hora: horaFinal,
+          mesa: mesa,
+          correo: correo
+        }
+      ]);
+    if (error) {
+      this.errorConsultaCliente = 'No se pudo enviar la consulta.';
+    } else {
+      this.consultaClienteTexto = '';
+      this.cargarConsultasCliente();
     }
   }
 }

@@ -40,7 +40,10 @@
       </div>
     </div>
 
-    <ion-button expand="block" (click)="escanearParaDisponibilidadMesas()">Mesas disponibles</ion-button>
+    <ion-button expand="block" shape="round" class="qr-btn" (click)="escanearParaDisponibilidadMesas()">
+      <ion-icon name="qr-code-outline" slot="start"></ion-icon>
+      Mesas Disponibles
+    </ion-button>
     <div *ngIf="mensajeErrorQR" class="qr-error-message">{{ mensajeErrorQR }}</div>
     <ion-modal [isOpen]="mostrarModalMesas" (didDismiss)="cerrarModalMesasDisponibles()">
       <ng-template>
@@ -75,7 +78,6 @@
       </ng-template>
     </ion-modal>
 
-    <!-- Modal para lista de clientes -->
     <ion-modal [isOpen]="mostrarModalClientes" (didDismiss)="cerrarModalClientes()">
       <ng-template>
         <ion-content>

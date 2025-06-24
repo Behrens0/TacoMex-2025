@@ -62,7 +62,7 @@
       color="secondary" 
       expand="block" 
       class="boton-escanear-qr"
-      (click)="abrirConsultaMozo()">
+      (click)="abrirModalConsultasCliente()">
       Consultar al mozo
     </ion-button>
 
@@ -75,6 +75,11 @@
       (click)="escanearQR()">
       <ion-icon name="qr-code-outline"></ion-icon>
       Escanear QR para Solicitar Mesa
+    </ion-button>
+
+    <!-- Botón para mozo: ver consultas -->
+    <ion-button *ngIf="perfilUsuario === 'mozo'" expand="block" color="primary" (click)="abrirModalConsultasMozo()">
+      Consultas
     </ion-button>
   </div>
 
@@ -120,21 +125,85 @@
     </ng-template>
   </ion-modal>
 
-  <!-- Modal personalizado para consulta al mozo -->
-  <div *ngIf="mostrarModalConsultaMozo" class="overlay-modal-consulta" [ngClass]="{'modal-out': animandoSalidaModalConsultaMozo}">
-    <div class="modal-content">
-      <h3>Consulta al mozo</h3>
-      <textarea
-        [(ngModel)]="consultaMozo"
-        placeholder="Escriba su consulta al mozo..."
-        [ngClass]="{'campo-invalido': mostrarErrorConsultaMozo}"
-        rows="4"
-      ></textarea>
-      <div *ngIf="mostrarErrorConsultaMozo" class="error-consulta-mozo">La consulta debe tener al menos 10 caracteres.</div>
-      <div class="modal-actions">
-        <button type="button" class="btn-accion btn-confirmar" (click)="confirmarConsultaMozo()" [disabled]="!consultaMozo || consultaMozo.trim().length < 10">Confirmar</button>
-        <button type="button" class="btn-accion btn-cerrar" (click)="cerrarConsultaMozo(true)">Cerrar</button>
-      </div>
-    </div>
-  </div>
+  <!-- Modal para mozo: ver y responder consultas -->
+  <ion-modal [isOpen]="mostrarModalConsultasMozo" (didDismiss)="cerrarModalConsultasMozo()">
+    <ng-template>
+      <ion-content>
+        <div class="modal-title-container">
+          <ion-button fill="clear" class="close-button" (click)="cerrarModalConsultasMozo()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+          <h2 class="modal-title">Consultas de clientes</h2>
+        </div>
+        <div class="clientes-container">
+          <div *ngIf="cargandoConsultasMozo" class="loading-container"><p>Cargando consultas...</p></div>
+          <div *ngIf="!cargandoConsultasMozo && consultasMozo.length === 0" class="modal-empty">No hay consultas.</div>
+          <div *ngFor="let consulta of consultasMozo" class="cliente-item">
+            <div class="cliente-info">
+              <div class="cliente-nombre">Mesa N° {{ consulta.mesa }}</div>
+              <div class="cliente-correo">{{ formatearHoraConsulta(consulta.hora) }}</div>
+              <div class="cliente-correo">{{ consulta.consulta }}</div>
+            </div>
+            <div class="mesa-actions">
+              <ng-container *ngIf="!consulta.respuesta">
+                <ion-button *ngIf="mostrarRespuestaId !== consulta.id" fill="outline" color="success" size="small" (click)="mostrarRespuestaId = consulta.id">
+                  <ion-icon name="chatbox-ellipses" slot="start"></ion-icon>
+                  Responder
+                </ion-button>
+                <div *ngIf="mostrarRespuestaId === consulta.id" class="respuesta-form">
+                  <textarea [(ngModel)]="respuestaMozoPorId[consulta.id]" placeholder="Escribe tu respuesta..." rows="2"></textarea>
+                  <div *ngIf="errorRespuestaMozoPorId[consulta.id]" class="error-consulta-mozo">{{ errorRespuestaMozoPorId[consulta.id] }}</div>
+                  <ion-button class="btn-accion btn-confirmar" color="success" (click)="enviarRespuestaMozo(consulta)" [disabled]="!respuestaMozoPorId[consulta.id] || !respuestaMozoPorId[consulta.id].trim()">Enviar</ion-button>
+                  <ion-button fill="clear" color="danger" size="small" (click)="mostrarRespuestaId = null">Cancelar</ion-button>
+                </div>
+              </ng-container>
+              <div *ngIf="consulta.respuesta" class="respuesta-mozo">
+                <div class="respuesta-label">Respuesta del mozo:</div>
+                <div class="respuesta-texto">{{ consulta.respuesta }}</div>
+                <div class="respuesta-meta">Por: {{ consulta.mozo }} | {{ formatearHoraConsulta(consulta.hora_respuesta) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal para cliente: ver y crear consultas (igual a mozo, pero solo propias) -->
+  <ion-modal [isOpen]="mostrarModalConsultasCliente" (didDismiss)="cerrarModalConsultasCliente()">
+    <ng-template>
+      <ion-content>
+        <div class="modal-title-container">
+          <ion-button fill="clear" class="close-button" (click)="cerrarModalConsultasCliente()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+          <h2 class="modal-title">Mis consultas al mozo</h2>
+        </div>
+        <div class="clientes-container">
+          <div class="respuesta-form">
+            <textarea [(ngModel)]="consultaClienteTexto" placeholder="Escribe tu consulta al mozo..." rows="2"></textarea>
+            <div *ngIf="errorConsultaCliente" class="error-consulta-mozo">{{ errorConsultaCliente }}</div>
+            <ion-button class="btn-accion btn-confirmar" color="success" (click)="enviarConsultaCliente()" [disabled]="!consultaClienteTexto || consultaClienteTexto.trim().length < 10">Enviar</ion-button>
+          </div>
+          <div *ngIf="cargandoConsultasCliente" class="loading-container"><p>Cargando consultas...</p></div>
+          <div *ngIf="!cargandoConsultasCliente && consultasCliente.length === 0" class="modal-empty">No tienes consultas.</div>
+          <div *ngFor="let consulta of consultasCliente" class="cliente-item">
+            <div class="cliente-info">
+              <div class="cliente-nombre">Mesa N° {{ consulta.mesa }}</div>
+              <div class="cliente-correo">{{ formatearHoraConsulta(consulta.hora) }}</div>
+              <div class="cliente-correo">{{ consulta.consulta }}</div>
+            </div>
+            <div class="mesa-actions">
+              <div *ngIf="consulta.respuesta" class="respuesta-mozo">
+                <div class="respuesta-label">Respuesta del mozo:</div>
+                <div class="respuesta-texto">{{ consulta.respuesta }}</div>
+                <div class="respuesta-meta">Por: {{ consulta.mozo }} | {{ formatearHoraConsulta(consulta.hora_respuesta) }}</div>
+              </div>
+              <div *ngIf="!consulta.respuesta" class="respuesta-mozo" style="background:#fff0; border:none; color:#888;">Sin respuesta aún</div>
+            </div>
+          </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

@@ -241,19 +241,19 @@
     visibility: visible !important;
     opacity: 1 !important;
     margin-right: 0;
-    font-size: 0.6rem;
-    --size: 12px;
+    font-size: 1rem;
+    --size: 20px;
     color: #000000;
     min-width: fit-content;
-    max-width: 55px;
+    max-width: 100px;
   }
 
   ion-checkbox::part(container) {
     background: #fff !important;
     border: 2px solid #0e5f00 !important;
     border-radius: 4px !important;
-    width: 12px !important;
-    height: 12px !important;
+    width: 20px !important;
+    height: 20px !important;
   }
 
   ion-checkbox::part(mark) {
@@ -299,24 +299,6 @@
   font-weight: 500;
   white-space: nowrap;
   min-width: fit-content;
-}
-
-ion-checkbox {
-  --background: #fff;
-  --border-color: #0e5f00;
-  --checkmark-color: #0e5f00;
-  --border-radius: 4px;
-  --border-style: solid;
-  --border-width: 2px;
-  display: inline-flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  margin-right: 0;
-  font-size: 0.65rem;
-  --size: 12px;
-  color: #000000;
-  min-width: fit-content;
-  max-width: 60px;
 }
 
 ion-checkbox::part(label) {
@@ -512,8 +494,10 @@ form[formGroupName="productoForm"] ion-input[type="number"] {
 .perfil-checkboxes.fila-horizontal {
   display: flex;
   flex-direction: row;
-  gap: 1.5rem;
-  align-items: center;
+  gap: 0;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  justify-content: center;
 }
 
 .perfil-checkboxes-producto {
@@ -523,4 +507,108 @@ form[formGroupName="productoForm"] ion-input[type="number"] {
 .perfil-checkboxes-producto .checkbox-label {
   gap: 0.1rem !important;
   margin-right: 0.5rem !important;
+}
+
+.perfil-checkboxes.fila-horizontal ion-checkbox::part(label) {
+  font-size: 1.5em;
+  margin-left: 0.1em;
+  margin-right: 0;
+}
+.imagenes-grid-centrada {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.imagen-preview-única {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-wrapper img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  display: block;
+  margin: 0 auto;
+}
+
+.boton-eliminar-foto {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  --padding-start: 0;
+  --padding-end: 0;
+  --border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+}
+
+.imagen-preview-única ion-label {
+  width: 100%;
+  text-align: center;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.perfil-checkboxes.fila-horizontal ion-checkbox {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
+.perfil-checkboxes.fila-horizontal ion-checkbox::part(container),
+.perfil-checkboxes.fila-horizontal ion-checkbox::part(label) {
+  vertical-align: middle;
+}
+
+.perfil-opcion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  margin: 0 0.01em;
+  padding: 0;
+}
+
+.checkbox-perfil {
+  --size: 44px;
+  --checkbox-background-checked: #0e5f00;
+  --checkbox-background: #fff;
+  --border-color: #0e5f00;
+  --checkmark-color: #0e5f00;
+  margin-bottom: 0.05em;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+}
+
+.texto-perfil {
+  font-size: 0.93em;
+  margin-top: 0.03em;
+  text-align: center;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  margin-left: -19px;
 }
