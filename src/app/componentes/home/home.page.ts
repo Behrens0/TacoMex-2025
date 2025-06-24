@@ -39,6 +39,12 @@ export class HomePage implements OnInit, OnDestroy {
   mostrarModalProductos: boolean = false;
   productosPorTipo: { [key: string]: any[]; comida: any[]; bebida: any[]; postre: any[] } = { comida: [], bebida: [], postre: [] };
   seleccionProductos: { [id: string]: { producto: any, cantidad: number } } = {};
+  private intervaloMesa: any;
+  mesaAsignadaAnterior: any = null;
+  mostrarModalConsultaMozo: boolean = false;
+  consultaMozo: string = '';
+  mostrarErrorConsultaMozo: boolean = false;
+  animandoSalidaModalConsultaMozo: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -59,6 +65,8 @@ export class HomePage implements OnInit, OnDestroy {
     BarcodeScanner.isSupported().then((result) => {
       this.isSupported = result.supported;
     });
+
+    this.iniciarActualizacionMesa();
   }
 
   irARegistro() {
@@ -98,7 +106,6 @@ export class HomePage implements OnInit, OnDestroy {
       } else {
         if (this.perfilUsuario === 'cliente') {
           await this.verificarMesaAsignada();
-          this.suscribirseACambiosMesa();
         }
         
         // const correo = this.user.email;
@@ -147,13 +154,18 @@ export class HomePage implements OnInit, OnDestroy {
         return;
       }
 
-      if (clienteEnLista && clienteEnLista.mesa_asignada) {
-        this.mesaAsignada = clienteEnLista.mesa_asignada;
-        this.mostrarBotonEscanearMesa = true;
-      } else {
-        this.mesaAsignada = null;
-        this.mostrarBotonEscanearMesa = false;
+      const nuevaMesaAsignada = clienteEnLista?.mesa_asignada || null;
+
+      if (nuevaMesaAsignada !== this.mesaAsignadaAnterior) {
+        this.loadingService.show();
+        setTimeout(() => {
+          this.loadingService.hide();
+        }, 1000);
       }
+
+      this.mesaAsignada = nuevaMesaAsignada;
+      this.mostrarBotonEscanearMesa = !!nuevaMesaAsignada;
+      this.mesaAsignadaAnterior = nuevaMesaAsignada;
     } catch (error) {
       return;
     }
@@ -324,49 +336,20 @@ export class HomePage implements OnInit, OnDestroy {
       this.supabase.supabase.removeChannel(this.realtimeChannel);
       this.realtimeChannel = null;
     }
+    this.detenerActualizacionMesa();
   }
 
-  async suscribirseACambiosMesa() {
-    if (!this.usuario || this.perfilUsuario !== 'cliente') {
-      return;
-    }
+  iniciarActualizacionMesa() {
+    this.detenerActualizacionMesa();
+    this.intervaloMesa = setInterval(() => {
+      this.verificarMesaAsignada();
+    }, 5000);
+  }
 
-    try {
-      if (this.realtimeChannel) {
-        await this.supabase.supabase.removeChannel(this.realtimeChannel);
-      }
-
-      this.realtimeChannel = this.supabase.supabase
-        .channel('mesa-asignada-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'lista_espera',
-            filter: `correo=eq.${this.usuario.email}`
-          },
-          async (payload) => {
-            if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-              const mesaAsignada = payload.new?.['mesa_asignada'];
-              
-              if (mesaAsignada && mesaAsignada !== '') {
-                this.mesaAsignada = mesaAsignada;
-                this.mostrarBotonEscanearMesa = true;
-              } else {
-                this.mesaAsignada = null;
-                this.mostrarBotonEscanearMesa = false;
-              }
-            } else if (payload.eventType === 'DELETE') {
-              this.mesaAsignada = null;
-              this.mostrarBotonEscanearMesa = false;
-            }
-          }
-        )
-        .subscribe();
-
-    } catch (error) {
-      return;
+  detenerActualizacionMesa() {
+    if (this.intervaloMesa) {
+      clearInterval(this.intervaloMesa);
+      this.intervaloMesa = null;
     }
   }
 
@@ -431,5 +414,70 @@ export class HomePage implements OnInit, OnDestroy {
       }
     });
     return maxPorTipo['comida'] + maxPorTipo['bebida'] + maxPorTipo['postre'];
+  }
+
+  abrirConsultaMozo() {
+    this.mostrarModalConsultaMozo = true;
+    this.consultaMozo = '';
+    this.mostrarErrorConsultaMozo = false;
+  }
+
+  cerrarConsultaMozo(animar: boolean = false) {
+    if (animar) {
+      this.animandoSalidaModalConsultaMozo = true;
+      setTimeout(() => {
+        this.mostrarModalConsultaMozo = false;
+        this.animandoSalidaModalConsultaMozo = false;
+        this.consultaMozo = '';
+        this.mostrarErrorConsultaMozo = false;
+      }, 250);
+    } else {
+      this.mostrarModalConsultaMozo = false;
+      this.animandoSalidaModalConsultaMozo = false;
+      this.consultaMozo = '';
+      this.mostrarErrorConsultaMozo = false;
+    }
+  }
+
+  async confirmarConsultaMozo() {
+    if (!this.consultaMozo.trim() || this.consultaMozo.trim().length < 10) {
+      this.mostrarErrorConsultaMozo = true;
+      return;
+    }
+    this.mostrarErrorConsultaMozo = false;
+    try {
+      const ahora = new Date();
+      const fechaFormateada = ahora.toLocaleString('es-AR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZone: 'America/Argentina/Buenos_Aires'
+      });
+      const [fecha, hora] = fechaFormateada.replace(',', '').split(' ');
+      const [dia, mes, anio] = fecha.split('/');
+      const horaFinal = `${anio}-${mes}-${dia} ${hora}`;
+      const mesa = this.mesaAsignada ? String(this.mesaAsignada) : '';
+      const { error } = await this.supabase.supabase
+        .from('consultas_a_mozo')
+        .insert([
+          {
+            consulta: this.consultaMozo.trim(),
+            hora: horaFinal,
+            mesa: mesa
+          }
+        ]);
+      if (error) {
+        this.mostrarAlerta('Error', 'No se pudo enviar la consulta.');
+      } else {
+        this.mostrarAlerta('Enviado', 'Su consulta fue enviada al mozo.');
+        this.cerrarConsultaMozo(true);
+      }
+    } catch (e) {
+      this.mostrarAlerta('Error', 'No se pudo enviar la consulta.');
+    }
   }
 }

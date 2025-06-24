@@ -453,3 +453,69 @@ ion-modal, ion-modal ion-content {
   --background: #fff !important;
   background: #fff !important;
 }
+
+.modal-consulta-mozo::part(backdrop) {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.contenedor-modal-consulta {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  width: 90vw;
+  max-width: 350px;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.boton-cerrar-x {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.cuadro-texto-consulta {
+  width: 100%;
+  background: rgba(0, 128, 0, 0.18);
+  border-radius: 10px;
+  margin-top: 2.5rem;
+  margin-bottom: 1.2rem;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.cuadro-texto-consulta textarea {
+  width: 100%;
+  border: none;
+  background: transparent;
+  resize: none;
+  font-size: 1.1rem;
+  outline: none;
+  color: #222;
+}
+
+.boton-enviar-consulta {
+  margin-top: 0.5rem;
+  align-self: center;
+  width: 70%;
+}
+
+@media (max-width: 400px) {
+  .contenedor-modal-consulta {
+    max-width: 95vw;
+    padding: 1.2rem 0.5rem 1rem 0.5rem;
+  }
+}

@@ -41,6 +41,14 @@
     </ion-button>
 
     <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && !mostrarBotonEscanearMesa" 
+      expand="block" 
+      class="boton-encuesta"
+      (click)="irAListaEspera()">
+      Registrarse a la lista de espera
+    </ion-button>
+
+    <ion-button 
       *ngIf="perfilUsuario === 'cliente' && mostrarBotonEscanearMesa" 
       expand="block" 
       class="boton-escanear-mesa"
@@ -48,6 +56,16 @@
       <ion-icon name="qr-code-outline"></ion-icon>
       Escanear Mesa {{ mesaAsignada }}
     </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && mostrarBotonEscanearMesa" 
+      color="secondary" 
+      expand="block" 
+      class="boton-escanear-qr"
+      (click)="abrirConsultaMozo()">
+      Consultar al mozo
+    </ion-button>
+
     <div *ngIf="mensajeErrorQR" class="qr-error-message">{{ mensajeErrorQR }}</div>
 
     <ion-button 
@@ -101,4 +119,22 @@
       </div>
     </ng-template>
   </ion-modal>
+
+  <!-- Modal personalizado para consulta al mozo -->
+  <div *ngIf="mostrarModalConsultaMozo" class="overlay-modal-consulta" [ngClass]="{'modal-out': animandoSalidaModalConsultaMozo}">
+    <div class="modal-content">
+      <h3>Consulta al mozo</h3>
+      <textarea
+        [(ngModel)]="consultaMozo"
+        placeholder="Escriba su consulta al mozo..."
+        [ngClass]="{'campo-invalido': mostrarErrorConsultaMozo}"
+        rows="4"
+      ></textarea>
+      <div *ngIf="mostrarErrorConsultaMozo" class="error-consulta-mozo">La consulta debe tener al menos 10 caracteres.</div>
+      <div class="modal-actions">
+        <button type="button" class="btn-accion btn-confirmar" (click)="confirmarConsultaMozo()" [disabled]="!consultaMozo || consultaMozo.trim().length < 10">Confirmar</button>
+        <button type="button" class="btn-accion btn-cerrar" (click)="cerrarConsultaMozo(true)">Cerrar</button>
+      </div>
+    </div>
+  </div>
 </ion-content>
