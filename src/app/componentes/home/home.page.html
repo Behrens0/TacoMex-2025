@@ -4,6 +4,11 @@
     Cerrar sesión
   </ion-button>
   
+  <!-- Texto de la mesa para clientes sentados -->
+  <div *ngIf="perfilUsuario === 'cliente' && clienteSentado && mesaAsignada" class="mesa-info">
+    <h2 class="mesa-numero">Mesa N° {{ mesaAsignada }}</h2>
+  </div>
+  
   <div class="home-container">
     <ion-button 
       *ngIf="mostrarBotonRegistro && !esBartender && !esCocinero" 
@@ -41,20 +46,21 @@
     </ion-button>
 
     <ion-button 
-      *ngIf="perfilUsuario === 'cliente' && !mostrarBotonEscanearMesa" 
-      expand="block" 
-      class="boton-encuesta"
-      (click)="irAListaEspera()">
-      Registrarse a la lista de espera
-    </ion-button>
-
-    <ion-button 
-      *ngIf="perfilUsuario === 'cliente' && mostrarBotonEscanearMesa" 
+      *ngIf="perfilUsuario === 'cliente' && mostrarBotonEscanearMesa && !clienteSentado" 
       expand="block" 
       class="boton-escanear-mesa"
       (click)="escanearMesaAsignada()">
       <ion-icon name="qr-code-outline"></ion-icon>
       Escanear Mesa {{ mesaAsignada }}
+    </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && mostrarBotonHacerPedido" 
+      expand="block" 
+      class="boton-hacer-pedido"
+      (click)="irAHacerPedido()">
+      <ion-icon name="restaurant-outline"></ion-icon>
+      Hacer Pedido
     </ion-button>
 
     <ion-button 
@@ -69,7 +75,7 @@
     <div *ngIf="mensajeErrorQR" class="qr-error-message">{{ mensajeErrorQR }}</div>
 
     <ion-button 
-      *ngIf="perfilUsuario === 'cliente' && isSupported" 
+      *ngIf="perfilUsuario === 'cliente' && isSupported && !yaEnListaEspera && !qrEnProceso" 
       expand="block" 
       class="boton-escanear-qr"
       (click)="escanearQR()">
@@ -90,7 +96,7 @@
           <ion-button fill="clear" class="close-button" (click)="cerrarModalProductosMesa()">
             <ion-icon name="close"></ion-icon>
           </ion-button>
-          <h2 class="modal-title">Menú de la Mesa</h2>
+          <h2 class="modal-title">Menú</h2>
         </div>
         <div class="productos-modal-container">
           <ng-container *ngFor="let tipo of ['comida', 'bebida', 'postre']">
@@ -118,9 +124,36 @@
           </ng-container>
         </div>
       </ion-content>
-      <div class="resumen-pedido-fijo">
+      <button *ngIf="!mostrarConfirmacionPedido" class="resumen-pedido-fijo" [class.resumen-pedido-clickeando]="clickeandoResumen" [disabled]="getTotalPrecio() === 0" (mousedown)="clickeandoResumen = true" (mouseup)="clickeandoResumen = false" (mouseleave)="clickeandoResumen = false" (click)="abrirConfirmacionPedido()">
         <div class="resumen-precio">${{ getTotalPrecio() | number:'1.2-2' }}</div>
         <div class="resumen-tiempo">⏱ {{ getTotalTiempo() }} min</div>
+      </button>
+      <div *ngIf="mostrarConfirmacionPedido">
+        <div class="modal-blur-overlay"></div>
+        <div class="confirmacion-pedido-modal">
+          <div *ngIf="cargandoConfirmacion" class="loading-container"><p>Cargando...</p></div>
+          <div *ngIf="!cargandoConfirmacion">
+            <h2 class="confirmacion-titulo">Confirmar Pedido</h2>
+            <div class="lista-productos-confirmacion">
+              <div *ngFor="let item of productosSeleccionadosParaConfirmar" class="item-confirmacion">
+                <div class="item-nombre">{{ item.producto.nombre }}</div>
+                <div class="item-detalles">
+                  <span class="item-cantidad">x{{ item.cantidad }}</span>
+                  <span class="item-precio">${{ item.producto.precio | number:'1.2-2' }}</span>
+                  <span class="item-tiempo">⏱ {{ item.producto.tiempo_elaboracion }} min</span>
+                  <span class="item-tipo">({{ item.producto.tipo }})</span>
+                  <span class="item-subtotal">Subtotal: ${{ (item.producto.precio * item.cantidad) | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="resumen-confirmacion">
+              <div class="resumen-precio">Total: ${{ getTotalPrecio() | number:'1.2-2' }}</div>
+              <div class="resumen-tiempo">⏱ {{ getTotalTiempo() }} min</div>
+            </div>
+            <ion-button expand="block" color="success" class="boton-confirmar-pedido" (click)="confirmarPedido()">Confirmar pedido</ion-button>
+            <ion-button expand="block" fill="outline" color="danger" class="boton-cancelar-pedido" (click)="cancelarConfirmacionPedido()">Cancelar</ion-button>
+          </div>
+        </div>
       </div>
     </ng-template>
   </ion-modal>

@@ -763,9 +763,9 @@ export class RegistroComponent {
         return;
       }
 
-      this.mensajeExito = 'Registro exitoso de empleado';
+      this.mensajeExito = 'Empleado registrado!';
       this.empleadoForm.reset();
-      this.imagenURL = null;
+      this.imagenURLEmpleado = null;
       this.loadingService.hide();
       
       setTimeout(() => {
@@ -843,9 +843,9 @@ export class RegistroComponent {
         return;
       }
 
-      this.mensajeExito = 'Registro exitoso de supervisor';
+      this.mensajeExito = 'Supervisor registrado!';
       this.supervisorForm.reset();
-      this.imagenURL = null;
+      this.imagenSupervisorURL = null;
       this.loadingService.hide();
       
       setTimeout(() => {
@@ -944,6 +944,8 @@ export class RegistroComponent {
       this.mensajeExitoMesa = 'Mesa registrada correctamente';
       this.mesaForm.reset();
       this.imagenMesaURL = null;
+      this.imagenesMesaURLs = [];
+      this.imagenesMesaArchivos = [];
       this.loadingService.hide();
       
       setTimeout(() => {
@@ -995,7 +997,9 @@ export class RegistroComponent {
           .from('imagenes')
           .upload(`producto-${nombre}-${i}-${archivo.name}`, archivo, { upsert: true });
 
-        if (error) throw new Error(error.message);
+        if (error) {
+          throw new Error(error.message);
+        }
 
         const imagenURL = this.sb.supabase.storage
           .from('imagenes')
@@ -1088,6 +1092,15 @@ export class RegistroComponent {
   }
 
   onImagenSeleccionada(event: any) {
+    if (this.tipoRegistro === 'producto') {
+      const files: FileList = event.target.files;
+      if (files && files.length > 0) {
+        for (let i = 0; i < files.length && this.imagenesProductoArchivos.length < 3; i++) {
+          this.agregarFotoProducto(files[i]);
+        }
+      }
+      return;
+    }
     const archivo = event.target.files[0];
     if (archivo) {
       let reader = new FileReader();
@@ -1095,19 +1108,15 @@ export class RegistroComponent {
         switch(this.tipoRegistro) {
           case 'mesa':
             this.imagenMesaURL = reader.result as string;
-            alert('URL de imagen mesa: ' + this.imagenMesaURL);
             break;
           case 'empleado':
             this.imagenURLEmpleado = reader.result as string;
-            alert('URL de imagen empleado: ' + this.imagenURLEmpleado);
             break;
           case 'supervisor':
             this.imagenSupervisorURL = reader.result as string;
-            alert('URL de imagen supervisor: ' + this.imagenSupervisorURL);
             break;
           case 'cliente':
             this.imagenURL = reader.result as string;
-            alert('URL de imagen cliente: ' + this.imagenURL);
             break;
         }
       };

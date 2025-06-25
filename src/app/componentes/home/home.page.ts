@@ -57,6 +57,14 @@ export class HomePage implements OnInit, OnDestroy {
   consultaClienteTexto: string = '';
   errorConsultaCliente: string = '';
   intervaloConsultasMozo: any = null;
+  clienteSentado: boolean = false;
+  mostrarBotonHacerPedido: boolean = false;
+  mostrarConfirmacionPedido: boolean = false;
+  cargandoConfirmacion: boolean = false;
+  productosSeleccionadosParaConfirmar: { producto: any, cantidad: number }[] = [];
+  clickeandoResumen: boolean = false;
+  yaEnListaEspera: boolean = false;
+  qrEnProceso: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -155,6 +163,12 @@ export class HomePage implements OnInit, OnDestroy {
 
   async verificarMesaAsignada() {
     try {
+      const { data: lista, error: errorLista } = await this.supabase.supabase
+        .from('lista_espera')
+        .select('*')
+        .eq('correo', this.usuario.email);
+      this.yaEnListaEspera = Array.isArray(lista) && lista.length > 0;
+
       const { data: clienteEnLista, error } = await this.supabase.supabase
         .from('lista_espera')
         .select('mesa_asignada')
@@ -178,6 +192,34 @@ export class HomePage implements OnInit, OnDestroy {
       this.mesaAsignada = nuevaMesaAsignada;
       this.mostrarBotonEscanearMesa = !!nuevaMesaAsignada;
       this.mesaAsignadaAnterior = nuevaMesaAsignada;
+
+      if (nuevaMesaAsignada) {
+        await this.verificarClienteSentado();
+      } else {
+        this.clienteSentado = false;
+        this.mostrarBotonHacerPedido = false;
+      }
+    } catch (error) {
+      return;
+    }
+  }
+
+  async verificarClienteSentado() {
+    try {
+      const { data: clienteEnLista, error } = await this.supabase.supabase
+        .from('clientes')
+        .select('sentado')
+        .eq('correo', this.usuario.email)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        return;
+      }
+
+      const sentado = clienteEnLista?.sentado || false;
+
+      this.clienteSentado = sentado;
+      this.mostrarBotonHacerPedido = sentado;
     } catch (error) {
       return;
     }
@@ -195,11 +237,10 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async escanearQR() {
+    this.qrEnProceso = true;
     this.loadingService.show();
-    
     try {
       const { barcodes } = await BarcodeScanner.scan();
-      
       if (barcodes.length > 0) {
         const codigoEscaneado = barcodes[0].displayValue;
         await this.procesarCodigoEscaneado(codigoEscaneado);
@@ -210,6 +251,7 @@ export class HomePage implements OnInit, OnDestroy {
       await this.mostrarAlerta('Error', 'Error al escanear el código QR.');
     } finally {
       this.loadingService.hide();
+      this.qrEnProceso = false;
     }
   }
 
@@ -332,7 +374,7 @@ export class HomePage implements OnInit, OnDestroy {
     if (!qrValido) {
       this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
     } else {
-      await this.abrirModalProductosMesa();
+      await this.marcarClienteSentado();
     }
   }
 
@@ -665,5 +707,89 @@ export class HomePage implements OnInit, OnDestroy {
       this.consultaClienteTexto = '';
       this.cargarConsultasCliente();
     }
+  }
+
+  async marcarClienteSentado() {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('clientes')
+        .update({
+          sentado: true
+        })
+        .eq('correo', this.usuario.email);
+
+      if (error) {
+        this.mostrarAlerta('Error', 'No se pudo marcar el cliente como sentado.');
+      } else {
+        this.mostrarAlerta('¡Bienvenido!', 'Has sido marcado como sentado en tu mesa. Ya puedes hacer tu pedido.');
+        this.clienteSentado = true;
+        this.mostrarBotonHacerPedido = true;
+      }
+    } catch (error) {
+      this.mostrarAlerta('Error', 'Error al marcar el cliente como sentado.');
+    }
+  }
+
+  irAHacerPedido() {
+    this.abrirModalProductosMesa();
+  }
+
+  abrirConfirmacionPedido() {
+    this.cargandoConfirmacion = true;
+    this.mostrarConfirmacionPedido = true;
+    this.productosSeleccionadosParaConfirmar = Object.values(this.seleccionProductos).map(sel => ({ producto: sel.producto, cantidad: sel.cantidad }));
+    setTimeout(() => {
+      this.cargandoConfirmacion = false;
+    }, 800);
+  }
+
+  async confirmarPedido() {
+    this.cargandoConfirmacion = true;
+    const comidas: string[] = [];
+    const bebidas: string[] = [];
+    const postres: string[] = [];
+    this.productosSeleccionadosParaConfirmar.forEach(item => {
+      for (let i = 0; i < item.cantidad; i++) {
+        if (item.producto.tipo === 'comida') comidas.push(item.producto.nombre);
+        if (item.producto.tipo === 'bebida') bebidas.push(item.producto.nombre);
+        if (item.producto.tipo === 'postre') postres.push(item.producto.nombre);
+      }
+    });
+    const precio = this.getTotalPrecio();
+    const tiempo_estimado = this.getTotalTiempo();
+    try {
+      this.loadingService.show();
+      const { error } = await this.supabase.supabase
+        .from('pedidos')
+        .insert([
+          {
+            mesa: this.mesaAsignada,
+            comidas,
+            bebidas,
+            postres,
+            precio,
+            tiempo_estimado
+          }
+        ]);
+      if (!error) {
+        this.mostrarConfirmacionPedido = false;
+        this.seleccionProductos = {};
+        this.mostrarModalProductos = false;
+        this.productosSeleccionadosParaConfirmar = [];
+        this.mostrarAlerta('¡Pedido realizado!', 'Tu pedido fue enviado correctamente.');
+      } else {
+        this.mostrarAlerta('Error', 'No se pudo enviar el pedido.');
+      }
+    } catch (e) {
+      this.mostrarAlerta('Error', 'No se pudo enviar el pedido.');
+    } finally {
+      this.cargandoConfirmacion = false;
+      this.loadingService.hide();
+    }
+  }
+
+  cancelarConfirmacionPedido() {
+    this.mostrarConfirmacionPedido = false;
+    this.clickeandoResumen = false;
   }
 }
