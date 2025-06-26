@@ -158,4 +158,63 @@ export class AuthService {
 
     this.router.navigateByUrl('/login', { replaceUrl: true });
   }
+
+  async guardarPushToken(userId: string, token: string) {
+    try {
+      const { data: user } = await this.sb.supabase.auth.getUser();
+      
+      if (!user?.user) {
+        console.log('No hay usuario autenticado');
+        return;
+      }
+
+      const email = user.user.email;
+
+      const { data: supervisor } = await this.sb.supabase
+        .from('supervisores')
+        .select('id')
+        .eq('correo', email)
+        .single();
+
+      const { data: empleado } = await this.sb.supabase
+        .from('empleados')
+        .select('id')
+        .eq('correo', email)
+        .single();
+
+      const { data: cliente } = await this.sb.supabase
+        .from('clientes')
+        .select('id')
+        .eq('correo', email)
+        .single();
+
+      let tableName = '';
+      let updateData = { fcm_token: token };
+
+      if (supervisor) {
+        tableName = 'supervisores';
+      } else if (empleado) {
+        tableName = 'empleados';
+      } else if (cliente) {
+        tableName = 'clientes';
+      } else {
+        console.log('Usuario no encontrado en ninguna tabla');
+        return;
+      }
+
+      const { error } = await this.sb.supabase
+        .from(tableName)
+        .update(updateData)
+        .eq('correo', email);
+
+      if (error) {
+        console.error('Error al guardar FCM token:', error);
+      } else {
+        console.log('FCM token guardado exitosamente en', tableName);
+      }
+
+    } catch (error) {
+      console.error('Error al guardar token en base de datos:', error);
+    }
+  }
 }

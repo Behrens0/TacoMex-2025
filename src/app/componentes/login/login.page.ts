@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/servicios/auth.service';
 import { LoadingService } from 'src/app/servicios/loading.service';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 import {
   IonContent,
@@ -153,6 +154,17 @@ export class LoginPage implements OnInit {
         return;
       }
 
+      // Registrar push token después del login exitoso
+      // TEMPORALMENTE DESHABILITADO - Firebase no configurado
+      /*
+      try {
+        await this.registrarPushToken(usuario.id);
+      } catch (error) {
+        console.error('Error al registrar push token:', error);
+        // No bloquear el login si falla el registro del token
+      }
+      */
+
       this.loginForm.reset();
       this.router.navigate(['/home']);
       this.loadingService.hide();
@@ -184,6 +196,29 @@ export class LoginPage implements OnInit {
         correo: presets[type].correo,
         contrasenia: presets[type].contrasenia
       });
+    }
+  }
+
+  async registrarPushToken(userId: string) {
+    try {
+      const permStatus = await PushNotifications.requestPermissions();
+      if (permStatus.receive === 'granted') {
+        await PushNotifications.register();
+
+        PushNotifications.addListener('registration', async (token) => {
+          console.log('Push registration success, token:', token.value);
+          await this.authService.guardarPushToken(userId, token.value);
+        });
+
+        PushNotifications.addListener('registrationError', (error) => {
+          console.error('Push registration error:', error);
+        });
+
+      } else {
+        console.warn('Push notifications permission not granted');
+      }
+    } catch (error) {
+      console.error('Error en registrarPushToken:', error);
     }
   }
 }
