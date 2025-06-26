@@ -7,7 +7,7 @@ import { LoadingService } from 'src/app/servicios/loading.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonButton, IonIcon, AlertController, ModalController, IonModal } from '@ionic/angular/standalone';
+import { IonContent, IonButton, IonIcon, AlertController, ModalController, IonModal, IonSpinner } from '@ionic/angular/standalone';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -22,7 +22,8 @@ import { RealtimeChannel } from '@supabase/supabase-js';
     CommonModule,
     IonContent,
     IonIcon,
-    IonModal
+    IonModal,
+    IonSpinner
   ],
 })
 export class HomePage implements OnInit, OnDestroy {
@@ -65,6 +66,18 @@ export class HomePage implements OnInit, OnDestroy {
   clickeandoResumen: boolean = false;
   yaEnListaEspera: boolean = false;
   qrEnProceso: boolean = false;
+  mostrarModalPedidos: boolean = false;
+  pedidos: any[] = [];
+  cargandoPedidos: boolean = false;
+  mostrarBotonVerEstadoPedido: boolean = false;
+  pedidoActualCliente: any = null;
+  mostrarModalEstadoPedido: boolean = false;
+  mostrarModalPedidosPreparar: boolean = false;
+  pedidosPreparar: any[] = [];
+  cargandoPedidosPreparar: boolean = false;
+  clienteInfo: any = null;
+  mostrarModalPago: boolean = false;
+  propinaSeleccionada: number = 0;
 
   constructor(
     private authService: AuthService,
@@ -76,17 +89,16 @@ export class HomePage implements OnInit, OnDestroy {
     // private pushNotificationService: PushNotificationService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.mostrarBotonRegistro = this.authService.puedeAccederARegistro() && this.router.url !== '/registro';
     this.perfilUsuario = this.authService.getPerfilUsuario();
     this.esBartender = this.authService.esUsuarioBartender();
     this.esCocinero = this.authService.esUsuarioCocinero();
-
     BarcodeScanner.isSupported().then((result) => {
       this.isSupported = result.supported;
     });
-
     this.iniciarActualizacionMesa();
+    await this.verificarPedidoExistente();
   }
 
   irARegistro() {
@@ -104,6 +116,18 @@ export class HomePage implements OnInit, OnDestroy {
   irAEncuesta() {
     this.loadingService.show();
     this.router.navigate(['/encuestas']);
+    this.loadingService.hide();
+  }
+
+  verEncuestasPrevias() {
+    this.loadingService.show();
+    this.router.navigate(['/encuestas'], { queryParams: { modo: 'ver' } });
+    this.loadingService.hide();
+  }
+
+  hacerEncuesta() {
+    this.loadingService.show();
+    this.router.navigate(['/encuestas'], { queryParams: { modo: 'hacer' } });
     this.loadingService.hide();
   }
 
@@ -126,6 +150,7 @@ export class HomePage implements OnInit, OnDestroy {
       } else {
         if (this.perfilUsuario === 'cliente') {
           await this.verificarMesaAsignada();
+          await this.cargarClienteInfo();
         }
         
         // const correo = this.user.email;
@@ -158,6 +183,23 @@ export class HomePage implements OnInit, OnDestroy {
       }
     } catch (error) {
       this.router.navigateByUrl('/login');
+    }
+  }
+
+  async cargarClienteInfo() {
+    if (!this.usuario || this.perfilUsuario !== 'cliente') return;
+    
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('clientes')
+        .select('*')
+        .eq('correo', this.usuario.email)
+        .single();
+      
+      if (!error && data) {
+        this.clienteInfo = data;
+      }
+    } catch (error) {
     }
   }
 
@@ -195,9 +237,11 @@ export class HomePage implements OnInit, OnDestroy {
 
       if (nuevaMesaAsignada) {
         await this.verificarClienteSentado();
+        await this.verificarPedidoExistente();
       } else {
         this.clienteSentado = false;
         this.mostrarBotonHacerPedido = false;
+        this.mostrarBotonVerEstadoPedido = false;
       }
     } catch (error) {
       return;
@@ -219,7 +263,6 @@ export class HomePage implements OnInit, OnDestroy {
       const sentado = clienteEnLista?.sentado || false;
 
       this.clienteSentado = sentado;
-      this.mostrarBotonHacerPedido = sentado;
     } catch (error) {
       return;
     }
@@ -723,7 +766,8 @@ export class HomePage implements OnInit, OnDestroy {
       } else {
         this.mostrarAlerta('¡Bienvenido!', 'Has sido marcado como sentado en tu mesa. Ya puedes hacer tu pedido.');
         this.clienteSentado = true;
-        this.mostrarBotonHacerPedido = true;
+        this.mostrarBotonHacerPedido = false;
+        await this.verificarPedidoExistente();
       }
     } catch (error) {
       this.mostrarAlerta('Error', 'Error al marcar el cliente como sentado.');
@@ -777,6 +821,7 @@ export class HomePage implements OnInit, OnDestroy {
         this.mostrarModalProductos = false;
         this.productosSeleccionadosParaConfirmar = [];
         this.mostrarAlerta('¡Pedido realizado!', 'Tu pedido fue enviado correctamente.');
+        await this.verificarPedidoExistente();
       } else {
         this.mostrarAlerta('Error', 'No se pudo enviar el pedido.');
       }
@@ -791,5 +836,481 @@ export class HomePage implements OnInit, OnDestroy {
   cancelarConfirmacionPedido() {
     this.mostrarConfirmacionPedido = false;
     this.clickeandoResumen = false;
+  }
+
+  async escanearQRProducto() {
+    this.loadingService.show();
+    try {
+      const { barcodes } = await BarcodeScanner.scan();
+      if (barcodes.length > 0) {
+        let datosQR;
+        try {
+          datosQR = JSON.parse(barcodes[0].displayValue);
+        } catch (e) {
+          await this.mostrarAlerta('Error', 'El QR escaneado no es válido.');
+          return;
+        }
+        const nombre = datosQR?.nombreProducto || datosQR?.nombre;
+        if (!nombre) {
+          await this.mostrarAlerta('Error', 'El QR no contiene el nombre del producto.');
+          return;
+        }
+        let productoEncontrado = null;
+        for (const tipo of ['comida', 'bebida', 'postre']) {
+          productoEncontrado = this.productosPorTipo[tipo].find(p => p.nombre === nombre);
+          if (productoEncontrado) break;
+        }
+        if (productoEncontrado) {
+          this.sumarProducto(productoEncontrado);
+        } else {
+          await this.mostrarAlerta('Error', 'No se encontró el producto en el menú.');
+        }
+      } else {
+        await this.mostrarAlerta('Error', 'No se detectó ningún código QR.');
+      }
+    } catch (error) {
+      await this.mostrarAlerta('Error', 'Error al escanear el QR del producto.');
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  abrirModalPedidos() {
+    this.mostrarModalPedidos = true;
+    this.cargarPedidos();
+  }
+
+  cerrarModalPedidos() {
+    this.mostrarModalPedidos = false;
+    this.pedidos = [];
+  }
+
+  async cargarPedidos() {
+    this.cargandoPedidos = true;
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('pedidos')
+        .select('*')
+        .order('id', { ascending: false });
+      if (!error) {
+        this.pedidos = data;
+      }
+    } finally {
+      this.cargandoPedidos = false;
+    }
+  }
+
+  async marcarPedidoEntregado(pedido: any) {
+    const { error } = await this.supabase.supabase
+      .from('pedidos')
+      .update({ estado: 'Entregado' })
+      .eq('id', pedido.id);
+    
+    if (!error) {
+      pedido.estado = 'Entregado';
+      await this.cargarPedidos();
+    }
+  }
+
+  async llevarCuenta(pedido: any) {
+    const { error } = await this.supabase.supabase
+      .from('pedidos')
+      .update({ cuenta: 'entregada' })
+      .eq('id', pedido.id);
+    
+    if (!error) {
+      pedido.cuenta = 'entregada';
+      await this.cargarPedidos();
+    }
+  }
+
+  async confirmarRecepcion() {
+    if (!this.pedidoActualCliente) return;
+    
+    const { error } = await this.supabase.supabase
+      .from('pedidos')
+      .update({ recepcion: true })
+      .eq('id', this.pedidoActualCliente.id);
+    
+    if (!error) {
+      this.pedidoActualCliente.recepcion = true;
+      await this.verificarPedidoExistente();
+    }
+  }
+
+  async pedirCuenta() {
+    if (!this.pedidoActualCliente) return;
+    
+    const { error } = await this.supabase.supabase
+      .from('pedidos')
+      .update({ cuenta: 'pedida' })
+      .eq('id', this.pedidoActualCliente.id);
+    
+    if (!error) {
+      this.pedidoActualCliente.cuenta = 'pedida';
+      await this.verificarPedidoExistente();
+    }
+  }
+
+  async abrirModalPago() {
+    if (this.productosPorTipo.comida.length === 0 && 
+        this.productosPorTipo.bebida.length === 0 && 
+        this.productosPorTipo.postre.length === 0) {
+      const { data: productos, error } = await this.supabase.supabase
+        .from('productos')
+        .select('*');
+      if (!error && productos) {
+        this.productosPorTipo = { comida: [], bebida: [], postre: [] };
+        for (const prod of productos) {
+          if (prod.tipo === 'comida') this.productosPorTipo.comida.push(prod);
+          else if (prod.tipo === 'bebida') this.productosPorTipo.bebida.push(prod);
+          else if (prod.tipo === 'postre') this.productosPorTipo.postre.push(prod);
+        }
+      }
+    }
+    this.propinaSeleccionada = 0;
+    this.mostrarModalPago = true;
+  }
+
+  cerrarModalPago() {
+    this.mostrarModalPago = false;
+    this.propinaSeleccionada = 0;
+  }
+
+  seleccionarPropina(porcentaje: number) {
+    this.propinaSeleccionada = porcentaje;
+  }
+
+  calcularPropina(): number {
+    if (!this.pedidoActualCliente || this.propinaSeleccionada === 0) return 0;
+    return Math.round(this.pedidoActualCliente.precio * (this.propinaSeleccionada / 100));
+  }
+
+  calcularTotalConPropina(): number {
+    if (!this.pedidoActualCliente) return 0;
+    return this.pedidoActualCliente.precio + this.calcularPropina();
+  }
+
+  agruparItems(arr: string[]): {nombre: string, cantidad: number}[] {
+    if (!arr) return [];
+    const map = new Map<string, number>();
+    for (const nombre of arr) {
+      map.set(nombre, (map.get(nombre) || 0) + 1);
+    }
+    return Array.from(map.entries()).map(([nombre, cantidad]) => ({ nombre, cantidad }));
+  }
+
+  esUltimoItem(item: {nombre: string, cantidad: number}, arr: {nombre: string, cantidad: number}[]): boolean {
+    return arr[arr.length - 1] === item;
+  }
+
+  async verificarPedidoExistente() {
+    if (!this.mesaAsignada || this.perfilUsuario !== 'cliente') {
+      this.mostrarBotonVerEstadoPedido = false;
+      this.pedidoActualCliente = null;
+      return;
+    }
+    const { data, error } = await this.supabase.supabase
+      .from('pedidos')
+      .select('*')
+      .eq('mesa', this.mesaAsignada)
+      .order('id', { ascending: false })
+      .limit(1);
+    if (!error && data && data.length > 0) {
+      this.mostrarBotonVerEstadoPedido = true;
+      this.pedidoActualCliente = data[0];
+      this.mostrarBotonHacerPedido = false;
+    } else {
+      this.mostrarBotonVerEstadoPedido = false;
+      this.pedidoActualCliente = null;
+      this.mostrarBotonHacerPedido = this.clienteSentado;
+    }
+
+    await this.cargarClienteInfo();
+  }
+
+  abrirModalEstadoPedido() {
+    this.mostrarModalEstadoPedido = true;
+  }
+
+  cerrarModalEstadoPedido() {
+    this.mostrarModalEstadoPedido = false;
+  }
+
+  abrirModalPedidosPreparar() {
+    this.mostrarModalPedidosPreparar = true;
+    this.cargarPedidosPreparar();
+  }
+
+  cerrarModalPedidosPreparar() {
+    this.mostrarModalPedidosPreparar = false;
+    this.pedidosPreparar = [];
+  }
+
+  async cargarPedidosPreparar() {
+    this.cargandoPedidosPreparar = true;
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('pedidos')
+        .select('*')
+        .eq('confirmado', true)
+        .not('estado', 'eq', 'Entregado')
+        .order('id', { ascending: false });
+      
+      if (!error && data) {
+        if (this.esCocinero) {
+          this.pedidosPreparar = data.filter(pedido => 
+            (pedido.comidas && pedido.comidas.length > 0) || 
+            (pedido.postres && pedido.postres.length > 0)
+          );
+        } else if (this.esBartender) {
+          this.pedidosPreparar = data.filter(pedido => 
+            pedido.bebidas && pedido.bebidas.length > 0
+          );
+        }
+      }
+    } finally {
+      this.cargandoPedidosPreparar = false;
+    }
+  }
+
+  async marcarProductoTerminado(pedido: any, tipo: 'comida' | 'bebida' | 'postre', index: number) {
+    const estadoField = tipo === 'comida' ? 'estado_comida' : tipo === 'bebida' ? 'estado_bebida' : 'estado_postre';
+    const productos = tipo === 'comida' ? pedido.comidas : tipo === 'bebida' ? pedido.bebidas : pedido.postres;
+    
+    let estados = pedido[estadoField] || [];
+    if (estados.length < productos.length) {
+      estados = new Array(productos.length).fill(false);
+    }
+
+    estados[index] = true;
+
+    const todosTerminados = estados.every((estado: boolean) => estado === true);
+
+    const updateData: any = { [estadoField]: estados };
+  
+    if (todosTerminados) {
+      if (tipo === 'comida') {
+        updateData.estado = 'Comidas listas';
+      } else if (tipo === 'bebida') {
+        updateData.estado = 'Bebidas listas';
+      } else {
+        updateData.estado = 'Postres listos';
+      }
+    }
+    
+    const { error } = await this.supabase.supabase
+      .from('pedidos')
+      .update(updateData)
+      .eq('id', pedido.id);
+    
+    if (!error) {
+      this.cargarPedidosPreparar();
+    }
+  }
+
+  async marcarTipoCompletoTerminado(pedido: any, tipo: 'comida' | 'bebida' | 'postre') {
+    try {
+      const estadoField = tipo === 'comida' ? 'estado_comida' : tipo === 'bebida' ? 'estado_bebida' : 'estado_postre';
+      const productos = tipo === 'comida' ? pedido.comidas : tipo === 'bebida' ? pedido.bebidas : pedido.postres;
+      
+      if (!productos || productos.length === 0) {
+        return;
+      }
+      
+      const updateData: any = {
+        [estadoField]: true
+      };
+      
+      const comidasCompletadas = pedido.comidas?.length > 0 ? (tipo === 'comida' ? true : pedido.estado_comida === true) : true;
+      const bebidasCompletadas = pedido.bebidas?.length > 0 ? (tipo === 'bebida' ? true : pedido.estado_bebida === true) : true;
+      const postresCompletados = pedido.postres?.length > 0 ? (tipo === 'postre' ? true : pedido.estado_postre === true) : true;
+
+      if (comidasCompletadas && bebidasCompletadas && postresCompletados) {
+        updateData.estado = 'Listo para entregar';
+      }
+      
+      const { error } = await this.supabase.supabase
+        .from('pedidos')
+        .update(updateData)
+        .eq('id', pedido.id);
+      
+      if (error) {
+        return;
+      }
+      
+      await this.cargarPedidosPreparar();
+      
+    } catch (error) {
+    }
+  }
+
+  isTipoCompletoTerminado(pedido: any, tipo: 'comida' | 'bebida' | 'postre'): boolean {
+    const estadoField = tipo === 'comida' ? 'estado_comida' : tipo === 'bebida' ? 'estado_bebida' : 'estado_postre';
+    return pedido[estadoField] === true;
+  }
+
+  isProductoTerminado(pedido: any, tipo: 'comida' | 'bebida' | 'postre', index: number): boolean {
+    const estadoField = tipo === 'comida' ? 'estado_comida' : tipo === 'bebida' ? 'estado_bebida' : 'estado_postre';
+    return pedido[estadoField] === true;
+  }
+
+  getEstadoTipoProducto(pedido: any, tipo: 'comida' | 'bebida' | 'postre'): string {
+    const estadoField = tipo === 'comida' ? 'estado_comida' : tipo === 'bebida' ? 'estado_bebida' : 'estado_postre';
+    const productos = tipo === 'comida' ? pedido.comidas : tipo === 'bebida' ? pedido.bebidas : pedido.postres;
+    
+    if (!productos || productos.length === 0) {
+      return 'Sin productos';
+    }
+    
+    if (pedido[estadoField] === true) {
+      return 'Listo';
+    } else {
+      return 'En preparación';
+    }
+  }
+
+  agruparItemsConPrecio(arr: string[]): {nombre: string, cantidad: number, precio_unitario: number, precio_total: number}[] {
+    if (!arr) return [];
+    const map = new Map<string, {cantidad: number, precio_unitario: number}>();
+    
+    for (const nombre of arr) {
+      if (map.has(nombre)) {
+        map.get(nombre)!.cantidad++;
+      } else {
+        const producto = this.productosPorTipo.comida.find(p => p.nombre === nombre) ||
+                        this.productosPorTipo.bebida.find(p => p.nombre === nombre) ||
+                        this.productosPorTipo.postre.find(p => p.nombre === nombre);
+        
+        map.set(nombre, {
+          cantidad: 1,
+          precio_unitario: producto ? producto.precio : 0
+        });
+      }
+    }
+    
+    return Array.from(map.entries()).map(([nombre, info]) => ({
+      nombre,
+      cantidad: info.cantidad,
+      precio_unitario: info.precio_unitario,
+      precio_total: info.precio_unitario * info.cantidad
+    }));
+  }
+
+  async confirmarPago() {
+    if (!this.pedidoActualCliente) return;
+    
+    const totalConPropina = this.calcularTotalConPropina();
+    
+    const { error } = await this.supabase.supabase
+      .from('pedidos')
+      .update({ 
+        cuenta: 'chequeo',
+        pagado: totalConPropina
+      })
+      .eq('id', this.pedidoActualCliente.id);
+    
+    if (!error) {
+      this.pedidoActualCliente.cuenta = 'chequeo';
+      this.pedidoActualCliente.pagado = totalConPropina;
+      this.cerrarModalPago();
+      await this.verificarPedidoExistente();
+    }
+  }
+
+  async confirmarPagoMozo(pedido: any) {
+    try {
+      const { error: errorPedido } = await this.supabase.supabase
+        .from('pedidos')
+        .update({ cuenta: 'pagada' })
+        .eq('id', pedido.id);
+      
+      if (errorPedido) {
+        await this.mostrarAlerta('Error', 'No se pudo actualizar el pedido: ' + errorPedido.message);
+        return;
+      }
+
+      const { data: listaEsperaData, error: errorListaEspera } = await this.supabase.supabase
+        .from('lista_espera')
+        .select('*')
+        .eq('mesa_asignada', pedido.mesa);
+
+      if (errorListaEspera) {
+        await this.mostrarAlerta('Error', 'Error al buscar en lista de espera: ' + errorListaEspera.message);
+        return;
+      }
+
+      if (listaEsperaData && listaEsperaData.length > 0) {
+        const listaEspera = listaEsperaData[0];
+        
+        const { data: clienteData, error: errorCliente } = await this.supabase.supabase
+          .from('clientes')
+          .select('*')
+          .eq('correo', listaEspera.correo);
+
+        if (errorCliente) {
+          await this.mostrarAlerta('Error', 'Error al buscar cliente: ' + errorCliente.message);
+          return;
+        }
+
+        if (clienteData && clienteData.length > 0) {
+          const cliente = clienteData[0];
+          
+          const { error: errorUpdateCliente } = await this.supabase.supabase
+            .from('clientes')
+            .update({ 
+              sentado: false,
+              encuesta: false
+            })
+            .eq('id', cliente.id);
+
+          if (errorUpdateCliente) {
+            await this.mostrarAlerta('Error', 'No se pudo actualizar el cliente: ' + errorUpdateCliente.message);
+          }
+        }
+
+        const { error: errorDeleteListaEspera } = await this.supabase.supabase
+          .from('lista_espera')
+          .delete()
+          .eq('correo', listaEspera.correo);
+
+        if (errorDeleteListaEspera) {
+          await this.mostrarAlerta('Error', 'No se pudo eliminar de lista de espera: ' + errorDeleteListaEspera.message);
+        }
+      }
+
+      const { error: errorMesa } = await this.supabase.supabase
+        .from('mesas')
+        .update({ 
+          ocupada: false
+        })
+        .eq('numero', pedido.mesa);
+
+      if (errorMesa) {
+        await this.mostrarAlerta('Error', 'No se pudo liberar la mesa: ' + errorMesa.message);
+      }
+
+      await this.cargarPedidos();
+      
+      await this.mostrarAlerta('Éxito', 'Pago confirmado y mesa liberada');
+      
+    } catch (error) {
+      await this.mostrarAlerta('Error', 'Error inesperado al confirmar el pago: ' + error);
+    }
+  }
+
+  async pagarCuenta() {
+    this.abrirModalPago();
+  }
+
+  async confirmarPedidoMozo(pedido: any) {
+    if (pedido.confirmado) return;
+    const { error } = await this.supabase.supabase
+      .from('pedidos')
+      .update({ confirmado: true, estado: 'En preparación' })
+      .eq('id', pedido.id);
+    if (!error) {
+      this.cargarPedidos();
+    }
   }
 }

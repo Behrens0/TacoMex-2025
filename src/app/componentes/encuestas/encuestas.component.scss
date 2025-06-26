@@ -624,3 +624,187 @@ ion-content {
   min-height: 100vh !important;
   height: 100vh !important;
 }
+
+.encuestas-previas-section {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.encuestas-lista {
+  margin-bottom: 20px;
+  
+  h3 {
+    color: #4CAF50;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+}
+
+.encuesta-item {
+  margin-bottom: 20px;
+  
+  ion-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin: 0;
+    
+    ion-card-header {
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      border-radius: 12px 12px 0 0;
+      
+      ion-card-title {
+        color: #4CAF50;
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+      
+      ion-card-subtitle {
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+    }
+    
+    ion-card-content {
+      padding: 16px;
+    }
+  }
+}
+
+.encuesta-datos {
+  .encuesta-puntuaciones {
+    margin-bottom: 16px;
+    
+    .puntuacion-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .puntuacion-label {
+        font-weight: 500;
+        color: #333;
+      }
+      
+      .puntuacion-valor {
+        font-weight: bold;
+        color: #4CAF50;
+        background: #e8f5e8;
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+    }
+  }
+  
+  .encuesta-opciones {
+    margin-bottom: 16px;
+    
+    .opcion-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .opcion-label {
+        font-weight: 500;
+        color: #333;
+      }
+      
+      .opcion-valor {
+        font-weight: bold;
+        color: #2196F3;
+      }
+    }
+  }
+  
+  .encuesta-comentario {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50;
+    
+    .comentario-label {
+      font-weight: bold;
+      color: #333;
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .comentario-texto {
+      color: #666;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+  
+  .encuesta-imagenes {
+    text-align: center;
+    
+    .btn-ver-imagenes {
+      --color: #4CAF50;
+      --border-color: #4CAF50;
+      font-weight: 500;
+      
+      ion-icon {
+        margin-right: 6px;
+      }
+    }
+  }
+}
+
+.no-encuestas {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  
+  ion-icon {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    color: #495057;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    color: #6c757d;
+    margin: 0;
+  }
+}
+
+.graficos-section {
+  .estadisticas-header {
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: -30px;
+    
+    h3 {
+      color: #4CAF50;
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin: 0;
+      padding: 10px 20px;
+      background: #fff;
+      border-radius: 8px;
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+}

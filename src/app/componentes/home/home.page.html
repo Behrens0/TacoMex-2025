@@ -40,9 +40,9 @@
       *ngIf="perfilUsuario === 'cliente'" 
       expand="block" 
       class="boton-encuesta"
-      (click)="irAEncuesta()">
+      (click)="verEncuestasPrevias()">
       <ion-icon name="clipboard-outline"></ion-icon>
-      Encuesta de Satisfacción
+      Ver Encuestas Previas
     </ion-button>
 
     <ion-button 
@@ -64,7 +64,7 @@
     </ion-button>
 
     <ion-button 
-      *ngIf="perfilUsuario === 'cliente' && mostrarBotonEscanearMesa" 
+      *ngIf="perfilUsuario === 'cliente' && mostrarBotonEscanearMesa && clienteSentado" 
       color="secondary" 
       expand="block" 
       class="boton-escanear-qr"
@@ -72,10 +72,55 @@
       Consultar al mozo
     </ion-button>
 
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && mostrarBotonVerEstadoPedido" 
+      expand="block" 
+      class="boton-hacer-pedido"
+      (click)="abrirModalEstadoPedido()">
+      <ion-icon name="hourglass-outline"></ion-icon>
+      Estado del pedido
+    </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && pedidoActualCliente?.estado === 'Entregado' && !pedidoActualCliente?.recepcion" 
+      expand="block" 
+      class="boton-confirmar-recepcion"
+      (click)="confirmarRecepcion()">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+      Confirmar Recepción
+    </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && pedidoActualCliente?.recepcion && !pedidoActualCliente?.cuenta" 
+      expand="block" 
+      class="boton-pedir-cuenta"
+      (click)="pedirCuenta()">
+      <ion-icon name="card-outline"></ion-icon>
+      Pedir la Cuenta
+    </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && pedidoActualCliente?.recepcion && !clienteInfo?.encuesta" 
+      expand="block" 
+      class="boton-encuesta-satisfaccion"
+      (click)="hacerEncuesta()">
+      <ion-icon name="clipboard-outline"></ion-icon>
+      Encuesta de Satisfacción
+    </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && pedidoActualCliente?.cuenta === 'entregada'" 
+      expand="block" 
+      class="boton-pagar-cuenta"
+      (click)="pagarCuenta()">
+      <ion-icon name="card-outline"></ion-icon>
+      Pagar Cuenta
+    </ion-button>
+
     <div *ngIf="mensajeErrorQR" class="qr-error-message">{{ mensajeErrorQR }}</div>
 
     <ion-button 
-      *ngIf="perfilUsuario === 'cliente' && isSupported && !yaEnListaEspera && !qrEnProceso" 
+      *ngIf="perfilUsuario === 'cliente' && isSupported && !yaEnListaEspera && !qrEnProceso && !clienteSentado" 
       expand="block" 
       class="boton-escanear-qr"
       (click)="escanearQR()">
@@ -87,6 +132,16 @@
     <ion-button *ngIf="perfilUsuario === 'mozo'" expand="block" color="primary" (click)="abrirModalConsultasMozo()">
       Consultas
     </ion-button>
+
+    <!-- Botón Pedidos solo para mozo -->
+    <button *ngIf="perfilUsuario === 'mozo'" class="btn-pedidos" (click)="abrirModalPedidos()">
+      Pedidos
+    </button>
+
+    <!-- Botón Pedidos a preparar para cocinero y bartender -->
+    <button *ngIf="esCocinero || esBartender" class="btn-pedidos-preparar" (click)="abrirModalPedidosPreparar()">
+      {{ esCocinero ? 'Comidas y postres a preparar' : 'Bebidas a preparar' }}
+    </button>
   </div>
 
   <ion-modal [isOpen]="mostrarModalProductos" (didDismiss)="cerrarModalProductosMesa()">
@@ -123,6 +178,9 @@
             </div>
           </ng-container>
         </div>
+          <button class="boton-flotante-qr-producto" (click)="escanearQRProducto()">
+            <ion-icon name="qr-code-outline"></ion-icon>
+          </button>
       </ion-content>
       <button *ngIf="!mostrarConfirmacionPedido" class="resumen-pedido-fijo" [class.resumen-pedido-clickeando]="clickeandoResumen" [disabled]="getTotalPrecio() === 0" (mousedown)="clickeandoResumen = true" (mouseup)="clickeandoResumen = false" (mouseleave)="clickeandoResumen = false" (click)="abrirConfirmacionPedido()">
         <div class="resumen-precio">${{ getTotalPrecio() | number:'1.2-2' }}</div>
@@ -235,6 +293,269 @@
               <div *ngIf="!consulta.respuesta" class="respuesta-mozo" style="background:#fff0; border:none; color:#888;">Sin respuesta aún</div>
             </div>
           </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal de Pedidos para Mozo -->
+  <ion-modal *ngIf="mostrarModalPedidos" [isOpen]="mostrarModalPedidos" (ionModalDidDismiss)="cerrarModalPedidos()">
+    <ng-template>
+      <ion-content>
+        <div class="modal-title-container">
+          <ion-button fill="clear" class="close-button" (click)="cerrarModalPedidos()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+          <h2 class="modal-title">Pedidos de mesas</h2>
+        </div>
+        <div class="clientes-container">
+          <div *ngIf="cargandoPedidos" class="loading-container"><p>Cargando pedidos...</p></div>
+          <div *ngIf="!cargandoPedidos && pedidos.length === 0" class="modal-empty">No hay pedidos.</div>
+          <div *ngFor="let pedido of pedidos" class="cliente-item">
+            <div class="cliente-info">
+              <div class="cliente-nombre">Mesa N° {{ pedido.mesa }}</div>
+              <div class="cliente-correo"><b>Comidas:</b>
+                <ng-container *ngIf="pedido.comidas?.length; else sinComidas">
+                  <div *ngFor="let item of agruparItems(pedido.comidas)">
+                    {{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span>
+                  </div>
+                </ng-container>
+                <ng-template #sinComidas>-</ng-template>
+                <div class="estado-tipo" *ngIf="pedido.confirmado && pedido.comidas?.length">
+                  <span>Estado: {{ getEstadoTipoProducto(pedido, 'comida') }}</span>
+                </div>
+              </div>
+              <div class="cliente-correo"><b>Bebidas:</b>
+                <ng-container *ngIf="pedido.bebidas?.length; else sinBebidas">
+                  <div *ngFor="let item of agruparItems(pedido.bebidas)">
+                    {{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span>
+                  </div>
+                </ng-container>
+                <ng-template #sinBebidas>-</ng-template>
+                <div class="estado-tipo" *ngIf="pedido.confirmado && pedido.bebidas?.length">
+                  <span>Estado: {{ getEstadoTipoProducto(pedido, 'bebida') }}</span>
+                </div>
+              </div>
+              <div class="cliente-correo"><b>Postres:</b>
+                <ng-container *ngIf="pedido.postres?.length; else sinPostres">
+                  <div *ngFor="let item of agruparItems(pedido.postres)">
+                    {{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span>
+                  </div>
+                </ng-container>
+                <ng-template #sinPostres>-</ng-template>
+                <div class="estado-tipo" *ngIf="pedido.confirmado && pedido.postres?.length">
+                  <span>Estado: {{ getEstadoTipoProducto(pedido, 'postre') }}</span>
+                </div>
+              </div>
+              <div class="cliente-correo"><b>Precio:</b> ${{ pedido.precio }}</div>
+              <div class="cliente-correo"><b>Tiempo estimado:</b> {{ pedido.tiempo_estimado }} min</div>
+              <div class="cliente-correo" *ngIf="pedido.estado !== 'Entregado'"><b>Estado:</b> <span [ngClass]="{'confirmado-true': pedido.confirmado, 'confirmado-false': !pedido.confirmado}">{{ pedido.estado || (pedido.confirmado ? 'En preparación' : 'Sin confirmar') }}</span></div>
+              <div class="estado-tipo" *ngIf="pedido.estado === 'Entregado'">
+                <span class="estado-terminado">✓ Pedido entregado</span>
+              </div>
+              <div class="cliente-correo" *ngIf="pedido.cuenta">
+                <b>Cuenta:</b> 
+                <span *ngIf="pedido.cuenta === 'pedida'" class="estado-cuenta-pedida">Pedida</span>
+                <span *ngIf="pedido.cuenta === 'entregada'" class="estado-cuenta-entregada">Entregada</span>
+                <span *ngIf="pedido.cuenta === 'chequeo'" class="estado-cuenta-chequeo">En Chequeo</span>
+                <span *ngIf="pedido.cuenta === 'pagada'" class="estado-cuenta-pagada">✓ Cuenta pagada</span>
+              </div>
+              <div class="cliente-correo" *ngIf="pedido.pagado">
+                <b>Monto pagado:</b> ${{ pedido.pagado }}
+              </div>
+            </div>
+            <div class="mesa-actions">
+              <ion-button expand="block" color="success" *ngIf="!pedido.confirmado" (click)="confirmarPedidoMozo(pedido)">
+                Confirmar pedido
+              </ion-button>
+              <ion-button expand="block" color="warning" *ngIf="pedido.estado === 'Listo para entregar'" (click)="marcarPedidoEntregado(pedido)">
+                Marcar como entregado
+              </ion-button>
+              <ion-button expand="block" color="primary" *ngIf="pedido.cuenta === 'pedida'" (click)="llevarCuenta(pedido)">
+                Llevar Cuenta
+              </ion-button>
+              <ion-button expand="block" color="success" *ngIf="pedido.cuenta === 'chequeo' && pedido.cuenta !== 'pagada'" (click)="confirmarPagoMozo(pedido)">
+                Confirmar Pago
+              </ion-button>
+            </div>
+          </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal *ngIf="mostrarModalEstadoPedido" [isOpen]="mostrarModalEstadoPedido" (ionModalDidDismiss)="cerrarModalEstadoPedido()" class="modal-estado-pedido">
+    <ng-template>
+      <div class="contenedor-modal-estado-pedido">
+        <button class="boton-cerrar-x" (click)="cerrarModalEstadoPedido()">&times;</button>
+        <h2>Estado del pedido</h2>
+        <div class="estado-pedido-texto">{{ pedidoActualCliente?.estado || 'Sin información' }}</div>
+        <div class="estado-tiempo-estimado">
+          <ion-icon name="time-outline"></ion-icon>
+          Tiempo estimado: {{ pedidoActualCliente?.tiempo_estimado || '-' }} min
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal de Pedidos a Preparar para Cocinero/Bartender -->
+  <ion-modal *ngIf="mostrarModalPedidosPreparar" [isOpen]="mostrarModalPedidosPreparar" (ionModalDidDismiss)="cerrarModalPedidosPreparar()">
+    <ng-template>
+      <ion-content>
+        <div class="modal-title-container">
+          <ion-button fill="clear" class="close-button" (click)="cerrarModalPedidosPreparar()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+          <h2 class="modal-title">{{ esCocinero ? 'Comidas y postres a preparar' : 'Bebidas a preparar' }}</h2>
+        </div>
+        <div class="clientes-container">
+          <div *ngIf="cargandoPedidosPreparar" class="loading-container"><p>Cargando pedidos...</p></div>
+          <div *ngIf="!cargandoPedidosPreparar && pedidosPreparar.length === 0" class="modal-empty">No hay pedidos para preparar.</div>
+          <div *ngFor="let pedido of pedidosPreparar" class="cliente-item">
+            <div class="cliente-info">
+              <div class="cliente-nombre">Mesa N° {{ pedido.mesa }}</div>
+              <div class="cliente-correo" *ngIf="esCocinero"><b>Comidas:</b>
+                <ng-container *ngIf="pedido.comidas?.length; else sinComidasPreparar">
+                  <div *ngFor="let item of agruparItems(pedido.comidas)" class="producto-item-preparar">
+                    <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+                  </div>
+                </ng-container>
+                <ng-template #sinComidasPreparar>-</ng-template>
+                <div class="accion-tipo" *ngIf="pedido.comidas?.length">
+                  <span *ngIf="isTipoCompletoTerminado(pedido, 'comida')" class="estado-terminado">✓ Comidas completadas</span>
+                  <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'comida')" size="small" color="success" (click)="marcarTipoCompletoTerminado(pedido, 'comida')">
+                    Marcar comidas como terminadas
+                  </ion-button>
+                </div>
+              </div>
+              <div class="cliente-correo" *ngIf="esCocinero"><b>Postres:</b>
+                <ng-container *ngIf="pedido.postres?.length; else sinPostresPreparar">
+                  <div *ngFor="let item of agruparItems(pedido.postres)" class="producto-item-preparar">
+                    <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+                  </div>
+                </ng-container>
+                <ng-template #sinPostresPreparar>-</ng-template>
+                <div class="accion-tipo" *ngIf="pedido.postres?.length">
+                  <span *ngIf="isTipoCompletoTerminado(pedido, 'postre')" class="estado-terminado">✓ Postres completados</span>
+                  <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'postre')" size="small" color="success" (click)="marcarTipoCompletoTerminado(pedido, 'postre')">
+                    Marcar postres como terminados
+                  </ion-button>
+                </div>
+              </div>
+              <div class="cliente-correo" *ngIf="esBartender"><b>Bebidas:</b>
+                <ng-container *ngIf="pedido.bebidas?.length; else sinBebidasPreparar">
+                  <div *ngFor="let item of agruparItems(pedido.bebidas)" class="producto-item-preparar">
+                    <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+                  </div>
+                </ng-container>
+                <ng-template #sinBebidasPreparar>-</ng-template>
+                <div class="accion-tipo" *ngIf="pedido.bebidas?.length">
+                  <span *ngIf="isTipoCompletoTerminado(pedido, 'bebida')" class="estado-terminado">✓ Bebidas completadas</span>
+                  <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'bebida')" size="small" color="success" (click)="marcarTipoCompletoTerminado(pedido, 'bebida')">
+                    Marcar bebidas como terminadas
+                  </ion-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal de Pago -->
+  <ion-modal *ngIf="mostrarModalPago" [isOpen]="mostrarModalPago" (ionModalDidDismiss)="cerrarModalPago()">
+    <ng-template>
+      <ion-content>
+        <div class="modal-title-container">
+          <ion-button fill="clear" class="close-button" (click)="cerrarModalPago()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+          <h2 class="modal-title">Detalle de Pago</h2>
+        </div>
+        <div class="detalle-pago-container">
+          <div class="detalle-pedido">
+            <h3>Mesa N° {{ pedidoActualCliente?.mesa }}</h3>
+            
+            <div class="seccion-productos" *ngIf="pedidoActualCliente?.comidas?.length">
+              <h4>Comidas</h4>
+              <div class="producto-item" *ngFor="let item of agruparItemsConPrecio(pedidoActualCliente.comidas)">
+                <div class="producto-info">
+                  <span class="producto-nombre">{{ item.nombre }}</span>
+                  <span class="producto-cantidad">x{{ item.cantidad }}</span>
+                </div>
+                <div class="producto-precio">
+                  <span class="precio-unitario">${{ item.precio_unitario }} c/u</span>
+                  <span class="precio-total">${{ item.precio_total }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="seccion-productos" *ngIf="pedidoActualCliente?.bebidas?.length">
+              <h4>Bebidas</h4>
+              <div class="producto-item" *ngFor="let item of agruparItemsConPrecio(pedidoActualCliente.bebidas)">
+                <div class="producto-info">
+                  <span class="producto-nombre">{{ item.nombre }}</span>
+                  <span class="producto-cantidad">x{{ item.cantidad }}</span>
+                </div>
+                <div class="producto-precio">
+                  <span class="precio-unitario">${{ item.precio_unitario }} c/u</span>
+                  <span class="precio-total">${{ item.precio_total }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="seccion-productos" *ngIf="pedidoActualCliente?.postres?.length">
+              <h4>Postres</h4>
+              <div class="producto-item" *ngFor="let item of agruparItemsConPrecio(pedidoActualCliente.postres)">
+                <div class="producto-info">
+                  <span class="producto-nombre">{{ item.nombre }}</span>
+                  <span class="producto-cantidad">x{{ item.cantidad }}</span>
+                </div>
+                <div class="producto-precio">
+                  <span class="precio-unitario">${{ item.precio_unitario }} c/u</span>
+                  <span class="precio-total">${{ item.precio_total }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="total-container">
+              <div class="linea-separadora"></div>
+              
+              <!-- Botones de Propina -->
+              <div class="propina-container">
+                <h4>Propina</h4>
+                <div class="botones-propina">
+                  <ion-button 
+                    *ngFor="let porcentaje of [0, 10, 15, 20]" 
+                    [class.propina-seleccionada]="propinaSeleccionada === porcentaje"
+                    fill="outline" 
+                    size="small"
+                    (click)="seleccionarPropina(porcentaje)">
+                    {{ porcentaje }}%
+                  </ion-button>
+                </div>
+                <div class="propina-info" *ngIf="propinaSeleccionada > 0">
+                  <span>Propina ({{ propinaSeleccionada }}%): ${{ calcularPropina() }}</span>
+                </div>
+              </div>
+
+              <div class="linea-separadora"></div>
+              
+              <div class="total-final">
+                <span class="total-label">TOTAL A PAGAR:</span>
+                <span class="total-monto">${{ calcularTotalConPropina() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <ion-button 
+            expand="block" 
+            class="boton-pagar-final"
+            (click)="confirmarPago()">
+            <ion-icon name="card-outline"></ion-icon>
+            PAGAR ${{ calcularTotalConPropina() }}
+          </ion-button>
         </div>
       </ion-content>
     </ng-template>

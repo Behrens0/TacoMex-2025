@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonContent, IonButton, IonIcon, IonHeader, IonToolbar, IonTitle, IonItem, IonLabel, IonInput, IonRange, IonRadioGroup, IonRadio, IonCheckbox, IonSelect, IonSelectOption, IonTextarea, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol, IonImg, IonAlert, IonBackButton, IonButtons, IonSpinner, AlertController } from '@ionic/angular/standalone';
+import { IonContent, IonButton, IonIcon, IonHeader, IonToolbar, IonTitle, IonItem, IonLabel, IonInput, IonRange, IonRadioGroup, IonRadio, IonCheckbox, IonSelect, IonSelectOption, IonTextarea, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonGrid, IonRow, IonCol, IonImg, IonAlert, IonBackButton, IonButtons, IonSpinner, AlertController } from '@ionic/angular/standalone';
 import { SupabaseService } from '../../servicios/supabase.service';
 import { LoadingService } from '../../servicios/loading.service';
 import { Router } from '@angular/router';
@@ -53,6 +53,7 @@ interface Encuesta {
     IonCard,
     IonCardHeader,
     IonCardTitle,
+    IonCardSubtitle,
     IonCardContent,
     IonGrid,
     IonRow,
@@ -79,6 +80,8 @@ export class EncuestasComponent implements OnInit {
   mostrarImagenes = false;
   encuestaSeleccionada: Encuesta | null = null;
   imagenAmpliada: string | null = null;
+  modo: 'hacer' | 'ver' = 'hacer';
+  mostrarFormulario = true;
 
   constructor(
     private fb: FormBuilder,
@@ -101,6 +104,28 @@ export class EncuestasComponent implements OnInit {
 
   ngOnInit() {
     this.cargarUsuario();
+    this.leerParametrosQuery();
+  }
+
+  leerParametrosQuery() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const modoParam = urlParams.get('modo');
+    
+    if (modoParam === 'ver') {
+      this.modo = 'ver';
+      this.mostrarFormulario = false;
+      this.cargarEncuestas().then(() => {
+        this.mostrarGraficos = true;
+        this.crearGraficos();
+      });
+    } else if (modoParam === 'hacer') {
+      this.modo = 'hacer';
+      this.mostrarFormulario = true;
+      this.cargarEncuestas();
+    } else {
+      this.modo = 'hacer';
+      this.mostrarFormulario = true;
+    }
   }
 
   async cargarUsuario() {
@@ -121,7 +146,6 @@ export class EncuestasComponent implements OnInit {
         .single();
 
       if (clientError) {
-        console.error('Error al cargar información del cliente:', clientError);
         await this.mostrarAlerta('Error', 'No se pudo obtener la información del cliente.');
         this.router.navigate(['/login']);
         return;
@@ -135,7 +159,6 @@ export class EncuestasComponent implements OnInit {
         return;
       }
     } catch (error) {
-      console.error('Error al cargar usuario:', error);
       await this.mostrarAlerta('Error', 'Error al cargar la información del usuario.');
     }
   }
@@ -152,14 +175,6 @@ export class EncuestasComponent implements OnInit {
         .from(tablaCorrecta)
         .select('*');
       if (error) {
-        console.error('Error al cargar encuestas:', error);
-        console.error('Detalles del error:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
-        
         if (error.code === 'PGRST116') {
           await this.mostrarAlerta('Error', 'La tabla de encuestas no existe. Contacte al administrador.');
         } else if (error.code === '42501') {
@@ -168,17 +183,9 @@ export class EncuestasComponent implements OnInit {
           await this.mostrarAlerta('Error', `No se pudieron cargar las encuestas: ${error.message}`);
         }
       } else {
-        console.log('Encuestas cargadas exitosamente:', data?.length || 0, 'encuestas');
         this.encuestas = data || [];
-        
-        if (this.encuestas.length === 0) {
-          console.log('No hay encuestas en la base de datos');
-        } else {
-          console.log('Primera encuesta:', this.encuestas[0]);
-        }
       }
     } catch (error) {
-      console.error('Error inesperado al cargar encuestas:', error);
       await this.mostrarAlerta('Error', `Error inesperado al cargar las encuestas: ${error}`);
     } finally {
       this.loadingService.hide();
@@ -203,7 +210,6 @@ export class EncuestasComponent implements OnInit {
         this.fotos.push(`data:image/jpeg;base64,${imagen.base64String}`);
       }
     } catch (error) {
-      console.error('Error al tomar foto:', error);
       await this.mostrarAlerta('Error', 'No se pudo tomar la foto. Verifique los permisos de cámara.');
     }
   }
@@ -241,7 +247,6 @@ export class EncuestasComponent implements OnInit {
         const url = await this.supabase.subirImagenEncuesta(archivo, this.clientInfo.correo, i);
         urls.push(url);
       } catch (error) {
-        console.error(`Error al procesar imagen ${i + 1}:`, error);
         if (error instanceof Error) {
           throw new Error(`Error al subir la imagen ${i + 1}: ${error.message}`);
         } else {
@@ -254,85 +259,57 @@ export class EncuestasComponent implements OnInit {
   }
 
   async enviarEncuesta() {
-    if (!this.encuestaForm.valid) {
-      await this.mostrarAlerta('Formulario incompleto', 'Por favor complete todos los campos requeridos.');
-      return;
-    }
-
-    if (!this.user) {
-      await this.mostrarAlerta('Error', 'No se pudo obtener la información del usuario.');
-      return;
-    }
-
-    if (!this.clientInfo) {
-      await this.mostrarAlerta('Error', 'No se pudo obtener la información del cliente.');
-      return;
-    }
-
-    this.loadingService.show();
-    
-    try {
-      const formData = this.encuestaForm.value;
-
-      let urlsImagenes: string[] = [];
-      if (this.fotos.length > 0) {
-        try {
-          urlsImagenes = await this.subirImagenesAStorage();
-        } catch (error) {
-          await this.mostrarAlerta('Error', `Error al subir las imágenes: ${error}`);
-          this.loadingService.hide();
+    if (this.encuestaForm.valid) {
+      this.loadingService.show();
+      try {
+        const tablaCorrecta = await this.verificarTablas();
+        if (!tablaCorrecta) {
+          await this.mostrarAlerta('Error', 'No se encontró la tabla de encuestas. Contacte al administrador.');
           return;
         }
-      }
 
-      const encuestaData = {
-        nombre: this.clientInfo.nombre,
-        apellido: this.clientInfo.apellido,
-        correo: this.clientInfo.correo,
-        satisfaccion_general: formData.satisfaccion_general,
-        calidad_comida: formData.calidad_comida,
-        calidad_servicio: formData.calidad_servicio,
-        ambiente: formData.ambiente,
-        recomendacion: formData.recomendacion,
-        volverias: formData.volverias,
-        tipo_visita: formData.tipo_visita,
-        comentario: formData.comentario,
-        imagenes: urlsImagenes
-      };
-
-      const { error } = await this.supabase.supabase
-        .from('encuesta_satisfaccion')
-        .insert([encuestaData]);
-
-      if (error) {
-        console.error('Error al enviar encuesta:', error);
-        const errorMessage = error.message || 'Error desconocido';
-        await this.mostrarAlerta('Error al enviar encuesta', `Detalles del error: ${errorMessage}`);
-      } else {
-        this.mensajeExito = '¡Encuesta enviada exitosamente!';
-        this.mostrarMensajeExito = true;
+        const imagenesUrls = await this.subirImagenesAStorage();
         
-        setTimeout(() => {
-          this.mostrarMensajeExito = false;
-          this.mensajeExito = '';
-        }, 6000);
+        const encuestaData = {
+          ...this.encuestaForm.value,
+          nombre: this.clientInfo.nombre,
+          apellido: this.clientInfo.apellido,
+          correo: this.clientInfo.correo,
+          imagenes: imagenesUrls,
+        };
 
-        this.encuestaForm.reset({
-          satisfaccion_general: 5,
-          calidad_comida: 5,
-          calidad_servicio: 5,
-          ambiente: 5,
-          volverias: true
-        });
-        this.fotos = [];
-        this.encuestaEnviada = true;
+        const { error } = await this.supabase.supabase
+          .from(tablaCorrecta)
+          .insert([encuestaData]);
+
+        if (error) {
+          await this.mostrarAlerta('Error', `No se pudo enviar la encuesta: ${error.message}`);
+        } else {
+          this.encuestaEnviada = true;
+          this.mostrarMensajeExito = true;
+          this.mensajeExito = '¡Encuesta enviada exitosamente!';
+
+          const { error: errorCliente } = await this.supabase.supabase
+            .from('clientes')
+            .update({ encuesta: true })
+            .eq('correo', this.clientInfo.correo);
+          
+          if (errorCliente) {
+          }
+          
+          await this.cargarEncuestas();
+          this.mostrarGraficos = true;
+          this.crearGraficos();
+          
+          setTimeout(() => {
+            this.mostrarMensajeExito = false;
+          }, 3000);
+        }
+      } catch (error) {
+        await this.mostrarAlerta('Error', `Error inesperado al enviar la encuesta: ${error}`);
+      } finally {
+        this.loadingService.hide();
       }
-    } catch (error) {
-      console.error('Error inesperado:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      await this.mostrarAlerta('Error inesperado', `Error al enviar la encuesta: ${errorMessage}`);
-    } finally {
-      this.loadingService.hide();
     }
   }
 
@@ -364,11 +341,8 @@ export class EncuestasComponent implements OnInit {
 
   crearGraficos() {
     if (this.encuestas.length === 0) {
-      console.log('No hay encuestas para mostrar gráficos');
       return;
     }
-
-    console.log('Creando gráficos con', this.encuestas.length, 'encuestas');
 
     setTimeout(() => {
       this.crearGraficoSatisfaccion();
@@ -383,7 +357,6 @@ export class EncuestasComponent implements OnInit {
   crearGraficoSatisfaccion() {
     const ctx = document.getElementById('satisfaccionChart') as HTMLCanvasElement;
     if (!ctx) {
-      console.error('No se encontró el elemento canvas satisfaccionChart');
       return;
     }
 
@@ -423,16 +396,13 @@ export class EncuestasComponent implements OnInit {
                     }
                   }
       });
-      console.log('Gráfico de satisfacción general creado exitosamente');
     } catch (error) {
-      console.error('Error al crear gráfico de satisfacción general:', error);
     }
   }
 
   crearGraficoCalidadComida() {
     const ctx = document.getElementById('calidadComidaChart') as HTMLCanvasElement;
     if (!ctx) {
-      console.error('No se encontró el elemento canvas calidadComidaChart');
       return;
     }
 
@@ -472,9 +442,7 @@ options: {
             }
           }
       });
-      console.log('Gráfico de calidad de comida creado exitosamente');
     } catch (error) {
-      console.error('Error al crear gráfico de calidad de comida:', error);
     }
   }
 
@@ -521,16 +489,13 @@ options: {
             }
           }
       });
-      console.log('Gráfico de calidad de servicio creado exitosamente');
     } catch (error) {
-      console.error('Error al crear gráfico de calidad de servicio:', error);
     }
   }
 
   crearGraficoAmbiente() {
     const ctx = document.getElementById('ambienteChart') as HTMLCanvasElement;
     if (!ctx) {
-      console.error('No se encontró el elemento canvas ambienteChart');
       return;
     }
 
@@ -570,16 +535,13 @@ options: {
             }
           }
       });
-      console.log('Gráfico de ambiente creado exitosamente');
     } catch (error) {
-      console.error('Error al crear gráfico de ambiente:', error);
     }
   }
 
   crearGraficoRecomendacion() {
     const ctx2 = document.getElementById('recomendacionChart') as HTMLCanvasElement;
     if (!ctx2) {
-      console.error('No se encontró el elemento canvas recomendacionChart');
       return;
     }
 
@@ -633,9 +595,7 @@ options: {
             }
           }
       });
-      console.log('Gráfico de recomendación creado exitosamente');
     } catch (error) {
-      console.error('Error al crear gráfico de recomendación:', error);
     }
   }
 
@@ -690,9 +650,7 @@ options: {
             }
           }
       });
-      console.log('Gráfico de volvería creado exitosamente');
     } catch (error) {
-      console.error('Error al crear gráfico de volvería:', error);
     }
   }
 
@@ -708,7 +666,9 @@ options: {
   }
 
   volverAHome() {
+    this.loadingService.show();
     this.router.navigate(['/home']);
+    this.loadingService.hide();
   }
 
   nuevaEncuesta() {
@@ -727,8 +687,6 @@ options: {
   }
 
   async verificarTablas() {
-    console.log('Verificando tablas disponibles...');
-    
     try {
       const tablas = ['encuesta_satisfaccion', 'encuestas', 'survey', 'encuesta'];
       
@@ -740,20 +698,15 @@ options: {
             .limit(1);
           
           if (!error) {
-            console.log(`✅ Tabla "${tabla}" existe`);
             return tabla;
           } else {
-            console.log(`❌ Tabla "${tabla}" no existe:`, error.message);
           }
-        } catch (e) {
-          console.log(`❌ Error al verificar tabla "${tabla}":`, e);
+        } catch (error) {
         }
       }
       
-      console.log('❌ No se encontró ninguna tabla de encuestas');
       return null;
     } catch (error) {
-      console.error('Error al verificar tablas:', error);
       return null;
     }
   }
