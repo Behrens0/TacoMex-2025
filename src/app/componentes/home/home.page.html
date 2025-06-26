@@ -1,8 +1,13 @@
 <ion-content>
-  <ion-button (click)="cerrarSesion()" fill="clear" class="logout-button">
-    <ion-icon name="log-out"></ion-icon>
-    Cerrar sesión
-  </ion-button>
+  <div class="cerrar-sesion-container">
+    <ion-button (click)="cerrarSesion()" fill="solid" class="logout-button">
+      <ion-icon name="log-out"></ion-icon>
+      <span class="logout-text">Cerrar sesión</span>
+    </ion-button>
+  </div>
+  <div class="logo-bar">
+    <img src="assets/TacoMex.png" alt="Logo TacoMex" class="logo-tacomex" />
+  </div>
   
   <!-- Texto de la mesa para clientes sentados -->
   <div *ngIf="perfilUsuario === 'cliente' && clienteSentado && mesaAsignada" class="mesa-info">
@@ -21,10 +26,12 @@
     <ion-button 
       *ngIf="esBartender || esCocinero" 
       expand="block" 
-      class="boton-registro-productos"
+      class="boton-registro-productos espacio-logo-boton"
       (click)="irARegistro()">
-      <ion-icon name="restaurant-outline"></ion-icon>
-      Registrar Producto
+      <div class="boton-contenido-columna">
+        <ion-icon name="add-circle-outline"></ion-icon>
+        <span class="boton-texto">Registrar Producto</span>
+      </div>
     </ion-button>
 
     <ion-button 
@@ -140,7 +147,10 @@
 
     <!-- Botón Pedidos a preparar para cocinero y bartender -->
     <button *ngIf="esCocinero || esBartender" class="btn-pedidos-preparar" (click)="abrirModalPedidosPreparar()">
-      {{ esCocinero ? 'Comidas y postres a preparar' : 'Bebidas a preparar' }}
+      <div class="boton-contenido-columna">
+        <ion-icon name="fast-food-outline"></ion-icon>
+        <span class="boton-texto">COCINA</span>
+      </div>
     </button>
   </div>
 
