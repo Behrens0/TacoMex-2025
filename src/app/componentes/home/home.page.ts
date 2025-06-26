@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { SupabaseService } from 'src/app/servicios/supabase.service';
 import { AuthService } from 'src/app/servicios/auth.service';
 import { LoadingService } from 'src/app/servicios/loading.service';
-// import { PushNotificationService } from 'src/app/servicios/push-notification.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -86,7 +85,6 @@ export class HomePage implements OnInit, OnDestroy {
     private loadingService: LoadingService,
     private alertController: AlertController,
     private modalController: ModalController
-    // private pushNotificationService: PushNotificationService
   ) {}
 
   async ngOnInit() {
@@ -152,34 +150,6 @@ export class HomePage implements OnInit, OnDestroy {
           await this.verificarMesaAsignada();
           await this.cargarClienteInfo();
         }
-        
-        // const correo = this.user.email;
-        // if (correo) {
-        //   const { data: empleado } = await this.supabase.supabase
-        //     .from('empleados')
-        //     .select('id')
-        //     .eq('correo', correo)
-        //     .single();
-        //   if (empleado) {
-        //     this.router.navigate(['/encuestas']);
-        //     return;
-        //   }
-        // }
-        // this.perfilUsuario = this.authService.getPerfilUsuario();
-        // this.esBartender = this.authService.esUsuarioBartender();
-        // this.esCocinero = this.authService.esUsuarioCocinero();
-        // this.mostrarBotonRegistro = this.authService.puedeAccederARegistro() && this.router.url !== '/registro';
-        
-        // Inicializar notificaciones push si el usuario ya está logueado
-        // TEMPORALMENTE DESHABILITADO
-        /*
-        try {
-          await this.pushNotificationService.initializePushNotifications();
-        } catch (error) {
-          console.error('Error al inicializar notificaciones push:', error);
-          // No bloquear la app si fallan las notificaciones
-        }
-        */
       }
     } catch (error) {
       this.router.navigateByUrl('/login');
@@ -364,6 +334,27 @@ export class HomePage implements OnInit, OnDestroy {
       if (errorInsert) {
         await this.mostrarAlerta('Error', 'No se pudo agregar a la lista de espera: ' + errorInsert.message);
         return;
+      }
+
+      try {
+        const response = await fetch('https://backend-taco-mex-2025.onrender.com/notify-maitre-new-client', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            clienteNombre: cliente.nombre,
+            clienteApellido: cliente.apellido
+          })
+        });
+
+        if (response.ok) {
+          console.log('Notificación enviada al maitre exitosamente');
+        } else {
+          console.error('Error al enviar notificación al maitre:', response.status);
+        }
+      } catch (error) {
+        console.error('Error al enviar notificación al maitre:', error);
       }
 
       await this.mostrarAlerta('Éxito', 'Has sido agregado exitosamente a la lista de espera.');

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "490415858831",
+    "project_id": "taco--mex",
+    "storage_bucket": "taco--mex.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:490415858831:android:3c73bde106e4e32c947cfa",
+        "android_client_info": {
+          "package_name": "app.Tabla.Didactica"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdY-QyO8tOdJ_7T9JOcTHqiLk3d86itX4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

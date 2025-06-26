@@ -127,7 +127,7 @@
     <div *ngIf="mensajeErrorQR" class="qr-error-message">{{ mensajeErrorQR }}</div>
 
     <ion-button 
-      *ngIf="perfilUsuario === 'cliente' && isSupported && !yaEnListaEspera && !qrEnProceso && !clienteSentado" 
+      *ngIf="perfilUsuario === 'cliente' && !yaEnListaEspera && !clienteSentado" 
       expand="block" 
       class="boton-escanear-qr"
       (click)="escanearQR()">

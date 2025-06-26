@@ -10,6 +10,13 @@
 		},
 		"Icon": {
 			"icon": "./src/assets/logo.png"
+		},
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
 		}
 	}
 }

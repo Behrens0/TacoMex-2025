@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "app.Taco.Mex"
+    namespace "app.Tabla.Didactica"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.Taco.Mex"
+        applicationId "app.Tabla.Didactica"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

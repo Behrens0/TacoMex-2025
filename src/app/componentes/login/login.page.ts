@@ -154,16 +154,11 @@ export class LoginPage implements OnInit {
         return;
       }
 
-      // Registrar push token después del login exitoso
-      // TEMPORALMENTE DESHABILITADO - Firebase no configurado
-      /*
       try {
         await this.registrarPushToken(usuario.id);
       } catch (error) {
         console.error('Error al registrar push token:', error);
-        // No bloquear el login si falla el registro del token
       }
-      */
 
       this.loginForm.reset();
       this.router.navigate(['/home']);
