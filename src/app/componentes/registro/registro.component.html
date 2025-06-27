@@ -61,11 +61,17 @@
           <ion-button slot="end" size="small" class="boton-verde" (click)="fileInput.click()">Subir Imagen</ion-button>
           <ion-button slot="end" size="small" class="boton-verde" (click)="tomarFoto()">Tomar Foto</ion-button>
           <input #fileInput type="file" accept="image/*" style="display: none" (change)="onImagenSeleccionada($event)" />
-          <ng-container *ngIf="imagenURL">
-            <ion-icon name="checkmark-circle" color="success" style="margin-left:8px;font-size:1.5em;"></ion-icon>
-            <img [src]="imagenURL" alt="preview" style="width:32px;height:32px;border-radius:50%;margin-left:4px;" />
-          </ng-container>
         </ion-item>
+        <!-- PREVIEW DE IMAGEN CLIENTE -->
+        <div *ngIf="imagenURL" class="imagen-preview-única" style="margin-top: 10px;">
+          <ion-label>Vista previa:</ion-label>
+          <div class="preview-wrapper" style="display: flex; align-items: center;">
+            <img [src]="imagenURL" alt="Preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 8px;" />
+            <ion-button class="boton-eliminar-foto" size="small" color="danger" (click)="eliminarFotoCliente()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
         <div class="field-error" *ngIf="clienteImagenError">{{ clienteImagenError }}</div>
 
         <div class="error-message" *ngIf="mensajeError">{{ mensajeError }}</div>

@@ -255,47 +255,18 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async escanearQR() {
-    if (!this.isSupported) {
-      await this.mostrarNotificacion('El escáner de códigos QR no está disponible en este dispositivo.', 'error');
-      return;
-    }
-
     this.qrEnProceso = true;
     this.loadingService.show();
-    
     try {
-      const permissionStatus = await BarcodeScanner.requestPermissions();
-      if (permissionStatus.camera !== 'granted') {
-        await this.mostrarNotificacion('Se requieren permisos de cámara para escanear códigos QR.', 'error');
-        return;
-      }
-
-      try {
-        await BarcodeScanner.installGoogleBarcodeScannerModule();
-      } catch (installError: any) {
-        if (!installError.message?.includes('already installed')) {
-          console.warn('Error al instalar módulo de barcode scanner:', installError);
-        }
-      }
-      
       const { barcodes } = await BarcodeScanner.scan();
-      
       if (barcodes.length > 0) {
         const codigoEscaneado = barcodes[0].displayValue;
         await this.procesarCodigoEscaneado(codigoEscaneado);
       } else {
         await this.mostrarNotificacion('No se detectó ningún código QR.', 'info');
       }
-    } catch (error: any) {
-      console.error('Error al escanear QR:', error);
-
-      if (error.message?.includes('permission')) {
-        await this.mostrarNotificacion('Permisos de cámara denegados.', 'error');
-      } else if (error.message?.includes('cancelled') || error.message?.includes('canceled')) {
-        return;
-      } else {
-        await this.mostrarNotificacion('Error al escanear el código QR: ' + (error.message || 'Error desconocido'), 'error');
-      }
+    } catch (error) {
+      await this.mostrarNotificacion('Error al escanear el código QR.', 'error');
     } finally {
       this.loadingService.hide();
       this.qrEnProceso = false;
@@ -386,27 +357,9 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async escanearMesaAsignada() {
-    if (!this.isSupported) {
-      await this.mostrarNotificacion('El escáner de códigos QR no está disponible en este dispositivo.', 'error');
-      return;
-    }
-
     this.loadingService.show();
     
     try {
-      const permissionStatus = await BarcodeScanner.requestPermissions();
-      if (permissionStatus.camera !== 'granted') {
-        await this.mostrarNotificacion('Se requieren permisos de cámara para escanear códigos QR.', 'error');
-        return;
-      }
-      try {
-        await BarcodeScanner.installGoogleBarcodeScannerModule();
-      } catch (installError: any) {
-        if (!installError.message?.includes('already installed')) {
-          console.warn('Error al instalar módulo de barcode scanner:', installError);
-        }
-      }
-
       const { barcodes } = await BarcodeScanner.scan();
       
       if (barcodes.length > 0) {
@@ -415,41 +368,26 @@ export class HomePage implements OnInit, OnDestroy {
       } else {
         this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
       }
-    } catch (error: any) {
-      console.error('Error al escanear QR de mesa:', error);
-
-      if (error.message?.includes('permission')) {
-        await this.mostrarNotificacion('Permisos de cámara denegados.', 'error');
-      } else if (error.message?.includes('cancelled') || error.message?.includes('canceled')) {
-        return;
-      } else {
-        this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
-      }
+    } catch (error) {
+      this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
     } finally {
       this.loadingService.hide();
     }
   }
 
   async validarMesaEscaneada(codigoEscaneado: string) {
-    
     let qrValido = false;
     try {
       const datosQR = JSON.parse(codigoEscaneado);
-      const mesaQR = String(datosQR.numeroMesa);
-      const mesaAsignada = String(this.mesaAsignada);
-      
-      if (mesaQR === mesaAsignada) {
+      if (datosQR.numeroMesa === parseInt(this.mesaAsignada)) {
         qrValido = true;
-      } else {
       }
     } catch (e) {
       const patronEsperado = `numeroMesa: ${this.mesaAsignada}`;
       if (codigoEscaneado.includes(patronEsperado)) {
         qrValido = true;
-      } else {
       }
     }
-    
     if (!qrValido) {
       this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
     } else {
@@ -890,29 +828,9 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async escanearQRProducto() {
-    if (!this.isSupported) {
-      await this.mostrarNotificacion('El escáner de códigos QR no está disponible en este dispositivo.', 'error');
-      return;
-    }
-
     this.loadingService.show();
     try {
-      const permissionStatus = await BarcodeScanner.requestPermissions();
-      if (permissionStatus.camera !== 'granted') {
-        await this.mostrarNotificacion('Se requieren permisos de cámara para escanear códigos QR.', 'error');
-        return;
-      }
-
-      try {
-        await BarcodeScanner.installGoogleBarcodeScannerModule();
-      } catch (installError: any) {
-        if (!installError.message?.includes('already installed')) {
-          console.warn('Error al instalar módulo de barcode scanner:', installError);
-        }
-      }
-
       const { barcodes } = await BarcodeScanner.scan();
-      
       if (barcodes.length > 0) {
         let datosQR;
         try {
@@ -939,16 +857,8 @@ export class HomePage implements OnInit, OnDestroy {
       } else {
         await this.mostrarNotificacion('No se detectó ningún código QR.', 'error');
       }
-    } catch (error: any) {
-      console.error('Error al escanear QR de producto:', error);
-      
-      if (error.message?.includes('permission')) {
-        await this.mostrarNotificacion('Permisos de cámara denegados.', 'error');
-      } else if (error.message?.includes('cancelled') || error.message?.includes('canceled')) {
-        return;
-      } else {
-        await this.mostrarNotificacion('Error al escanear el QR del producto: ' + (error.message || 'Error desconocido'), 'error');
-      }
+    } catch (error) {
+      await this.mostrarNotificacion('Error al escanear el QR del producto.', 'error');
     } finally {
       this.loadingService.hide();
     }
@@ -1028,6 +938,9 @@ export class HomePage implements OnInit, OnDestroy {
     if (!error) {
       this.pedidoActualCliente.cuenta = 'pedida';
 
+      // Mostrar toast de cuenta pedida
+      this.mostrarNotificacion('Cuenta pedida', 'exito');
+
       try {
         const clienteNombre = this.clienteInfo?.nombre || this.usuario?.email?.split('@')[0] || 'Cliente';
         const clienteApellido = this.clienteInfo?.apellido || '';
@@ -1102,14 +1015,12 @@ export class HomePage implements OnInit, OnDestroy {
       this.pedidoActualCliente = null;
       return;
     }
-    
     const { data, error } = await this.supabase.supabase
       .from('pedidos')
       .select('*')
       .eq('mesa', this.mesaAsignada)
       .order('id', { ascending: false })
       .limit(1);
-    
     if (!error && data && data.length > 0) {
       this.mostrarBotonVerEstadoPedido = true;
       this.pedidoActualCliente = data[0];
@@ -1324,25 +1235,27 @@ export class HomePage implements OnInit, OnDestroy {
     
     const totalConPropina = this.calcularTotalConPropina();
     
-    const { error, data } = await this.supabase.supabase
+    const { error } = await this.supabase.supabase
       .from('pedidos')
       .update({ 
         cuenta: 'chequeo',
         pagado: totalConPropina
       })
-      .eq('id', this.pedidoActualCliente.id)
-      .select();
+      .eq('id', this.pedidoActualCliente.id);
     
     if (!error) {
       this.pedidoActualCliente.cuenta = 'chequeo';
       this.pedidoActualCliente.pagado = totalConPropina;
       this.cerrarModalPago();
-      
-      await this.verificarPedidoExistente();
-      
-      await this.mostrarNotificacion('Pago confirmado exitosamente', 'exito');
-    } else {
-      await this.mostrarNotificacion('Error al confirmar el pago', 'error');
+
+      const { error: errorDeletePedido } = await this.supabase.supabase
+        .from('pedidos')
+        .delete()
+        .eq('id', this.pedidoActualCliente.id);
+
+      if (errorDeletePedido) {
+      }
+            await this.verificarPedidoExistente();
     }
   }
 
@@ -1491,12 +1404,15 @@ export class HomePage implements OnInit, OnDestroy {
         .order('id', { ascending: false });
 
       if (error) {
+        console.error('Error al cargar clientes pendientes:', error);
         await this.mostrarNotificacion('No se pudieron cargar los clientes pendientes: ' + error.message, 'error');
         return;
       }
 
       this.clientesPendientes = data || [];
+      console.log('Clientes pendientes cargados:', this.clientesPendientes.length);
     } catch (error) {
+      console.error('Error inesperado al cargar clientes pendientes:', error);
       await this.mostrarNotificacion('Error inesperado al cargar los clientes pendientes.', 'error');
     } finally {
       this.cargandoClientesPendientes = false;
