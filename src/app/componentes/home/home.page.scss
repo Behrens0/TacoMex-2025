@@ -120,6 +120,7 @@ ion-content {
 }
 
 .boton-confirmar-recepcion {
+  margin-top: 1rem;
   --background: #28a745;
   --background-hover: #218838;
   --color: #fff;
@@ -129,7 +130,7 @@ ion-content {
   height: 48px;
   font-size: 1rem;
   min-width: 200px;
-  max-width: 300px;
+  max-width: 280px;
   
   ion-icon {
     margin-right: 8px;
@@ -1669,4 +1670,19 @@ ion-modal, ion-modal ion-content {
 
 .btn-solicitar-mesa .boton-texto {
   font-size: 1.3em !important;
+}
+
+.recepcion-confirmada {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #28a745;
+  font-weight: bold;
+  font-size: 1.1rem;
+  
+  ion-icon {
+    font-size: 24px;
+  }
 }

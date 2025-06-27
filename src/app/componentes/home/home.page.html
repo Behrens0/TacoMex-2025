@@ -424,6 +424,23 @@
           <ion-icon name="time-outline"></ion-icon>
           Tiempo estimado: {{ pedidoActualCliente?.tiempo_estimado || '-' }} min
         </div>
+        
+        <!-- Botón para marcar como recibido cuando el pedido está entregado -->
+        <ion-button 
+          *ngIf="pedidoActualCliente?.estado === 'Entregado' && !pedidoActualCliente?.recepcion" 
+          expand="block" 
+          color="success" 
+          class="boton-confirmar-recepcion"
+          (click)="confirmarRecepcion()">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          Confirmar Recepción
+        </ion-button>
+        
+        <!-- Mensaje cuando ya fue confirmado -->
+        <div *ngIf="pedidoActualCliente?.recepcion" class="recepcion-confirmada">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+          <span>Pedido recibido</span>
+        </div>
       </div>
     </ng-template>
   </ion-modal>
