@@ -37,18 +37,10 @@
 | Alta de Empleados      | Tomás Behrens    | Finalizado | 13/06            |
 | Alta de Mesas  | Tomás Behrens    | Finalizado | 13/06           |
 | Alta de Productos      | Matías Bartel    | Finalizado | 20/06            |
-
----
-
-## 📌 Punto 5: HOME por tipo de usuario.
-
-- El integrante Felix Castelli se encargo de la logica para mostrar/ocultar botones dependiendo el usuario y de desarollar y testear las funciones necesarias.
-- El integrante Matias Bartel se encargo de la parte visual requerida, respetando colores y guiandose con el esquema realizado, dejando armadas las funciones de cada boton sin aplicarlas ni probar.
-- El integrante Tomas Behrens empezó a aplicar las push notifications requeridas y fueron finalizadas y implementadas por el usuario Felix Castelli.
   
 ---
 
-## 📌 Punto 6: Funcionalidades de la Aplicación
+## 📌 Punto 5: Funcionalidades de la Aplicación
 
 ### 🍽️ Funciones Principales del Cliente / Cocina
 
@@ -70,9 +62,39 @@
 | **Alta de Usuarios**      | Registro de clientes, empleados, dueños         | Todo el equipo   | ✅ Completo  | Con verificación de datos en campos |
 | **Carga de Productos**    | Agregar productos al menú                       | Felix Castelli   | ✅ Completo  | Se carga imagen + datos del mismo   |
 | **Gestión de Mesas**      | Asignar mozos, liberar mesas, etc.              | Tomas Behrens    | ✅ Completo | Crear mesa, liberar mesa, asigna una mesa al cliente |
+---
+### 🛠️ QRs - Realizados por Matias Bartel y Felix Castelli
+
+#### INGRESO AL LOCAL:
+
+![qr_ingreso_local](https://github.com/user-attachments/assets/cf1a344e-3970-4356-8037-f3aeec856c30)
+
+#### DISPONIBILIDAD DE MESAS:
+
+![qr_disponibilidad_mesas](https://github.com/user-attachments/assets/6141f872-15b8-4d4c-8dfc-4e2a15b332cf)
+
+#### IR AL MENU:
+
+![ir_al_menu](https://github.com/user-attachments/assets/2ec0e9a2-c9bf-4ca8-bba4-a5558ea621e0)
+
+#### ESTADO DE PEDIDO:
+
+![estado_de_pedido](https://github.com/user-attachments/assets/98efe373-10ef-4761-912d-d49bde0fd1df)
+
+#### COMIDA TERMINADA:
+
+![qr_ingreso_local](https://github.com/user-attachments/assets/cf1a344e-3970-4356-8037-f3aeec856c30)
+
+#### PROPINAS:
+
+![propinas](https://github.com/user-attachments/assets/ae9272be-5b13-4709-a654-8c6d026dbb28)
+
+#### ENCUESTAS:
+
+![ver_encuestas_viejas](https://github.com/user-attachments/assets/b7bc32f2-1c45-4f08-ad42-9655fec29642)
 
 ---
-**Última actualización**: `27 de junio de 2025`
 
+**Última actualización**: `27 de junio de 2025`
 ---
 
