@@ -7,7 +7,7 @@ import { PushNotificationService } from 'src/app/servicios/push-notification.ser
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonButton, IonIcon, AlertController, ModalController, IonModal, IonSpinner } from '@ionic/angular/standalone';
+import { IonContent, IonButton, IonIcon, ModalController, IonModal, IonSpinner } from '@ionic/angular/standalone';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -81,6 +81,7 @@ export class HomePage implements OnInit, OnDestroy {
   mostrarModalClientesPendientes: boolean = false;
   clientesPendientes: any[] = [];
   cargandoClientesPendientes: boolean = false;
+  notificacion: { mensaje: string, tipo: 'exito' | 'error' | 'info' } | null = null;
 
   constructor(
     public authService: AuthService,
@@ -88,7 +89,6 @@ export class HomePage implements OnInit, OnDestroy {
     private router: Router,
     private loadingService: LoadingService,
     private pushNotificationService: PushNotificationService,
-    private alertController: AlertController,
     private modalController: ModalController
   ) {}
 
@@ -258,15 +258,16 @@ export class HomePage implements OnInit, OnDestroy {
     this.qrEnProceso = true;
     this.loadingService.show();
     try {
+      await BarcodeScanner.installGoogleBarcodeScannerModule();
       const { barcodes } = await BarcodeScanner.scan();
       if (barcodes.length > 0) {
         const codigoEscaneado = barcodes[0].displayValue;
         await this.procesarCodigoEscaneado(codigoEscaneado);
       } else {
-        await this.mostrarAlerta('Error', 'No se detectó ningún código QR.');
+        await this.mostrarNotificacion('No se detectó ningún código QR.', 'info');
       }
     } catch (error) {
-      await this.mostrarAlerta('Error', 'Error al escanear el código QR.');
+      await this.mostrarNotificacion('Error al escanear el código QR.', 'error');
     } finally {
       this.loadingService.hide();
       this.qrEnProceso = false;
@@ -279,14 +280,14 @@ export class HomePage implements OnInit, OnDestroy {
     if (codigo === codigoEsperado) {
       await this.agregarAListaEspera();
     } else {
-      await this.mostrarAlerta('Código inválido', 'El código QR escaneado no es válido para la lista de espera.');
+      await this.mostrarNotificacion('Código inválido', 'error');
     }
   }
 
   async agregarAListaEspera() {
     try {
       if (!this.usuario) {
-        await this.mostrarAlerta('Error', 'No se pudo obtener la información del usuario.');
+        await this.mostrarNotificacion('No se pudo obtener la información del usuario.', 'error');
         return;
       }
 
@@ -297,7 +298,7 @@ export class HomePage implements OnInit, OnDestroy {
         .single();
 
       if (clienteEnLista) {
-        await this.mostrarAlerta('Ya en Lista', 'Ya estás en la lista de espera.');
+        await this.mostrarNotificacion('Ya en Lista', 'exito');
         return;
       }
 
@@ -308,7 +309,7 @@ export class HomePage implements OnInit, OnDestroy {
         .single();
 
       if (errorCliente || !cliente) {
-        await this.mostrarAlerta('Error', 'No se pudo obtener la información del cliente.');
+        await this.mostrarNotificacion('No se pudo obtener la información del cliente.', 'error');
         return;
       }
 
@@ -337,7 +338,7 @@ export class HomePage implements OnInit, OnDestroy {
         }]);
 
       if (errorInsert) {
-        await this.mostrarAlerta('Error', 'No se pudo agregar a la lista de espera: ' + errorInsert.message);
+        await this.mostrarNotificacion('No se pudo agregar a la lista de espera: ' + errorInsert.message, 'error');
         return;
       }
 
@@ -349,20 +350,11 @@ export class HomePage implements OnInit, OnDestroy {
       } catch (error) {
       }
 
-      await this.mostrarAlerta('Éxito', 'Has sido agregado exitosamente a la lista de espera.');
+      await this.mostrarNotificacion('Has sido agregado exitosamente a la lista de espera.', 'exito');
       
     } catch (error) {
-      await this.mostrarAlerta('Error', 'Error inesperado al agregar a la lista de espera.');
+      await this.mostrarNotificacion('Error inesperado al agregar a la lista de espera.', 'error');
     }
-  }
-
-  async mostrarAlerta(titulo: string, mensaje: string) {
-    const alert = await this.alertController.create({
-      header: titulo,
-      message: mensaje,
-      buttons: ['OK']
-    });
-    await alert.present();
   }
 
   async escanearMesaAsignada() {
@@ -440,7 +432,7 @@ export class HomePage implements OnInit, OnDestroy {
         .from('productos')
         .select('*');
       if (error) {
-        await this.mostrarAlerta('Error', 'No se pudieron cargar los productos.');
+        await this.mostrarNotificacion('No se pudieron cargar los productos.', 'error');
         return;
       }
       this.productosPorTipo = { comida: [], bebida: [], postre: [] };
@@ -551,13 +543,13 @@ export class HomePage implements OnInit, OnDestroy {
           }
         ]);
       if (error) {
-        this.mostrarAlerta('Error', 'No se pudo enviar la consulta.');
+        this.mostrarNotificacion('No se pudo enviar la consulta.', 'error');
       } else {
-        this.mostrarAlerta('Enviado', 'Su consulta fue enviada al mozo.');
+        this.mostrarNotificacion('Su consulta fue enviada al mozo.', 'exito');
         this.cerrarConsultaMozo(true);
       }
     } catch (e) {
-      this.mostrarAlerta('Error', 'No se pudo enviar la consulta.');
+      this.mostrarNotificacion('No se pudo enviar la consulta.', 'error');
     }
   }
 
@@ -760,15 +752,15 @@ export class HomePage implements OnInit, OnDestroy {
         .eq('correo', this.usuario.email);
 
       if (error) {
-        this.mostrarAlerta('Error', 'No se pudo marcar el cliente como sentado.');
+        this.mostrarNotificacion('No se pudo marcar el cliente como sentado.', 'error');
       } else {
-        this.mostrarAlerta('¡Bienvenido!', 'Has sido marcado como sentado en tu mesa. Ya puedes hacer tu pedido.');
+        this.mostrarNotificacion('¡Bienvenido!', 'exito');
         this.clienteSentado = true;
         this.mostrarBotonHacerPedido = false;
         await this.verificarPedidoExistente();
       }
     } catch (error) {
-      this.mostrarAlerta('Error', 'Error al marcar el cliente como sentado.');
+      this.mostrarNotificacion('Error al marcar el cliente como sentado.', 'error');
     }
   }
 
@@ -818,13 +810,13 @@ export class HomePage implements OnInit, OnDestroy {
         this.seleccionProductos = {};
         this.mostrarModalProductos = false;
         this.productosSeleccionadosParaConfirmar = [];
-        this.mostrarAlerta('¡Pedido realizado!', 'Tu pedido fue enviado correctamente.');
+        this.mostrarNotificacion('¡Pedido realizado!', 'exito');
         await this.verificarPedidoExistente();
       } else {
-        this.mostrarAlerta('Error', 'No se pudo enviar el pedido.');
+        this.mostrarNotificacion('No se pudo enviar el pedido.', 'error');
       }
     } catch (e) {
-      this.mostrarAlerta('Error', 'No se pudo enviar el pedido.');
+      this.mostrarNotificacion('No se pudo enviar el pedido.', 'error');
     } finally {
       this.cargandoConfirmacion = false;
       this.loadingService.hide();
@@ -845,12 +837,12 @@ export class HomePage implements OnInit, OnDestroy {
         try {
           datosQR = JSON.parse(barcodes[0].displayValue);
         } catch (e) {
-          await this.mostrarAlerta('Error', 'El QR escaneado no es válido.');
+          await this.mostrarNotificacion('El QR escaneado no es válido.', 'error');
           return;
         }
         const nombre = datosQR?.nombreProducto || datosQR?.nombre;
         if (!nombre) {
-          await this.mostrarAlerta('Error', 'El QR no contiene el nombre del producto.');
+          await this.mostrarNotificacion('El QR no contiene el nombre del producto.', 'error');
           return;
         }
         let productoEncontrado = null;
@@ -861,13 +853,13 @@ export class HomePage implements OnInit, OnDestroy {
         if (productoEncontrado) {
           this.sumarProducto(productoEncontrado);
         } else {
-          await this.mostrarAlerta('Error', 'No se encontró el producto en el menú.');
+          await this.mostrarNotificacion('No se encontró el producto en el menú.', 'error');
         }
       } else {
-        await this.mostrarAlerta('Error', 'No se detectó ningún código QR.');
+        await this.mostrarNotificacion('No se detectó ningún código QR.', 'error');
       }
     } catch (error) {
-      await this.mostrarAlerta('Error', 'Error al escanear el QR del producto.');
+      await this.mostrarNotificacion('Error al escanear el QR del producto.', 'error');
     } finally {
       this.loadingService.hide();
     }
@@ -1304,7 +1296,7 @@ export class HomePage implements OnInit, OnDestroy {
         .eq('id', pedido.id);
       
       if (errorPedido) {
-        await this.mostrarAlerta('Error', 'No se pudo actualizar el pedido: ' + errorPedido.message);
+        await this.mostrarNotificacion('No se pudo actualizar el pedido: ' + errorPedido.message, 'error');
         return;
       }
 
@@ -1314,7 +1306,7 @@ export class HomePage implements OnInit, OnDestroy {
         .eq('mesa_asignada', pedido.mesa);
 
       if (errorListaEspera) {
-        await this.mostrarAlerta('Error', 'Error al buscar en lista de espera: ' + errorListaEspera.message);
+        await this.mostrarNotificacion('Error al buscar en lista de espera: ' + errorListaEspera.message, 'error');
         return;
       }
 
@@ -1327,7 +1319,7 @@ export class HomePage implements OnInit, OnDestroy {
           .eq('correo', listaEspera.correo);
 
         if (errorCliente) {
-          await this.mostrarAlerta('Error', 'Error al buscar cliente: ' + errorCliente.message);
+          await this.mostrarNotificacion('Error al buscar cliente: ' + errorCliente.message, 'error');
           return;
         }
 
@@ -1343,7 +1335,7 @@ export class HomePage implements OnInit, OnDestroy {
             .eq('id', cliente.id);
 
           if (errorUpdateCliente) {
-            await this.mostrarAlerta('Error', 'No se pudo actualizar el cliente: ' + errorUpdateCliente.message);
+            await this.mostrarNotificacion('No se pudo actualizar el cliente: ' + errorUpdateCliente.message, 'error');
           }
         }
 
@@ -1353,7 +1345,7 @@ export class HomePage implements OnInit, OnDestroy {
           .eq('correo', listaEspera.correo);
 
         if (errorDeleteListaEspera) {
-          await this.mostrarAlerta('Error', 'No se pudo eliminar de lista de espera: ' + errorDeleteListaEspera.message);
+          await this.mostrarNotificacion('No se pudo eliminar de lista de espera: ' + errorDeleteListaEspera.message, 'error');
         }
       }
 
@@ -1365,7 +1357,7 @@ export class HomePage implements OnInit, OnDestroy {
         .eq('numero', pedido.mesa);
 
       if (errorMesa) {
-        await this.mostrarAlerta('Error', 'No se pudo liberar la mesa: ' + errorMesa.message);
+        await this.mostrarNotificacion('No se pudo liberar la mesa: ' + errorMesa.message, 'error');
       }
 
       const { error: errorDeletePedido } = await this.supabase.supabase
@@ -1374,15 +1366,15 @@ export class HomePage implements OnInit, OnDestroy {
         .eq('id', pedido.id);
 
       if (errorDeletePedido) {
-        await this.mostrarAlerta('Error', 'No se pudo eliminar el pedido: ' + errorDeletePedido.message);
+        await this.mostrarNotificacion('No se pudo eliminar el pedido: ' + errorDeletePedido.message, 'error');
       }
 
       await this.cargarPedidos();
       
-      await this.mostrarAlerta('Éxito', 'Pago confirmado, mesa liberada y pedido eliminado');
+      await this.mostrarNotificacion('Pago confirmado, mesa liberada y pedido eliminado', 'exito');
       
     } catch (error) {
-      await this.mostrarAlerta('Error', 'Error inesperado al confirmar el pago: ' + error);
+      await this.mostrarNotificacion('Error inesperado al confirmar el pago: ' + error, 'error');
     }
   }
 
@@ -1411,7 +1403,7 @@ export class HomePage implements OnInit, OnDestroy {
 
       if (error) {
         console.error('Error al cargar clientes pendientes:', error);
-        await this.mostrarAlerta('Error', `No se pudieron cargar los clientes pendientes: ${error.message}`);
+        await this.mostrarNotificacion('No se pudieron cargar los clientes pendientes: ' + error.message, 'error');
         return;
       }
 
@@ -1419,7 +1411,7 @@ export class HomePage implements OnInit, OnDestroy {
       console.log('Clientes pendientes cargados:', this.clientesPendientes.length);
     } catch (error) {
       console.error('Error inesperado al cargar clientes pendientes:', error);
-      await this.mostrarAlerta('Error', 'Error inesperado al cargar los clientes pendientes.');
+      await this.mostrarNotificacion('Error inesperado al cargar los clientes pendientes.', 'error');
     } finally {
       this.cargandoClientesPendientes = false;
     }
@@ -1436,14 +1428,14 @@ export class HomePage implements OnInit, OnDestroy {
         .eq('id', cliente.id);
 
       if (error) {
-        await this.mostrarAlerta('Error', 'No se pudo aprobar el cliente.');
+        await this.mostrarNotificacion('No se pudo aprobar el cliente.', 'error');
         return;
       }
 
-      await this.mostrarAlerta('Éxito', 'Cliente aprobado exitosamente.');
+      await this.mostrarNotificacion('Cliente aprobado exitosamente.', 'exito');
       await this.cargarClientesPendientes();
     } catch (error) {
-      await this.mostrarAlerta('Error', 'Error inesperado al aprobar el cliente.');
+      await this.mostrarNotificacion('Error inesperado al aprobar el cliente.', 'error');
     }
   }
 
@@ -1458,14 +1450,21 @@ export class HomePage implements OnInit, OnDestroy {
         .eq('id', cliente.id);
 
       if (error) {
-        await this.mostrarAlerta('Error', 'No se pudo rechazar el cliente.');
+        await this.mostrarNotificacion('No se pudo rechazar el cliente.', 'error');
         return;
       }
 
-      await this.mostrarAlerta('Éxito', 'Cliente rechazado exitosamente.');
+      await this.mostrarNotificacion('Cliente rechazado exitosamente.', 'exito');
       await this.cargarClientesPendientes();
     } catch (error) {
-      await this.mostrarAlerta('Error', 'Error inesperado al rechazar el cliente.');
+      await this.mostrarNotificacion('Error inesperado al rechazar el cliente.', 'error');
     }
+  }
+
+  mostrarNotificacion(mensaje: string, tipo: 'exito' | 'error' | 'info' = 'info') {
+    this.notificacion = { mensaje, tipo };
+    setTimeout(() => {
+      this.notificacion = null;
+    }, 3500);
   }
 }

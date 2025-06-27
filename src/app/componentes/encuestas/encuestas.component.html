@@ -234,95 +234,97 @@ class="btn-enviar">
   </div>
 
   <!-- Sección de gráficos y estadísticas -->
-  <div *ngIf="(mostrarGraficos || modo === 'ver') && encuestas.length > 0" class="graficos-section">
-    <div class="estadisticas-header">
-      <h3>Estadísticas de Encuestas ({{ encuestas.length }} encuestas)</h3>
+  <div *ngIf="(mostrarGraficos || modo === 'ver') && encuestas.length > 0" class="estadisticas-imagenes-container">
+    <div class="graficos-section">
+      <div class="estadisticas-header">
+        <h3>Estadísticas de Encuestas ({{ encuestas.length }} encuestas)</h3>
+      </div>
+
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Satisfacción General</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="satisfaccionChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Calidad de la Comida</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="calidadComidaChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Calidad del Servicio</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="calidadServicioChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Ambiente</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="ambienteChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Recomendación</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="recomendacionChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+          <ion-col size="12" size-md="6">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>¿Volvería?</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <canvas id="volveriaChart"></canvas>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </div>
 
-    <ion-grid>
-      <ion-row>
-        <ion-col size="12" size-md="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Satisfacción General</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <canvas id="satisfaccionChart"></canvas>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Calidad de la Comida</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <canvas id="calidadComidaChart"></canvas>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="12" size-md="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Calidad del Servicio</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <canvas id="calidadServicioChart"></canvas>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Ambiente</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <canvas id="ambienteChart"></canvas>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="12" size-md="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>Recomendación</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <canvas id="recomendacionChart"></canvas>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-        <ion-col size="12" size-md="6">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>¿Volvería?</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <canvas id="volveriaChart"></canvas>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </div>
-
-  <!-- Sección de imágenes al final -->
-  <div *ngIf="(mostrarGraficos || modo === 'ver')" class="imagenes-section">
-    <h3>Imágenes de las Encuestas</h3>
-    <div class="imagenes-grid">
-      <div *ngFor="let encuesta of encuestas" class="imagen-item">
-        <ion-button 
-          *ngIf="encuesta.imagenes && encuesta.imagenes.length > 0"
-          fill="outline" 
-          size="small"
-          (click)="mostrarImagenesEncuesta(encuesta)"
-          class="btn-imagen">
-          <ion-icon name="images"></ion-icon>
-          {{ encuesta.nombre }} {{ encuesta.apellido }}
-        </ion-button>
+    <!-- Sección de imágenes al final -->
+    <div *ngIf="(mostrarGraficos || modo === 'ver')" class="imagenes-section">
+      <h3>Imágenes de las Encuestas</h3>
+      <div class="imagenes-grid">
+        <div *ngFor="let encuesta of encuestas" class="imagen-item">
+          <ion-button 
+            *ngIf="encuesta.imagenes && encuesta.imagenes.length > 0"
+            fill="outline" 
+            size="small"
+            (click)="mostrarImagenesEncuesta(encuesta)"
+            class="btn-imagen">
+            <ion-icon name="images"></ion-icon>
+            {{ encuesta.nombre }} {{ encuesta.apellido }}
+          </ion-button>
+        </div>
       </div>
     </div>
   </div>

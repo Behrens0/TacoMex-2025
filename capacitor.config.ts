@@ -6,9 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'www',
   plugins: {
     SplashScreen: {
-      launchShowDuration: 3000, 
-      launchAutoHide: false,
-      backgroundColor: '#FF8C00', 
+      launchShowDuration: 0, 
+      launchAutoHide: true,
     },
     Icon: {
       icon: "./src/assets/logo.png", 
