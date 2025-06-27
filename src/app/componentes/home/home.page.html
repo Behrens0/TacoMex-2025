@@ -43,6 +43,18 @@
       Lista de Espera
     </ion-button>
 
+        <!-- Botón para aprobar clientes (solo supervisores y dueños) -->
+        <ion-button 
+        *ngIf="perfilUsuario === 'supervisor' || authService.esUsuarioAdmin()" 
+        expand="block" 
+        fill="outline" 
+        color="primary" 
+        (click)="abrirModalClientesPendientes()"
+        class="action-button">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Aprobar Clientes
+      </ion-button>
+
     <ion-button 
       *ngIf="perfilUsuario === 'cliente'" 
       expand="block" 
@@ -80,7 +92,7 @@
     </ion-button>
 
     <ion-button 
-      *ngIf="perfilUsuario === 'cliente' && mostrarBotonVerEstadoPedido" 
+      *ngIf="perfilUsuario === 'cliente' && mostrarBotonVerEstadoPedido && pedidoActualCliente" 
       expand="block" 
       class="boton-hacer-pedido"
       (click)="abrirModalEstadoPedido()">
@@ -107,7 +119,7 @@
     </ion-button>
 
     <ion-button 
-      *ngIf="perfilUsuario === 'cliente' && pedidoActualCliente?.recepcion && !clienteInfo?.encuesta" 
+      *ngIf="perfilUsuario === 'cliente' && pedidoActualCliente?.recepcion && !clienteInfo?.encuesta && (pedidoActualCliente?.pagado || pedidoActualCliente?.cuenta === 'pagada')" 
       expand="block" 
       class="boton-encuesta-satisfaccion"
       (click)="hacerEncuesta()">
@@ -566,6 +578,57 @@
             <ion-icon name="card-outline"></ion-icon>
             PAGAR ${{ calcularTotalConPropina() }}
           </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal de Clientes Pendientes -->
+  <ion-modal [isOpen]="mostrarModalClientesPendientes" (didDismiss)="cerrarModalClientesPendientes()">
+    <ng-template>
+      <ion-content>
+        <div class="modal-title-container">
+          <ion-button fill="clear" class="close-button" (click)="cerrarModalClientesPendientes()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+          <h2 class="modal-title">Clientes Pendientes de Aprobación</h2>
+        </div>
+        
+        <div class="modal-content">
+          <div *ngIf="cargandoClientesPendientes" class="loading-container">
+            <ion-spinner></ion-spinner>
+            <p>Cargando clientes pendientes...</p>
+          </div>
+          
+          <div *ngIf="!cargandoClientesPendientes && clientesPendientes.length === 0" class="empty-state">
+            <ion-icon name="checkmark-circle-outline" size="large" color="success"></ion-icon>
+            <h3>No hay clientes pendientes</h3>
+            <p>Todos los clientes han sido procesados.</p>
+          </div>
+          
+          <div *ngIf="!cargandoClientesPendientes && clientesPendientes.length > 0" class="clientes-list">
+            <div *ngFor="let cliente of clientesPendientes" class="cliente-item">
+              <div class="cliente-info">
+                <div class="cliente-avatar">
+                  <img *ngIf="cliente.imagenPerfil" [src]="cliente.imagenPerfil" alt="Foto de perfil" class="cliente-imagen-perfil">
+                  <ion-icon *ngIf="!cliente.imagenPerfil" name="person-outline" size="large"></ion-icon>
+                </div>
+                <div class="cliente-details">
+                  <h3 *ngIf="cliente.apellido">{{ cliente.nombre }} {{ cliente.apellido }}</h3>
+                  <h3 *ngIf="!cliente.apellido" class="nombre-sin-apellido">{{ cliente.nombre }}</h3>
+                  <p>{{ cliente.correo }}</p>
+                </div>
+              </div>
+              <div class="cliente-actions">
+                <ion-button fill="clear" color="success" (click)="aprobarCliente(cliente)" class="action-button">
+                  <ion-icon name="checkmark" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" color="danger" (click)="rechazarCliente(cliente)" class="action-button">
+                  <ion-icon name="close" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </div>
         </div>
       </ion-content>
     </ng-template>

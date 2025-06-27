@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { SupabaseService } from 'src/app/servicios/supabase.service';
 import { AuthService } from 'src/app/servicios/auth.service';
 import { LoadingService } from 'src/app/servicios/loading.service';
+import { PushNotificationService } from 'src/app/servicios/push-notification.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -77,12 +78,16 @@ export class HomePage implements OnInit, OnDestroy {
   clienteInfo: any = null;
   mostrarModalPago: boolean = false;
   propinaSeleccionada: number = 0;
+  mostrarModalClientesPendientes: boolean = false;
+  clientesPendientes: any[] = [];
+  cargandoClientesPendientes: boolean = false;
 
   constructor(
-    private authService: AuthService,
+    public authService: AuthService,
     private supabase: SupabaseService,
     private router: Router,
     private loadingService: LoadingService,
+    private pushNotificationService: PushNotificationService,
     private alertController: AlertController,
     private modalController: ModalController
   ) {}
@@ -337,24 +342,11 @@ export class HomePage implements OnInit, OnDestroy {
       }
 
       try {
-        const response = await fetch('https://backend-taco-mex-2025.onrender.com/notify-maitre-new-client', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            clienteNombre: cliente.nombre,
-            clienteApellido: cliente.apellido
-          })
-        });
-
-        if (response.ok) {
-          console.log('Notificación enviada al maitre exitosamente');
-        } else {
-          console.error('Error al enviar notificación al maitre:', response.status);
-        }
+        await this.pushNotificationService.notificarMaitreNuevoCliente(
+          cliente.nombre,
+          cliente.apellido
+        );
       } catch (error) {
-        console.error('Error al enviar notificación al maitre:', error);
       }
 
       await this.mostrarAlerta('Éxito', 'Has sido agregado exitosamente a la lista de espera.');
@@ -725,6 +717,7 @@ export class HomePage implements OnInit, OnDestroy {
     const horaFinal = `${anio}-${mes}-${dia} ${hora}`;
     const mesa = this.mesaAsignada ? String(this.mesaAsignada) : '';
     const correo = this.usuario?.email || '';
+    
     const { error } = await this.supabase.supabase
       .from('consultas_a_mozo')
       .insert([
@@ -735,9 +728,23 @@ export class HomePage implements OnInit, OnDestroy {
           correo: correo
         }
       ]);
+    
     if (error) {
       this.errorConsultaCliente = 'No se pudo enviar la consulta.';
     } else {
+      try {
+        const clienteNombre = this.clienteInfo?.nombre || this.usuario?.email?.split('@')[0] || 'Cliente';
+        const clienteApellido = this.clienteInfo?.apellido || '';
+        
+        await this.pushNotificationService.notificarMozosConsultaCliente(
+          clienteNombre,
+          clienteApellido,
+          mesa,
+          this.consultaClienteTexto.trim()
+        );
+      } catch (error) {
+      }
+      
       this.consultaClienteTexto = '';
       this.cargarConsultasCliente();
     }
@@ -939,6 +946,19 @@ export class HomePage implements OnInit, OnDestroy {
     
     if (!error) {
       this.pedidoActualCliente.cuenta = 'pedida';
+
+      try {
+        const clienteNombre = this.clienteInfo?.nombre || this.usuario?.email?.split('@')[0] || 'Cliente';
+        const clienteApellido = this.clienteInfo?.apellido || '';
+        
+        await this.pushNotificationService.notificarMozoSolicitudCuenta(
+          this.mesaAsignada,
+          clienteNombre,
+          clienteApellido
+        );
+      } catch (error) {
+      }
+      
       await this.verificarPedidoExistente();
     }
   }
@@ -1066,6 +1086,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async marcarProductoTerminado(pedido: any, tipo: 'comida' | 'bebida' | 'postre', index: number) {
+    
     const estadoField = tipo === 'comida' ? 'estado_comida' : tipo === 'bebida' ? 'estado_bebida' : 'estado_postre';
     const productos = tipo === 'comida' ? pedido.comidas : tipo === 'bebida' ? pedido.bebidas : pedido.postres;
     
@@ -1088,12 +1109,27 @@ export class HomePage implements OnInit, OnDestroy {
       } else {
         updateData.estado = 'Postres listos';
       }
+
+      try {
+        await this.pushNotificationService.notificarMozoPedidoListo(
+          pedido.mesa,
+          tipo,
+          productos,
+          pedido.id
+        );
+      } catch (error) {
+      }
+    } else {
     }
-    
+
     const { error } = await this.supabase.supabase
       .from('pedidos')
       .update(updateData)
       .eq('id', pedido.id);
+    
+    if (error) {
+    } else {
+    }
     
     if (!error) {
       this.cargarPedidosPreparar();
@@ -1101,6 +1137,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async marcarTipoCompletoTerminado(pedido: any, tipo: 'comida' | 'bebida' | 'postre') {
+    
     try {
       const estadoField = tipo === 'comida' ? 'estado_comida' : tipo === 'bebida' ? 'estado_bebida' : 'estado_postre';
       const productos = tipo === 'comida' ? pedido.comidas : tipo === 'bebida' ? pedido.bebidas : pedido.postres;
@@ -1120,6 +1157,16 @@ export class HomePage implements OnInit, OnDestroy {
       if (comidasCompletadas && bebidasCompletadas && postresCompletados) {
         updateData.estado = 'Listo para entregar';
       }
+
+      try {
+        await this.pushNotificationService.notificarMozoPedidoListo(
+          pedido.mesa,
+          tipo,
+          productos,
+          pedido.id
+        );
+      } catch (error) {
+      }
       
       const { error } = await this.supabase.supabase
         .from('pedidos')
@@ -1134,6 +1181,7 @@ export class HomePage implements OnInit, OnDestroy {
       
     } catch (error) {
     }
+    
   }
 
   isTipoCompletoTerminado(pedido: any, tipo: 'comida' | 'bebida' | 'postre'): boolean {
@@ -1205,7 +1253,46 @@ export class HomePage implements OnInit, OnDestroy {
       this.pedidoActualCliente.cuenta = 'chequeo';
       this.pedidoActualCliente.pagado = totalConPropina;
       this.cerrarModalPago();
-      await this.verificarPedidoExistente();
+
+      const { error: errorDeletePedido } = await this.supabase.supabase
+        .from('pedidos')
+        .delete()
+        .eq('id', this.pedidoActualCliente.id);
+
+      if (errorDeletePedido) {
+      }
+            await this.verificarPedidoExistente();
+    }
+  }
+
+  async confirmarPedidoMozo(pedido: any) {
+    if (pedido.confirmado) return;
+    
+    const { error } = await this.supabase.supabase
+      .from('pedidos')
+      .update({ confirmado: true, estado: 'En preparación' })
+      .eq('id', pedido.id);
+    
+    if (!error) {
+      try {
+        if (pedido.bebidas && pedido.bebidas.length > 0) {
+          await this.pushNotificationService.notificarBartenderNuevoPedido(
+            pedido.mesa,
+            pedido.bebidas
+          );
+        }
+
+        if ((pedido.comidas && pedido.comidas.length > 0) || (pedido.postres && pedido.postres.length > 0)) {
+          await this.pushNotificationService.notificarCocineroNuevoPedido(
+            pedido.mesa,
+            pedido.comidas || [],
+            pedido.postres || []
+          );
+        }
+      } catch (error) {
+      }
+      
+      this.cargarPedidos();
     }
   }
 
@@ -1281,9 +1368,18 @@ export class HomePage implements OnInit, OnDestroy {
         await this.mostrarAlerta('Error', 'No se pudo liberar la mesa: ' + errorMesa.message);
       }
 
+      const { error: errorDeletePedido } = await this.supabase.supabase
+        .from('pedidos')
+        .delete()
+        .eq('id', pedido.id);
+
+      if (errorDeletePedido) {
+        await this.mostrarAlerta('Error', 'No se pudo eliminar el pedido: ' + errorDeletePedido.message);
+      }
+
       await this.cargarPedidos();
       
-      await this.mostrarAlerta('Éxito', 'Pago confirmado y mesa liberada');
+      await this.mostrarAlerta('Éxito', 'Pago confirmado, mesa liberada y pedido eliminado');
       
     } catch (error) {
       await this.mostrarAlerta('Error', 'Error inesperado al confirmar el pago: ' + error);
@@ -1294,14 +1390,82 @@ export class HomePage implements OnInit, OnDestroy {
     this.abrirModalPago();
   }
 
-  async confirmarPedidoMozo(pedido: any) {
-    if (pedido.confirmado) return;
-    const { error } = await this.supabase.supabase
-      .from('pedidos')
-      .update({ confirmado: true, estado: 'En preparación' })
-      .eq('id', pedido.id);
-    if (!error) {
-      this.cargarPedidos();
+  async abrirModalClientesPendientes() {
+    this.mostrarModalClientesPendientes = true;
+    await this.cargarClientesPendientes();
+  }
+
+  cerrarModalClientesPendientes() {
+    this.mostrarModalClientesPendientes = false;
+    this.clientesPendientes = [];
+  }
+
+  async cargarClientesPendientes() {
+    this.cargandoClientesPendientes = true;
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('clientes')
+        .select('id, nombre, apellido, correo, imagenPerfil')
+        .is('validado', null)
+        .order('id', { ascending: false });
+
+      if (error) {
+        console.error('Error al cargar clientes pendientes:', error);
+        await this.mostrarAlerta('Error', `No se pudieron cargar los clientes pendientes: ${error.message}`);
+        return;
+      }
+
+      this.clientesPendientes = data || [];
+      console.log('Clientes pendientes cargados:', this.clientesPendientes.length);
+    } catch (error) {
+      console.error('Error inesperado al cargar clientes pendientes:', error);
+      await this.mostrarAlerta('Error', 'Error inesperado al cargar los clientes pendientes.');
+    } finally {
+      this.cargandoClientesPendientes = false;
+    }
+  }
+
+  async aprobarCliente(cliente: any) {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('clientes')
+        .update({ 
+          validado: true,
+          aceptado: true
+        })
+        .eq('id', cliente.id);
+
+      if (error) {
+        await this.mostrarAlerta('Error', 'No se pudo aprobar el cliente.');
+        return;
+      }
+
+      await this.mostrarAlerta('Éxito', 'Cliente aprobado exitosamente.');
+      await this.cargarClientesPendientes();
+    } catch (error) {
+      await this.mostrarAlerta('Error', 'Error inesperado al aprobar el cliente.');
+    }
+  }
+
+  async rechazarCliente(cliente: any) {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('clientes')
+        .update({ 
+          validado: false,
+          aceptado: false
+        })
+        .eq('id', cliente.id);
+
+      if (error) {
+        await this.mostrarAlerta('Error', 'No se pudo rechazar el cliente.');
+        return;
+      }
+
+      await this.mostrarAlerta('Éxito', 'Cliente rechazado exitosamente.');
+      await this.cargarClientesPendientes();
+    } catch (error) {
+      await this.mostrarAlerta('Error', 'Error inesperado al rechazar el cliente.');
     }
   }
 }

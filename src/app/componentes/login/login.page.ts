@@ -182,7 +182,7 @@ export class LoginPage implements OnInit {
       maitre: { correo: 'carlitos@gmail.com', contrasenia: '123456' },
       mozo: { correo: 'felix@gmail.com', contrasenia: '123456' },
       cocinero: { correo: 'c@gmail.com', contrasenia: '123456' },
-      bartender: { correo: 'matiasBartender@gmail.com', contrasenia: '123456' },
+      bartender: { correo: 'matiasbartender@gmail.com', contrasenia: '123456' },
       cliente: { correo: 'carlos@gmail.com', contrasenia: '123456' },
     };
 

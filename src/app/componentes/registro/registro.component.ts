@@ -10,6 +10,7 @@ import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { toDataURL } from 'qrcode';
 import { IonCheckbox, IonTextarea } from '@ionic/angular/standalone';
 import { HttpClient } from '@angular/common/http';
+import { PushNotificationService } from 'src/app/servicios/push-notification.service';
 
 @Component({
   selector: 'app-register',
@@ -102,7 +103,8 @@ export class RegistroComponent {
     private authService: AuthService,
     private loadingCtrl: LoadingController,
     private loadingService: LoadingService,
-    private http: HttpClient
+    private http: HttpClient,
+    private pushNotificationService: PushNotificationService
   ) {
     this.clienteForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.pattern(/^[A-Za-zÀ-ÿ\s]+$/)]],
@@ -605,10 +607,12 @@ export class RegistroComponent {
         const nuevoClienteAnonimo = {
           nombre,
           apellido: apellido || '',
-          correo: `anonimo${Math.floor(Math.random() * 1000000000000)}@tacomex.com`,
+          correo: `anonimo${Math.floor(Math.random() * 11)}@tacomex.com`,
           dni: '00000000',
           imagenPerfil,
-          anonimo: true
+          anonimo: true,
+          validado: null,
+          aceptado: null
         };
 
         const { error } = await this.sb.supabase.from('clientes').insert([nuevoClienteAnonimo]);
@@ -621,10 +625,23 @@ export class RegistroComponent {
         const contraseniaAnonimo = '123456';
         await this.authService.registro(nuevoClienteAnonimo.correo, contraseniaAnonimo);
 
-        await this.authService.logIn(nuevoClienteAnonimo.correo, contraseniaAnonimo);
-        this.loadingService.show();
-        this.router.navigate(['/home']);
+        try {
+          await this.pushNotificationService.notificarSupervisoresNuevoCliente(
+            nuevoClienteAnonimo.nombre,
+            nuevoClienteAnonimo.apellido
+          );
+        } catch (error) {
+          console.error('Error al enviar notificación a supervisores:', error);
+        }
+
+        this.mensajeExito = `Cliente anónimo registrado exitosamente!\n\nCorreo: ${nuevoClienteAnonimo.correo}\nContraseña: ${contraseniaAnonimo}.`;
+        this.clienteForm.reset();
+        this.imagenURL = null;
         this.loadingService.hide();
+        
+        setTimeout(() => {
+          this.mensajeExito = '';
+        }, 10000);
         return;
       } catch (e) {
         this.mensajeError = 'Error inesperado: ' + (e as Error).message;
@@ -658,7 +675,9 @@ export class RegistroComponent {
         apellido,
         correo,
         dni,
-        imagenPerfil
+        imagenPerfil,
+        validado: null,
+        aceptado: null
       };
 
       const { error } = await this.sb.supabase.from('clientes').insert([nuevoCliente]);
@@ -672,16 +691,14 @@ export class RegistroComponent {
         return;
       }
 
-      // TEMPORALMENTE DESHABILITADO - Notificaciones push
-      /*
-      this.http.post('https://tacomex-2025.onrender.com/notify-owner', {
-        title: 'Nuevo Cliente Registrado',
-        body: `El cliente ${nuevoCliente.nombre} ${nuevoCliente.apellido} se ha registrado.`
-      }).subscribe({
-        next: (res) => console.log('Notification request sent', res),
-        error: (err) => console.error('Error sending notification request', err)
-      });
-      */
+      try {
+        await this.pushNotificationService.notificarSupervisoresNuevoCliente(
+          nuevoCliente.nombre,
+          nuevoCliente.apellido
+        );
+      } catch (error) {
+        console.error('Error al enviar notificación a supervisores:', error);
+      }
 
       this.mensajeExito = 'Registro exitoso. Bienvenido!';
       this.clienteForm.reset();

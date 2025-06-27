@@ -2,7 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { User } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
-// import { PushNotificationService } from './push-notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +15,6 @@ export class AuthService {
   perfilUsuario: string = '';
 
   constructor(
-    // private pushNotificationService: PushNotificationService
   ) { }
 
   async logIn(correo: string, contrasenia: string) {
@@ -27,17 +25,27 @@ export class AuthService {
 
     if (error) throw error;
 
+    const { data: cliente } = await this.sb.supabase
+      .from('clientes')
+      .select('id, validado, aceptado')
+      .eq('correo', correo)
+      .single();
+
+    if (cliente) {
+      if (cliente.validado === null) {
+        await this.sb.supabase.auth.signOut();
+        throw new Error('Tu cuenta está pendiente de aprobación. Por favor, espera a que un administrador la revise.');
+      } else if (cliente.validado === false) {
+        await this.sb.supabase.auth.signOut();
+        throw new Error('Tu cuenta fue rechazada. Por favor, contacta al administrador para más información.');
+      }
+    }
+
     this.usuarioActual = data?.user || null;
 
     const { data: empleado } = await this.sb.supabase
       .from('empleados')
       .select('*')
-      .eq('correo', correo)
-      .single();
-
-    const { data: cliente } = await this.sb.supabase
-      .from('clientes')
-      .select('id')
       .eq('correo', correo)
       .single();
 
@@ -59,16 +67,6 @@ export class AuthService {
     } else if (cliente) {
       this.perfilUsuario = 'cliente';
     }
-
-    // Inicializar notificaciones push después del login exitoso
-    // TEMPORALMENTE DESHABILITADO
-    /*
-    try {
-      await this.pushNotificationService.initializePushNotifications();
-    } catch (error) {
-      // No bloquear la app si fallan las notificaciones
-    }
-    */
 
     return this.usuarioActual;
   }
@@ -112,15 +110,22 @@ export class AuthService {
   }
 
   async signOut() {
-    // Limpiar notificaciones push antes del logout
-    // TEMPORALMENTE DESHABILITADO
-    /*
     try {
-      await this.pushNotificationService.cleanup();
+      const { data: user } = await this.sb.supabase.auth.getUser();
+      const email = user?.user?.email;
+
+      if (email) {
+        try {
+          const { PushNotificationService } = await import('./push-notification.service');
+          const pushService = new PushNotificationService();
+          await pushService.borrarFcmToken(email);
+        } catch (error) {
+          console.error('Error al borrar FCM token:', error);
+        }
+      }
     } catch (error) {
-      console.error('Error al limpiar notificaciones:', error);
+      console.error('Error al obtener usuario para borrar token:', error);
     }
-    */
     
     await this.sb.supabase.auth.signOut();
     this.usuarioActual = null;
@@ -139,15 +144,22 @@ export class AuthService {
   }
 
   async clearAuthAndRedirect() {
-    // Limpiar notificaciones
-    // TEMPORALMENTE DESHABILITADO
-    /*
     try {
-      await this.pushNotificationService.cleanup();
+      const { data: user } = await this.sb.supabase.auth.getUser();
+      const email = user?.user?.email;
+
+      if (email) {
+        try {
+          const { PushNotificationService } = await import('./push-notification.service');
+          const pushService = new PushNotificationService();
+          await pushService.borrarFcmToken(email);
+        } catch (error) {
+          console.error('Error al borrar FCM token:', error);
+        }
+      }
     } catch (error) {
-      // No bloquear la app si fallan las notificaciones
+      console.error('Error al obtener usuario para borrar token:', error);
     }
-    */
 
     await this.sb.supabase.auth.signOut();
     

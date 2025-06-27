@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonContent, IonList, IonItem, IonLabel, IonHeader, IonToolbar, IonTitle, IonButton, IonIcon, IonBackButton, IonButtons, IonModal, AlertController } from '@ionic/angular/standalone';
 import { SupabaseService } from '../../servicios/supabase.service';
 import { LoadingService } from '../../servicios/loading.service';
+import { PushNotificationService } from '../../servicios/push-notification.service';
 import { Router } from '@angular/router';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
@@ -51,6 +52,7 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
   constructor(
     private supabase: SupabaseService,
     private loadingService: LoadingService,
+    private pushNotificationService: PushNotificationService,
     private router: Router,
     private alertController: AlertController
   ) { }
@@ -219,6 +221,12 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
   async asignarMesaACliente(clienteId: number) {
     try {
       this.loadingService.show();
+
+      const clienteSeleccionado = this.clientesDisponibles.find(c => c.id === clienteId);
+      if (!clienteSeleccionado) {
+        this.mensajeErrorAsignacion = 'Cliente no encontrado';
+        return;
+      }
       
       const { error: errorCliente } = await this.supabase.supabase
         .from('lista_espera')
@@ -238,6 +246,17 @@ export class ListaEsperaComponent implements OnInit, OnDestroy {
       if (errorMesa) {
         this.mensajeErrorAsignacion = 'Error al marcar mesa como ocupada';
         return;
+      }
+
+      try {
+        await this.pushNotificationService.notificarClienteAsignadaMesa(
+          clienteSeleccionado.correo,
+          this.mesaSeleccionada.numero,
+          clienteSeleccionado.nombre,
+          clienteSeleccionado.apellido
+        );
+      } catch (error) {
+        console.error('Error al enviar notificación push:', error);
       }
 
       this.cerrarModalClientes();
