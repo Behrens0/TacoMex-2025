@@ -17,10 +17,10 @@
         *ngIf="mostrarBotonVerEstadoPedido && pedidoActualCliente" 
         expand="block" 
         class="btn-pedidos"
-        (click)="abrirModalEstadoPedido()">
+        (click)="escanearQRParaVerEstado()">
         <div class="boton-contenido-columna">
-          <ion-icon name="hourglass-outline"></ion-icon>
-          <span class="boton-texto">PEDIDO</span>
+          <ion-icon name="qr-code-outline"></ion-icon>
+          <span class="boton-texto">ESTADO DEL PEDIDO</span>
         </div>
       </ion-button>
     </div>
@@ -87,11 +87,20 @@
       *ngIf="perfilUsuario === 'cliente' && mostrarBotonHacerPedido" 
       expand="block" 
       class="btn-pedidos btn-solicitar-mesa"
-      (click)="irAHacerPedido()">
+      (click)="escanearQRParaMenu()">
       <div class="boton-contenido-columna">
-        <ion-icon name="restaurant-outline"></ion-icon>
+        <ion-icon name="qr-code-outline"></ion-icon>
         <span class="boton-texto">HACER PEDIDO</span>
       </div>
+    </ion-button>
+
+    <ion-button 
+      *ngIf="perfilUsuario === 'cliente' && pedidoActualCliente?.recepcion === true && (pedidoActualCliente?.cuenta === null || pedidoActualCliente?.cuenta === undefined)" 
+      expand="block" 
+      class="boton-pedir-cuenta"
+      (click)="pedirCuenta()">
+      <ion-icon name="card-outline"></ion-icon>
+      Pedir la Cuenta
     </ion-button>
 
     <ion-button 
@@ -446,6 +455,14 @@
             <span>Pedido recibido</span>
           </div>
         </div>
+        <ion-button 
+          *ngIf="perfilUsuario === 'cliente' && pedidoActualCliente?.estado === 'En preparación' && !clienteInfo?.encuesta"
+          expand="block"
+          class="boton-hacer-encuesta"
+          (click)="hacerEncuesta()">
+          <ion-icon name="clipboard-outline"></ion-icon>
+          Encuesta de Satisfacción
+        </ion-button>
       </div>
     </ng-template>
   </ion-modal>

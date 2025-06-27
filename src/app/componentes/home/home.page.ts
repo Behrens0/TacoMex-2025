@@ -89,7 +89,6 @@ export class HomePage implements OnInit, OnDestroy {
     private router: Router,
     private loadingService: LoadingService,
     private pushNotificationService: PushNotificationService,
-    private modalController: ModalController
   ) {}
 
   async ngOnInit() {
@@ -128,9 +127,10 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadingService.hide();
   }
 
-  hacerEncuesta() {
+  async hacerEncuesta() {
     this.loadingService.show();
-    this.router.navigate(['/encuestas'], { queryParams: { modo: 'hacer' } });
+    this.cerrarModalEstadoPedido();
+    await this.router.navigate(['/encuestas'], { queryParams: { modo: 'hacer' } });
     this.loadingService.hide();
   }
 
@@ -763,10 +763,6 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
-  irAHacerPedido() {
-    this.abrirModalProductosMesa();
-  }
-
   abrirConfirmacionPedido() {
     this.cargandoConfirmacion = true;
     this.mostrarConfirmacionPedido = true;
@@ -938,7 +934,6 @@ export class HomePage implements OnInit, OnDestroy {
     if (!error) {
       this.pedidoActualCliente.cuenta = 'pedida';
 
-      // Mostrar toast de cuenta pedida
       this.mostrarNotificacion('Cuenta pedida', 'exito');
 
       try {
@@ -1468,5 +1463,47 @@ export class HomePage implements OnInit, OnDestroy {
     setTimeout(() => {
       this.notificacion = null;
     }, 3500);
+  }
+
+  async escanearQRParaMenu() {
+    this.loadingService.show();
+    try {
+      const { barcodes } = await BarcodeScanner.scan();
+      if (barcodes.length > 0) {
+        const codigoEscaneado = barcodes[0].displayValue;
+        if (codigoEscaneado === 'irAMenu') {
+          this.abrirModalProductosMesa();
+        } else {
+          await this.mostrarNotificacion('El QR no es válido para hacer el pedido.', 'error');
+        }
+      } else {
+        await this.mostrarNotificacion('No se detectó ningún código QR.', 'error');
+      }
+    } catch (error) {
+      await this.mostrarNotificacion('Error al escanear el QR.', 'error');
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  async escanearQRParaVerEstado() {
+    this.loadingService.show();
+    try {
+      const { barcodes } = await BarcodeScanner.scan();
+      if (barcodes.length > 0) {
+        const codigoEscaneado = barcodes[0].displayValue;
+        if (codigoEscaneado === 'estadoDelPedido') {
+          this.abrirModalEstadoPedido();
+        } else {
+          await this.mostrarNotificacion('El QR no es válido para ver el estado del pedido.', 'error');
+        }
+      } else {
+        await this.mostrarNotificacion('No se detectó ningún código QR.', 'error');
+      }
+    } catch (error) {
+      await this.mostrarNotificacion('Error al escanear el QR.', 'error');
+    } finally {
+      this.loadingService.hide();
+    }
   }
 }

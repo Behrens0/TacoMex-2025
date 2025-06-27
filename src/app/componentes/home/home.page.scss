@@ -2040,3 +2040,8 @@ ion-modal.modal-estado-pedido ion-page {
   height: auto;
   display: block;
 }
+
+.boton-hacer-encuesta {
+  @extend .boton-pedir-cuenta;
+  margin-top: 250px;
+}
