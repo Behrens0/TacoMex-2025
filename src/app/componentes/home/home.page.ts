@@ -82,6 +82,7 @@ export class HomePage implements OnInit, OnDestroy {
   clientesPendientes: any[] = [];
   cargandoClientesPendientes: boolean = false;
   notificacion: { mensaje: string, tipo: 'exito' | 'error' | 'info' } | null = null;
+  propinaQRScaneado: boolean = false;
 
   constructor(
     public authService: AuthService,
@@ -121,10 +122,25 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadingService.hide();
   }
 
-  verEncuestasPrevias() {
+  async verEncuestasPrevias() {
     this.loadingService.show();
-    this.router.navigate(['/encuestas'], { queryParams: { modo: 'ver' } });
-    this.loadingService.hide();
+    try {
+      const { barcodes } = await BarcodeScanner.scan();
+      if (barcodes.length > 0) {
+        const codigoEscaneado = barcodes[0].displayValue;
+        if (codigoEscaneado === 'verEncuestas') {
+          await this.router.navigate(['/encuestas'], { queryParams: { modo: 'ver' } });
+        } else {
+          await this.mostrarNotificacion('El QR no es válido para ver encuestas previas.', 'error');
+        }
+      } else {
+        await this.mostrarNotificacion('No se detectó ningún código QR.', 'error');
+      }
+    } catch (error) {
+      await this.mostrarNotificacion('Error al escanear el QR.', 'error');
+    } finally {
+      this.loadingService.hide();
+    }
   }
 
   async hacerEncuesta() {
@@ -975,6 +991,7 @@ export class HomePage implements OnInit, OnDestroy {
   cerrarModalPago() {
     this.mostrarModalPago = false;
     this.propinaSeleccionada = 0;
+    this.propinaQRScaneado = false;
   }
 
   seleccionarPropina(porcentaje: number) {
@@ -1496,6 +1513,49 @@ export class HomePage implements OnInit, OnDestroy {
           this.abrirModalEstadoPedido();
         } else {
           await this.mostrarNotificacion('El QR no es válido para ver el estado del pedido.', 'error');
+        }
+      } else {
+        await this.mostrarNotificacion('No se detectó ningún código QR.', 'error');
+      }
+    } catch (error) {
+      await this.mostrarNotificacion('Error al escanear el QR.', 'error');
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  async escanearQRParaConfirmarRecepcion() {
+    this.loadingService.show();
+    try {
+      const { barcodes } = await BarcodeScanner.scan();
+      if (barcodes.length > 0) {
+        const codigoEscaneado = barcodes[0].displayValue;
+        if (codigoEscaneado === 'comidaTerminada') {
+          await this.confirmarRecepcion();
+        } else {
+          await this.mostrarNotificacion('El QR no es válido para confirmar la recepción.', 'error');
+        }
+      } else {
+        await this.mostrarNotificacion('No se detectó ningún código QR.', 'error');
+      }
+    } catch (error) {
+      await this.mostrarNotificacion('Error al escanear el QR.', 'error');
+    } finally {
+      this.loadingService.hide();
+    }
+  }
+
+  async escanearQRParaPropinas() {
+    this.loadingService.show();
+    try {
+      const { barcodes } = await BarcodeScanner.scan();
+      if (barcodes.length > 0) {
+        const codigoEscaneado = barcodes[0].displayValue;
+        if (codigoEscaneado === 'propinas') {
+          this.propinaQRScaneado = true;
+          await this.mostrarNotificacion('QR de propinas escaneado correctamente.', 'exito');
+        } else {
+          await this.mostrarNotificacion('El QR no es válido para las propinas.', 'error');
         }
       } else {
         await this.mostrarNotificacion('No se detectó ningún código QR.', 'error');

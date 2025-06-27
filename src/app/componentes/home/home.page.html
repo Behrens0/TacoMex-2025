@@ -160,7 +160,7 @@
 
   <div class="zona-botones-inferiores">
     <ion-button 
-      *ngIf="perfilUsuario === 'cliente'" 
+      *ngIf="perfilUsuario === 'cliente' && yaEnListaEspera" 
       expand="block" 
       class="boton-encuesta"
       (click)="verEncuestasPrevias()">
@@ -446,7 +446,7 @@
             expand="block" 
             color="success" 
             class="boton-confirmar-recepcion"
-            (click)="confirmarRecepcion()">
+            (click)="escanearQRParaConfirmarRecepcion()">
             <ion-icon name="checkmark-circle-outline"></ion-icon>
             Confirmar Recepción
           </ion-button>
@@ -597,7 +597,21 @@
               <!-- Botones de Propina -->
               <div class="propina-container">
                 <h4>Propina</h4>
-                <div class="botones-propina">
+                
+                <!-- Botón para escanear QR de propinas -->
+                <div *ngIf="!propinaQRScaneado" class="boton-propina-qr">
+                  <ion-button 
+                    expand="block"
+                    fill="outline"
+                    class="boton-escanear-propina"
+                    (click)="escanearQRParaPropinas()">
+                    <ion-icon name="qr-code-outline"></ion-icon>
+                    Dejar Propina
+                  </ion-button>
+                </div>
+                
+                <!-- Opciones de propina (solo visibles después de escanear QR) -->
+                <div *ngIf="propinaQRScaneado" class="botones-propina">
                   <ion-button 
                     *ngFor="let porcentaje of [0, 10, 15, 20]" 
                     [class.propina-seleccionada]="propinaSeleccionada === porcentaje"

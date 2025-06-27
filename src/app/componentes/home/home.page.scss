@@ -2045,3 +2045,20 @@ ion-modal.modal-estado-pedido ion-page {
   @extend .boton-pedir-cuenta;
   margin-top: 250px;
 }
+
+.boton-escanear-propina {
+  margin: 16px 0;
+  --border-color: var(--ion-color-primary);
+  --color: var(--ion-color-primary);
+  
+  ion-icon {
+    margin-right: 8px;
+  }
+}
+
+.boton-propina-qr {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0;
+}
