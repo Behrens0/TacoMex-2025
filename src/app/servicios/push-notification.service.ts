@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -255,4 +254,30 @@ export class PushNotificationService {
       throw error;
     }
   }
-} 
+
+  async enviarCorreoEstadoCliente(clienteEmail: string, nombre: string, estado: 'aceptado' | 'rechazado') {
+    try {
+      const response = await fetch(`${this.backendUrl}/enviarCorreoEstado`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clienteEmail,
+          nombre,
+          estado
+        }),
+      });
+
+      const resultado = await response.json();
+      if (!response.ok) {
+        throw new Error(resultado.error || 'Error al enviar el correo');
+      }
+
+      return resultado;
+    } catch (error) {
+      console.error('Error al enviar el correo:', error);
+      throw error;
+    }
+  }
+}

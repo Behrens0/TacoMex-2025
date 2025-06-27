@@ -1540,8 +1540,29 @@ ion-modal.modal-estado-pedido {
   padding: 16px;
 }
 
+.clientes-list .cliente-item {
+  background: transparent !important;
+  border: 2px solid #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(108, 194, 114, 0.15);
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.clientes-list .cliente-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 16px;
+}
+
 .cliente-avatar {
-  margin-right: 16px;
   color: #666;
   display: flex;
   align-items: center;
@@ -1550,6 +1571,8 @@ ion-modal.modal-estado-pedido {
   height: 60px;
   border-radius: 50%;
   overflow: hidden;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid #ffffff;
 }
 
 .cliente-imagen-perfil {
@@ -1569,19 +1592,22 @@ ion-modal.modal-estado-pedido {
 
 .cliente-details {
   flex: 1;
+  text-align: left;
 }
 
 .cliente-details h3 {
   margin: 0 0 4px 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: #fff;
+  text-align: left;
 }
 
 .cliente-details p {
   margin: 2px 0;
   font-size: 14px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: left;
 }
 
 .fecha-registro {
@@ -1636,18 +1662,26 @@ ion-modal.modal-estado-pedido {
   justify-content: center;
   align-items: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transition: all 0.3s ease;
+}
+
+.clientes-list .action-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
 .clientes-list .action-button[color="success"] {
   --background: #28a745 !important;
   --background-hover: #218838 !important;
   --color: #fff !important;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 
 .clientes-list .action-button[color="danger"] {
   --background: #dc3545 !important;
   --background-hover: #b71c1c !important;
   --color: #fff !important;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 .clientes-list .action-button ion-icon {
@@ -1655,50 +1689,43 @@ ion-modal.modal-estado-pedido {
     margin: 0 !important;
 }
 
-.cliente-details {
-  flex: 1;
-  text-align: center;
-}
-
-.cliente-details h3 {
-  margin: 0 0 4px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  text-align: center;
-}
-
-.cliente-details p {
-  margin: 2px 0;
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-}
-
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #666;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  border: 2px solid #ffffff;
+  margin: 20px;
+  backdrop-filter: blur(10px);
 }
 
 .empty-state h3 {
   margin: 16px 0 8px 0;
-  color: #333;
+  color: #fff;
+  font-size: 18px;
 }
 
 .empty-state p {
   margin: 0;
   font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .loading-container {
   text-align: center;
   padding: 40px 20px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  border: 2px solid #6CC272;
+  margin: 20px;
+  backdrop-filter: blur(10px);
 }
 
 .loading-container p {
   margin-top: 16px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 @media (max-width: 600px) {

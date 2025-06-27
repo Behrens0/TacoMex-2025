@@ -7,7 +7,7 @@ import { PushNotificationService } from 'src/app/servicios/push-notification.ser
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonButton, IonIcon, ModalController, IonModal, IonSpinner } from '@ionic/angular/standalone';
+import { IonContent, IonButton, IonIcon, IonModal, IonSpinner } from '@ionic/angular/standalone';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -1446,6 +1446,17 @@ export class HomePage implements OnInit, OnDestroy {
         return;
       }
 
+      try {
+        await this.pushNotificationService.enviarCorreoEstadoCliente(
+          cliente.correo, 
+          cliente.nombre, 
+          'aceptado'
+        );
+        console.log('Email de aprobación enviado exitosamente');
+      } catch (emailError) {
+        console.error('Error al enviar email de aprobación:', emailError);
+      }
+
       await this.mostrarNotificacion('Cliente aprobado exitosamente.', 'exito');
       await this.cargarClientesPendientes();
     } catch (error) {
@@ -1466,6 +1477,17 @@ export class HomePage implements OnInit, OnDestroy {
       if (error) {
         await this.mostrarNotificacion('No se pudo rechazar el cliente.', 'error');
         return;
+      }
+
+      try {
+        await this.pushNotificationService.enviarCorreoEstadoCliente(
+          cliente.correo, 
+          cliente.nombre, 
+          'rechazado'
+        );
+        console.log('Email de rechazo enviado exitosamente');
+      } catch (emailError) {
+        console.error('Error al enviar email de rechazo:', emailError);
       }
 
       await this.mostrarNotificacion('Cliente rechazado exitosamente.', 'exito');

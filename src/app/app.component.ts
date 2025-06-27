@@ -4,11 +4,12 @@ import { LoadingSpinnerComponent } from './componentes/loading-spinner/loading-s
 import { LoadingService } from './servicios/loading.service';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet, LoadingSpinnerComponent],
+  imports: [IonApp, IonRouterOutlet, LoadingSpinnerComponent, HttpClientModule],
   providers: [LoadingService]
 })
 export class AppComponent {
