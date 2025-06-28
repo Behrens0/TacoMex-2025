@@ -392,18 +392,25 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async validarMesaEscaneada(codigoEscaneado: string) {
+    
     let qrValido = false;
     try {
       const datosQR = JSON.parse(codigoEscaneado);
-      if (datosQR.numeroMesa === parseInt(this.mesaAsignada)) {
+
+      const numeroMesaQR = String(datosQR.numeroMesa);
+      const mesaAsignadaStr = String(this.mesaAsignada);
+      
+      if (numeroMesaQR === mesaAsignadaStr) {
         qrValido = true;
       }
     } catch (e) {
       const patronEsperado = `numeroMesa: ${this.mesaAsignada}`;
+      
       if (codigoEscaneado.includes(patronEsperado)) {
         qrValido = true;
       }
     }
+    
     if (!qrValido) {
       this.mostrarMensajeError('QR inválido, escanea el QR de tu mesa');
     } else {
@@ -1446,17 +1453,6 @@ export class HomePage implements OnInit, OnDestroy {
         return;
       }
 
-      try {
-        await this.pushNotificationService.enviarCorreoEstadoCliente(
-          cliente.correo, 
-          cliente.nombre, 
-          'aceptado'
-        );
-        console.log('Email de aprobación enviado exitosamente');
-      } catch (emailError) {
-        console.error('Error al enviar email de aprobación:', emailError);
-      }
-
       await this.mostrarNotificacion('Cliente aprobado exitosamente.', 'exito');
       await this.cargarClientesPendientes();
     } catch (error) {
@@ -1477,17 +1473,6 @@ export class HomePage implements OnInit, OnDestroy {
       if (error) {
         await this.mostrarNotificacion('No se pudo rechazar el cliente.', 'error');
         return;
-      }
-
-      try {
-        await this.pushNotificationService.enviarCorreoEstadoCliente(
-          cliente.correo, 
-          cliente.nombre, 
-          'rechazado'
-        );
-        console.log('Email de rechazo enviado exitosamente');
-      } catch (emailError) {
-        console.error('Error al enviar email de rechazo:', emailError);
       }
 
       await this.mostrarNotificacion('Cliente rechazado exitosamente.', 'exito');
