@@ -1266,15 +1266,7 @@ export class HomePage implements OnInit, OnDestroy {
       this.pedidoActualCliente.cuenta = 'chequeo';
       this.pedidoActualCliente.pagado = totalConPropina;
       this.cerrarModalPago();
-
-      const { error: errorDeletePedido } = await this.supabase.supabase
-        .from('pedidos')
-        .delete()
-        .eq('id', this.pedidoActualCliente.id);
-
-      if (errorDeletePedido) {
-      }
-            await this.verificarPedidoExistente();
+      await this.verificarPedidoExistente();
     }
   }
 
