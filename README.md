@@ -83,7 +83,7 @@
 
 #### COMIDA TERMINADA:
 
-![qr_ingreso_local](https://github.com/user-attachments/assets/cf1a344e-3970-4356-8037-f3aeec856c30)
+![comida_terminada](https://github.com/user-attachments/assets/41dd258f-b155-40d8-bd68-94eb313f2621)
 
 #### PROPINAS:
 
@@ -97,4 +97,3 @@
 
 **Última actualización**: `27 de junio de 2025`
 ---
-
