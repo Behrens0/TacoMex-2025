@@ -1430,6 +1430,28 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
+  async enviarCorreoEstadoCliente(email: string, nombre: string, estado: 'aceptado' | 'rechazado') {
+    try {
+      const response = await fetch('https://backend-taco-mex-2025.onrender.com/enviarCorreoEstado', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, nombre, estado }),
+      });
+
+      const resultado = await response.json();
+      if (!response.ok) {
+        throw new Error(resultado.error || 'Error al enviar el correo');
+      }
+
+      return resultado;
+    } catch (error) {
+      console.error('Error desde Angular al enviar el correo:', error);
+      throw error;
+    }
+  }
+
   async aprobarCliente(cliente: any) {
     try {
       const { error } = await this.supabase.supabase
@@ -1443,6 +1465,12 @@ export class HomePage implements OnInit, OnDestroy {
       if (error) {
         await this.mostrarNotificacion('No se pudo aprobar el cliente.', 'error');
         return;
+      }
+
+      try {
+        await this.enviarCorreoEstadoCliente(cliente.correo, cliente.nombre, 'aceptado');
+      } catch (e) {
+        console.error('Error enviando correo de aceptación:', e);
       }
 
       await this.mostrarNotificacion('Cliente aprobado exitosamente.', 'exito');
@@ -1465,6 +1493,12 @@ export class HomePage implements OnInit, OnDestroy {
       if (error) {
         await this.mostrarNotificacion('No se pudo rechazar el cliente.', 'error');
         return;
+      }
+
+      try {
+        await this.enviarCorreoEstadoCliente(cliente.correo, cliente.nombre, 'rechazado');
+      } catch (e) {
+        console.error('Error enviando correo de rechazo:', e);
       }
 
       await this.mostrarNotificacion('Cliente rechazado exitosamente.', 'exito');
