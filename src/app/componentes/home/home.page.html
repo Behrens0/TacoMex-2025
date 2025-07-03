@@ -268,7 +268,7 @@
           <div *ngFor="let consulta of consultasMozo" class="cliente-item">
             <div class="cliente-info">
               <div class="cliente-nombre" style="display: flex; justify-content: center; width: 100%;">Mesa N° {{ consulta.mesa }}</div>
-              <div class="cliente-correo">{{ formatearHoraConsulta(consulta.hora) }}</div>
+              <div class="cliente-meta">{{ formatearHoraConsulta(consulta.hora) }}</div>
               <div class="cliente-correo">{{ consulta.consulta }}</div>
             </div>
             <div class="mesa-actions">
@@ -317,13 +317,13 @@
           <div *ngFor="let consulta of consultasCliente" class="cliente-item">
             <div class="cliente-info">
               <div class="cliente-nombre" style="display: flex; justify-content: center; width: 100%;">Mesa N° {{ consulta.mesa }}</div>
-              <div class="cliente-correo">{{ formatearHoraConsulta(consulta.hora) }}</div>
-              <div class="cliente-correo">{{ consulta.consulta }}</div>
+              <div class="cliente-correo"><b>{{ consulta.consulta }}</b></div>
+              <div class="cliente-meta">{{ formatearHoraConsulta(consulta.hora) }}</div>
             </div>
             <div class="mesa-actions">
               <div *ngIf="consulta.respuesta" class="respuesta-mozo">
                 <div class="respuesta-label">Respuesta del mozo:</div>
-                <div class="respuesta-texto">{{ consulta.respuesta }}</div>
+                <div class="respuesta-texto"><b>{{ consulta.respuesta }}</b></div>
                 <div class="respuesta-meta">Por: {{ consulta.mozo }} | {{ formatearHoraConsulta(consulta.hora_respuesta) }}</div>
               </div>
               <div *ngIf="!consulta.respuesta" class="respuesta-mozo" style="background:#fff; border:none; color:#222;">Sin respuesta aún</div>

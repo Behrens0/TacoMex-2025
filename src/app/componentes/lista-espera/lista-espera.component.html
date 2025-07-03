@@ -41,8 +41,10 @@
     </div>
 
     <ion-button expand="block" shape="round" class="qr-btn" (click)="escanearParaDisponibilidadMesas()">
-      <ion-icon name="qr-code-outline" slot="start"></ion-icon>
-      Mesas Disponibles
+      <div class="qr-btn-content">
+        <ion-icon name="qr-code-outline"></ion-icon>
+        <span>Mesas Disponibles</span>
+      </div>
     </ion-button>
     <div *ngIf="mensajeErrorQR" class="qr-error-message">{{ mensajeErrorQR }}</div>
     <ion-modal [isOpen]="mostrarModalMesas" (didDismiss)="cerrarModalMesasDisponibles()">
