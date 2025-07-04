@@ -475,57 +475,67 @@
           <ion-button fill="clear" class="close-button" (click)="cerrarModalPedidosPreparar()">
             <ion-icon name="close"></ion-icon>
           </ion-button>
-          <h2 class="modal-title">{{ esCocinero ? 'Comidas y postres a preparar' : 'Bebidas a preparar' }}</h2>
+          <h2 class="modal-title">Pedidos a preparar</h2>
         </div>
-        <div class="clientes-container">
+        <div class="clientes-container pedidos-preparar-modal-nuevo">
           <div *ngIf="cargandoPedidosPreparar" class="loading-container"><p>Cargando pedidos...</p></div>
           <div *ngIf="!cargandoPedidosPreparar && pedidosPreparar.length === 0" class="modal-empty">No hay pedidos para preparar.</div>
-          <div *ngFor="let pedido of pedidosPreparar" class="cliente-item">
-            <div class="cliente-info">
-              <div class="cliente-nombre">Mesa N° {{ pedido.mesa }}</div>
-              <div class="cliente-correo" *ngIf="esCocinero"><b>Comidas:</b><div class="productos-fila">
-                <ng-container *ngIf="pedido.comidas?.length; else sinComidasPreparar">
-                  <div *ngFor="let item of agruparItems(pedido.comidas)" class="producto-item-preparar">
-                    <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+          <div *ngFor="let pedido of pedidosPreparar" class="cliente-item pedido-preparar-item-nuevo">
+            <div class="pedido-preparar-mesa-titulo">Mesa N° {{ pedido.mesa }}</div>
+            <div class="pedido-preparar-bloques">
+              <div *ngIf="esCocinero">
+                <div class="pedido-preparar-bloque">
+                  <div class="pedido-preparar-bloque-titulo">Comidas</div>
+                  <div class="productos-fila productos-fila-centrada">
+                    <ng-container *ngIf="pedido.comidas?.length; else sinComidasPreparar">
+                      <div *ngFor="let item of agruparItems(pedido.comidas)" class="producto-item-preparar">
+                        <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+                      </div>
+                    </ng-container>
+                    <ng-template #sinComidasPreparar>-</ng-template>
                   </div>
-                </ng-container>
-                <ng-template #sinComidasPreparar>-</ng-template>
-              </div>
-                <div class="accion-tipo" *ngIf="pedido.comidas?.length">
-                  <span *ngIf="isTipoCompletoTerminado(pedido, 'comida')" class="estado-terminado">✓ Comidas completadas</span>
-                  <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'comida')" size="small" (click)="marcarTipoCompletoTerminado(pedido, 'comida')">
-                    Marcar comidas como terminadas
-                  </ion-button>
+                  <div class="accion-tipo accion-tipo-centrada" *ngIf="pedido.comidas?.length">
+                    <span *ngIf="isTipoCompletoTerminado(pedido, 'comida')" class="estado-terminado">✓ Comidas completadas</span>
+                    <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'comida')" size="small" (click)="marcarTipoCompletoTerminado(pedido, 'comida')">
+                      Marcar comidas terminadas
+                    </ion-button>
+                  </div>
+                </div>
+                <div class="pedido-preparar-bloque">
+                  <div class="pedido-preparar-bloque-titulo">Postres</div>
+                  <div class="productos-fila productos-fila-centrada">
+                    <ng-container *ngIf="pedido.postres?.length; else sinPostresPreparar">
+                      <div *ngFor="let item of agruparItems(pedido.postres)" class="producto-item-preparar">
+                        <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+                      </div>
+                    </ng-container>
+                    <ng-template #sinPostresPreparar>-</ng-template>
+                  </div>
+                  <div class="accion-tipo accion-tipo-centrada" *ngIf="pedido.postres?.length">
+                    <span *ngIf="isTipoCompletoTerminado(pedido, 'postre')" class="estado-terminado">✓ Postres completados</span>
+                    <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'postre')" size="small" (click)="marcarTipoCompletoTerminado(pedido, 'postre')">
+                      Marcar postres terminados
+                    </ion-button>
+                  </div>
                 </div>
               </div>
-              <div class="cliente-correo" *ngIf="esCocinero"><b>Postres:</b><div class="productos-fila">
-                <ng-container *ngIf="pedido.postres?.length; else sinPostresPreparar">
-                  <div *ngFor="let item of agruparItems(pedido.postres)" class="producto-item-preparar">
-                    <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+              <div *ngIf="esBartender">
+                <div class="pedido-preparar-bloque">
+                  <div class="pedido-preparar-bloque-titulo">Bebidas</div>
+                  <div class="productos-fila productos-fila-centrada">
+                    <ng-container *ngIf="pedido.bebidas?.length; else sinBebidasPreparar">
+                      <div *ngFor="let item of agruparItems(pedido.bebidas)" class="producto-item-preparar">
+                        <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+                      </div>
+                    </ng-container>
+                    <ng-template #sinBebidasPreparar>-</ng-template>
                   </div>
-                </ng-container>
-                <ng-template #sinPostresPreparar>-</ng-template>
-              </div>
-                <div class="accion-tipo" *ngIf="pedido.postres?.length">
-                  <span *ngIf="isTipoCompletoTerminado(pedido, 'postre')" class="estado-terminado">✓ Postres completados</span>
-                  <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'postre')" size="small" (click)="marcarTipoCompletoTerminado(pedido, 'postre')">
-                    Marcar postres como terminados
-                  </ion-button>
-                </div>
-              </div>
-              <div class="cliente-correo" *ngIf="esBartender"><b>Bebidas:</b><div class="productos-fila">
-                <ng-container *ngIf="pedido.bebidas?.length; else sinBebidasPreparar">
-                  <div *ngFor="let item of agruparItems(pedido.bebidas)" class="producto-item-preparar">
-                    <span>{{ item.nombre }}<span *ngIf="item.cantidad > 1" class="cantidad-repetida"> x{{ item.cantidad }}</span></span>
+                  <div class="accion-tipo accion-tipo-centrada" *ngIf="pedido.bebidas?.length">
+                    <span *ngIf="isTipoCompletoTerminado(pedido, 'bebida')" class="estado-terminado">✓ Bebidas completadas</span>
+                    <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'bebida')" size="small" (click)="marcarTipoCompletoTerminado(pedido, 'bebida')">
+                      Marcar bebidas terminadas
+                    </ion-button>
                   </div>
-                </ng-container>
-                <ng-template #sinBebidasPreparar>-</ng-template>
-              </div>
-                <div class="accion-tipo" *ngIf="pedido.bebidas?.length">
-                  <span *ngIf="isTipoCompletoTerminado(pedido, 'bebida')" class="estado-terminado">✓ Bebidas completadas</span>
-                  <ion-button *ngIf="!isTipoCompletoTerminado(pedido, 'bebida')" size="small" (click)="marcarTipoCompletoTerminado(pedido, 'bebida')">
-                    Marcar bebidas como terminadas
-                  </ion-button>
                 </div>
               </div>
             </div>
